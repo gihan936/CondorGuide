@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Navbar, Nav, Dropdown, Image } from 'react-bootstrap';
+import { Navbar, Nav, Dropdown, Image, Container } from 'react-bootstrap';
 import { ThemeContext } from '../context/ThemeContext';
 import logo from '../assets/logo.png';
 import avatar from '../assets/avatar.png';
@@ -8,33 +8,69 @@ const Header = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   return (
-    <Navbar bg={theme} variant={theme} expand="lg" className="px-4">
-      <Navbar.Brand href="/">
-        <Image src={logo} alt="Condor Guide" height="40" />
-      </Navbar.Brand>
-      <Navbar.Toggle aria-controls="basic-navbar-nav" />
-      <Navbar.Collapse id="basic-navbar-nav">
-        <Nav className="me-auto">
-          <Nav.Link href="/">Home</Nav.Link>
-          <Nav.Link href="/map">College Map</Nav.Link>
-          <Nav.Link href="/classrooms">Available Classrooms</Nav.Link>
-          <Nav.Link href="/issues">Report Issues</Nav.Link>
-          <Nav.Link href="/security">Security Alarm</Nav.Link>
-        </Nav>
-        <Dropdown align="end">
-          <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-            <Image src={avatar} roundedCircle height="30" />
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item href="/profile">Profile</Dropdown.Item>
-            <Dropdown.Item onClick={toggleTheme}>
-              Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
-            </Dropdown.Item>
-            <Dropdown.Divider />
-            <Dropdown.Item href="/logout">Logout</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </Navbar.Collapse>
+    <Navbar
+      expand="lg"
+      bg={theme}
+      variant={theme}
+      className={`py-3 shadow-sm ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
+    >
+      <Container fluid className="px-4 d-flex justify-content-between align-items-center">
+        {/* Logo */}
+        <Navbar.Brand href="/" className="d-flex align-items-center">
+          <Image
+            src={logo}
+            alt="Condor Guide"
+            height="70"
+            width="70"
+            className="me-2"
+            style={{ filter: theme === 'dark' ? 'brightness(1.5)' : 'none' }}
+          />
+          <span
+            className="fw-bold fs-4"
+            style={{ color: '#e1c212', letterSpacing: '0.5px' }}
+          >
+            Condor Guide
+          </span>
+        </Navbar.Brand>
+
+        {/* Responsive Toggle */}
+        <Navbar.Toggle aria-controls="main-navbar" />
+
+        {/* Nav Links & Avatar */}
+        <Navbar.Collapse id="main-navbar">
+          <Nav className="ms-auto d-flex align-items-center gap-3">
+            <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
+            <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
+            <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
+            <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
+            <Nav.Link href="/security" className="nav-link-custom">Security Alarm</Nav.Link>
+
+            {/* Avatar Dropdown */}
+            <Dropdown align="end">
+              <Dropdown.Toggle
+                variant="link"
+                id="dropdown-avatar"
+                className="p-0 border-0"
+              >
+                <Image
+                  src={avatar}
+                  roundedCircle
+                  height="40"
+                  style={{ border: '2px solid #e1c212' }}
+                />
+              </Dropdown.Toggle>
+              <Dropdown.Menu className={`dropdown-menu-${theme}`}>
+                <Dropdown.Item href="/profile">Profile</Dropdown.Item>
+                <Dropdown.Item onClick={toggleTheme}>
+                  Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item href="/logout">Logout</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
     </Navbar>
   );
 };

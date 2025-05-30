@@ -1,33 +1,64 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaGlobe,
+} from 'react-icons/fa';
 
-const Footer = () => (
-  <footer className="bg-dark text-light py-4 mt-auto">
-    <Container>
-      <Row>
-        <Col md={4}>
-          <h5>Condor Guide</h5>
-          <p>Your campus companion for navigation and safety.</p>
-        </Col>
-        <Col md={4}>
-          <h5>Quick Links</h5>
-          <ul className="list-unstyled">
-            <li><a href="/map" className="text-light">College Map</a></li>
-            <li><a href="/classrooms" className="text-light">Available Classrooms</a></li>
-            <li><a href="/issues" className="text-light">Report Issues</a></li>
-            <li><a href="/security" className="text-light">Security Alarm</a></li>
-          </ul>
-        </Col>
-        <Col md={4}>
-          <h5>Contact Us</h5>
-          <p>Email: support@condorguide.com</p>
-          <p>Phone: +1 (123) 456-7890</p>
-        </Col>
-      </Row>
-      <hr className="bg-light" />
-      <p className="text-center mb-0">&copy; {new Date().getFullYear()} Condor Guide. All rights reserved.</p>
-    </Container>
-  </footer>
-);
+const Footer = () => {
+  return (
+    <footer className="custom-footer bg-black text-white pt-4">
+      <Container>
+        <Row className="gy-4">
+          {/* Contact Us */}
+          <Col md={4}>
+            <h5 className="footer-heading">Contact Us</h5>
+            <p>Email: support@conestogacollege.ca</p>
+            <p>Phone: +1 (519) 748-5220</p>
+            <p>Address: 299 Doon Valley Dr, Kitchener, ON</p>
+          </Col>
+
+          {/* Quick Links */}
+          <Col md={4}>
+            <h5 className="footer-heading">Quick Links</h5>
+            <ul className="footer-links list-unstyled">
+              <li><a href="/">Home</a></li>
+              <li><a href="/map">College Map</a></li>
+              <li><a href="/classrooms">Available Classrooms</a></li>
+              <li><a href="/issues">Report Issues</a></li>
+              <li><a href="/security">Security Alarm</a></li>
+            </ul>
+          </Col>
+
+          {/* Social + College Link */}
+          <Col md={4}>
+            <h5 className="footer-heading">Stay Connected</h5>
+            <div className="social-icons d-flex gap-3 mb-3">
+              <a href="https://facebook.com" target="_blank" rel="noreferrer"><FaFacebookF /></a>
+              <a href="https://twitter.com" target="_blank" rel="noreferrer"><FaTwitter /></a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer"><FaInstagram /></a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer"><FaLinkedinIn /></a>
+            </div>
+            <a
+              href="https://www.conestogac.on.ca/"
+              target="_blank"
+              rel="noreferrer"
+              className="college-link"
+            >
+              <FaGlobe className="me-2" />Visit Conestoga College
+            </a>
+          </Col>
+        </Row>
+        <hr className="footer-divider" />
+        <p className="text-center text-white-50 mb-0">
+          © {new Date().getFullYear()} Conestoga College Guide. All rights reserved.
+        </p>
+      </Container>
+    </footer>
+  );
+};
 
 export default Footer;

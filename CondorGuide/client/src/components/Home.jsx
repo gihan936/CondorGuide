@@ -1,64 +1,111 @@
 import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
-import banner from '../assets/banner.jpg';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { motion } from 'framer-motion';
 import mapImg from '../assets/map.jpg';
 import classroomsImg from '../assets/classrooms.jpg';
 import issuesImg from '../assets/issues.jpg';
 import securityImg from '../assets/security.jpg';
 
+const features = [
+  {
+    title: 'College Map',
+    text: 'Navigate your campus with ease using our interactive map.',
+    image: mapImg,
+    link: '/map',
+  },
+  {
+    title: 'Available Classrooms',
+    text: 'Check real-time availability of classrooms for your study sessions.',
+    image: classroomsImg,
+    link: '/classrooms',
+  },
+  {
+    title: 'Report Issues',
+    text: 'Quickly report any campus issues to the administration.',
+    image: issuesImg,
+    link: '/issues',
+  },
+  {
+    title: 'Security Alarm',
+    text: 'Access emergency contacts and raise alarms instantly.',
+    image: securityImg,
+    link: '/security',
+  },
+];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      when: "beforeChildren",
+      staggerChildren: 0.2,
+    }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
+
 const Home = () => (
   <main>
-    <div
-      style={{
-        backgroundImage: `url(${banner})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        height: '60vh',
-      }}
-    >
-      <div className="d-flex h-100 align-items-center justify-content-center text-white text-center">
-        <h1 className="display-4 bg-dark bg-opacity-50 p-3 rounded">Welcome to Condor Guide</h1>
-      </div>
+    <div className="home-banner-section d-flex align-items-center justify-content-center">
+      <motion.div
+        className="text-center text-white"
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+      >
+        <h1 className="display-4 banner-text">Welcome to Condor Guide</h1>
+        <p className="lead">Your smart companion to navigate, report, and secure your college experience.</p>
+        <Button href="/map" variant="warning" className="mt-3 px-4 py-2 fw-bold">
+          Explore Campus
+        </Button>
+      </motion.div>
     </div>
+
+
     <Container className="my-5">
-      <Row className="g-4">
-        <Col md={6} lg={3}>
-          <Card className="h-100">
-            <Card.Img variant="top" src={mapImg} />
-            <Card.Body>
-              <Card.Title>College Map</Card.Title>
-              <Card.Text>Navigate your campus with ease using our interactive map.</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6} lg={3}>
-          <Card className="h-100">
-            <Card.Img variant="top" src={classroomsImg} />
-            <Card.Body>
-              <Card.Title>Available Classrooms</Card.Title>
-              <Card.Text>Check real-time availability of classrooms for your study sessions.</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6} lg={3}>
-          <Card className="h-100">
-            <Card.Img variant="top" src={issuesImg} />
-            <Card.Body>
-              <Card.Title>Report Issues</Card.Title>
-              <Card.Text>Quickly report any campus issues to the administration.</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6} lg={3}>
-          <Card className="h-100">
-            <Card.Img variant="top" src={securityImg} />
-            <Card.Body>
-              <Card.Title>Security Alarm</Card.Title>
-              <Card.Text>Access emergency contacts and raise alarms instantly.</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <Row className="g-4">
+          {features.map((feature, index) => (
+            <Col key={index} md={6} lg={3}>
+              <motion.a
+                href={feature.link}
+                className="card-link text-decoration-none text-dark"
+                variants={cardVariants}
+              >
+                <Card className="feature-card h-100 shadow-sm">
+                  <Card.Img variant="top" src={feature.image} />
+                  <Card.Body>
+                    <Card.Title className="fw-bold text-black">{feature.title}</Card.Title>
+                    <Card.Text>{feature.text}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </motion.a>
+            </Col>
+          ))}
+        </Row>
+      </motion.div>
+    </Container>
+
+    <Container className="my-5 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <h2 className="text-white mb-3">About Condor Guide</h2>
+        <p className="text-white-50">
+          This platform is built for students and faculty to enhance campus life with easy access to navigation, room availability, emergency tools, and issue reporting.
+        </p>
+      </motion.div>
     </Container>
   </main>
 );

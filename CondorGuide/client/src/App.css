@@ -42,6 +42,8 @@
   padding-top: 50px; /* optional: space from top */
 }
 
+
+
 .card-overlay {
     background-color: rgba(0, 0, 0, 0.6); /* semi-transparent black */
 }
@@ -102,4 +104,98 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+
+/* Header page */
+.nav-link-custom {
+  color: #000;
+  font-weight: 500;
+  transition: color 0.3s ease, border-bottom 0.3s ease;
+  position: relative;
+}
+
+.navbar-dark .nav-link-custom {
+  color: #fff;
+}
+
+.nav-link-custom:hover {
+  color: #e1c212 !important;
+  text-decoration: none;
+}
+
+.dropdown-menu-dark {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+.dropdown-menu-dark .dropdown-item {
+  color: #fff;
+}
+
+.dropdown-menu-dark .dropdown-item:hover {
+  background-color: #333;
+  color: #e1c212;
+}
+
+.dropdown-menu-light .dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #e1c212;
+}
+
+/* footer page */
+
+
+.custom-footer {
+  background-color: #000;
+  color: #fff;
+}
+
+.footer-heading {
+  color: #e1c212;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.footer-links a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #e1c212;
+}
+
+.social-icons a {
+  font-size: 1.2rem;
+  color: #fff;
+  transition: color 0.3s ease;
+}
+
+.social-icons a:hover {
+  color: #e1c212;
+}
+
+.college-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: #e1c212;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.college-link:hover {
+  text-decoration: underline;
+}
+
+.footer-divider {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* home page */
+.home-banner-section {
+  background-image: url('/assets/banner.jpg');
 }
