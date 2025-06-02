@@ -199,3 +199,65 @@
 .home-banner-section {
   background-image: url('/assets/banner.jpg');
 }
+
+/* available classrooms page */
+.classroom-section.light {
+  background-color: #fff;
+  color: #000;
+}
+
+.classroom-section.dark {
+  background-color: #000;
+  color: #fff;
+}
+
+.section-heading {
+  font-weight: 700;
+  color: #e1c212;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.classroom-form-card {
+  background-color: #1a1a1a;
+  color: white;
+  border: 2px solid #e1c212;
+  border-radius: 12px;
+}
+
+.classroom-form-card .form-label {
+  color: #e1c212;
+}
+
+.form-control {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.btn-customYellow {
+  background-color: #e1c212;
+  color: black;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-customYellow:hover {
+  background-color: #d4b000;
+  color: #000;
+}
+
+.wing-card {
+  background-color: #e1c212;
+  color: black;
+  font-weight: 600;
+  padding: 1.25rem;
+  border-radius: 12px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.wing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(225, 194, 18, 0.3);
+}

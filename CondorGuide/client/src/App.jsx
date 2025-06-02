@@ -6,6 +6,7 @@ import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
+import AvailableClassrooms from './components/AvailableClassrooms';
 
 import { ThemeContext } from './context/ThemeContext';
 
@@ -19,6 +20,7 @@ const App = () => {
         <main className="flex-grow-1">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/classrooms" element={<AvailableClassrooms />} />
           </Routes>
         </main>
         <Footer />
