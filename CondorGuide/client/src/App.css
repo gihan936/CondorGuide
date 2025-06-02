@@ -197,7 +197,8 @@
 
 /* home page */
 .home-banner-section {
-  background-image: url('/assets/banner.jpg');
+  background-image: url('/CondorGuide/client/src/assets/room-interior-design.jpg');
+
 }
 
 /* available classrooms page */

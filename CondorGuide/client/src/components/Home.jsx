@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
+import bannerBg from '../assets/banner.jpg';
 import mapImg from '../assets/map.jpg';
 import classroomsImg from '../assets/classrooms.jpg';
 import issuesImg from '../assets/issues.jpg';
@@ -51,8 +52,15 @@ const cardVariants = {
 
 const Home = () => (
   <main>
-    <div className="home-banner-section d-flex align-items-center justify-content-center">
-      <motion.div
+    <div className="home-banner-section d-flex align-items-center justify-content-center" style={{
+    backgroundImage: `url(${bannerBg})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    minHeight: '50vh'
+   
+  }} >
+      <Motion.div
         className="text-center text-white"
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -63,12 +71,12 @@ const Home = () => (
         <Button href="/map" variant="warning" className="mt-3 px-4 py-2 fw-bold">
           Explore Campus
         </Button>
-      </motion.div>
+      </Motion.div>
     </div>
 
 
     <Container className="my-5">
-      <motion.div
+      <Motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -76,7 +84,7 @@ const Home = () => (
         <Row className="g-4">
           {features.map((feature, index) => (
             <Col key={index} md={6} lg={3}>
-              <motion.a
+              <Motion.a
                 href={feature.link}
                 className="card-link text-decoration-none text-dark"
                 variants={cardVariants}
@@ -88,24 +96,24 @@ const Home = () => (
                     <Card.Text>{feature.text}</Card.Text>
                   </Card.Body>
                 </Card>
-              </motion.a>
+              </Motion.a>
             </Col>
           ))}
         </Row>
-      </motion.div>
+      </Motion.div>
     </Container>
 
     <Container className="my-5 text-center">
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-white mb-3">About Condor Guide</h2>
-        <p className="text-white-50">
+        <h2 className="text-black mb-3">About Condor Guide</h2>
+        <p className="text-black-50">
           This platform is built for students and faculty to enhance campus life with easy access to navigation, room availability, emergency tools, and issue reporting.
         </p>
-      </motion.div>
+      </Motion.div>
     </Container>
   </main>
 );
