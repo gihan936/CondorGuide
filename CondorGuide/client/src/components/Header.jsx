@@ -65,6 +65,7 @@ const Header = () => {
                   Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
                 </Dropdown.Item>
                 <Dropdown.Divider />
+                <Dropdown.Item href="/login">Login</Dropdown.Item>
                 <Dropdown.Item href="/logout">Logout</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
