@@ -60,6 +60,11 @@ const Header = () => {
                 />
               </Dropdown.Toggle>
               <Dropdown.Menu className={`dropdown-menu-${theme}`}>
+                {localStorage.getItem('user') && (
+                       <Dropdown.Header>
+                       {JSON.parse(localStorage.getItem('user')).email}
+                       </Dropdown.Header>
+                )}
                 <Dropdown.Item href="/profile">Profile</Dropdown.Item>
                 <Dropdown.Item onClick={toggleTheme}>
                   Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode

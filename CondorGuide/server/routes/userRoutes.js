@@ -24,17 +24,16 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const newUser = new User({ email, password });
     if(!email || !password){
       res.status(400).json({ message: 'All fields are required' });
     }
-    const user = User.findOne(email, password);
+    const user = await User.findOne({ email, password });
     if(!user){
      return res.status(401).json({message: 'Invalid email or password'})
     }
     res.status(200).json({message: 'Login successful', user})
   } catch (error) {
-    res.status(500).json({ message: "Error saving user", error });
+    res.status(500).json({ message: "Error in logging user", error });
   }
 });
 
