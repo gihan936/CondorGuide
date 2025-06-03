@@ -7,6 +7,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
 import AvailableClassrooms from './components/AvailableClassrooms';
+import LoginPage from './components/LoginPage'; 
+import SignUpPage from './components/SignUp'; 
 
 import { ThemeContext } from './context/ThemeContext';
 
@@ -21,6 +23,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/classrooms" element={<AvailableClassrooms />} />
+             <Route path="/login" element={<LoginPage />} />       
+            <Route path="/signup" element={<SignUpPage />} /> 
           </Routes>
         </main>
         <Footer />
