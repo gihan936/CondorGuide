@@ -90,7 +90,7 @@ const Home = () => (
                 variants={cardVariants}
               >
                 <Card className="feature-card h-100 shadow-sm">
-                  <Card.Img variant="top" src={feature.image} />
+                  <Card.Img variant="top" src={feature.image} className="feature-card-img" />
                   <Card.Body>
                     <Card.Title className="fw-bold text-black">{feature.title}</Card.Title>
                     <Card.Text>{feature.text}</Card.Text>

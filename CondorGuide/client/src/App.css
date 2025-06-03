@@ -208,6 +208,11 @@
 
 }
 
+.feature-card-img {
+  height: 250px;
+  object-fit: cover;
+}
+
 /* available classrooms page */
 .classroom-section.light {
   background-color: #fff;
