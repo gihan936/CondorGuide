@@ -33,4 +33,28 @@ const App = () => {
   );
 };
 
+// const App = () => {
+//   const { theme } = useContext(ThemeContext);
+
+//   return (
+//     <div className="app-background">
+//       <div className='overlay'>
+//         <LoginPage />
+//       </div>
+      
+//     </div>
+    // <div className={theme === 'dark' ? 'bg-dark text-light min-vh-100 d-flex flex-column' : 'bg-light text-dark min-vh-100 d-flex flex-column'}>
+    //   <Router>
+    //     <Header />
+    //     <main className="flex-grow-1">
+    //       <Routes>
+    //         <Route path="/" element={<Home />} />
+    //       </Routes>
+    //     </main>
+    //     <Footer />
+    //   </Router>
+    // </div>
+//   );
+// };
+
 export default App;

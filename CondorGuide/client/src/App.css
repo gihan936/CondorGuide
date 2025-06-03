@@ -18,6 +18,13 @@
   color: #000;
 }
 
+.btn-primary:active {
+  background-color: #c89e2d !important;  /* a darker yellow or same */
+  border-color: #c89e2d !important;
+  color: black !important;
+  box-shadow: none;
+}
+
 .bg-primary {
   background-color: var(--bs-primary) !important;
 }
@@ -27,7 +34,7 @@
 }
 
 .app-background {
-  background-image: url('/assets/room-interior-design.jpg'); 
+  background-image: url('./assets/room-interior-design.jpg'); 
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
