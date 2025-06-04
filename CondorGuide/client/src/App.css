@@ -279,38 +279,106 @@
 }
 
 /* Map Component Styles */
-/* Map Component Styles - Scrolling Layout */
 .map-page {
-  min-height: 100vh;
-}
-
-.map-container-wrapper {
-  height: 70vh; /* 70% of viewport height for the map */
-  min-height: 500px;
+  position: relative;
 }
 
 .map-container {
-  height: 100%;
-  width: 100%;
+  height: 50vh;
+  width: 70%;
+  margin: 0 auto;
 }
 
-/* Floor Switcher - Only floating element */
+.map-info-card {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 300px;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+.map-info-card.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.map-info-card.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
 .floor-switcher {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  backdrop-filter: blur(10px);
   z-index: 1000;
 }
 
-/* Map Controls - Floating */
+.floor-switcher.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.floor-switcher.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.floor-button {
+  min-width: 50px;
+  min-height: 50px;
+}
+
 .map-controls {
   position: absolute;
-  bottom: 50px;
-  right: 20px;
+  bottom: 15px;
+  right: 15px;
   z-index: 1000;
 }
 
-/* Theme-aware text colors */
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-info-modal {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  width: 300px;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  border-left: 4px solid #007bff;
+}
+
+.room-info-modal.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.room-info-modal.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.equipment-text {
+  font-size: 0.9em;
+  max-width: 60%;
+}
+
+.debug-info {
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.debug-info.dark-theme {
+  background-color: #000;
+  color: #fff;
+}
+
+.debug-info.light-theme {
+  background-color: #f8f9fa;
+  color: #343a40;
+}
+
 .text-dark-theme {
   color: #fff;
 }
@@ -327,42 +395,6 @@
   color: #adb5bd;
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .map-container-wrapper {
-    height: 50vh;
-    min-height: 400px;
-  }
-  
-  .floor-switcher {
-    top: 10px;
-    right: 10px;
-  }
-  
-  .map-controls {
-    bottom: 10px;
-    right: 10px;
-  }
-}
-
-.shadow-sm {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
-
-.py-4 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-}
-
-.py-5 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-=======
-=======
->>>>>>> Stashed changes
 
 
 /*class Availability Styling */
@@ -395,7 +427,3 @@
   border-radius: 8px;
   overflow: hidden;
 }
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
