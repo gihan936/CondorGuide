@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const classroomSchema = new mongoose.Schema({
   roomNumber: String,
-  wing: String, // A Wing, B Wing, etc.
+  wing: String, 
   bookings: [
     {
       date: String,          // "YYYY-MM-DD"

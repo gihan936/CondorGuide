@@ -1,6 +1,4 @@
-/* App.css */
 
-/* Mapbox GL CSS import*/
 @import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
@@ -8,7 +6,7 @@
   --bs-secondary: #000000;
 }
 
-/* Optional: customize text and background using new variables */
+
 .btn-primary {
   background-color: var(--bs-primary);
   border-color: var(--bs-primary);
@@ -22,7 +20,7 @@
 }
 
 .btn-primary:active {
-  background-color: #c89e2d !important;  /* a darker yellow or same */
+  background-color: #c89e2d !important; 
   border-color: #c89e2d !important;
   color: black !important;
   box-shadow: none;
@@ -46,16 +44,15 @@
   width: 100%;
 }
 .overlay {
-  background-color: rgba(0, 0, 0, 0.6); /* semi-transparent black */
-  width: 100%;
+  background-color: rgba(0, 0, 0, 0.6); 
   min-height: 100vh;
-  padding-top: 50px; /* optional: space from top */
+  padding-top: 50px; 
 }
 
 
 
 .card-overlay {
-    background-color: rgba(0, 0, 0, 0.6); /* semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.6); 
 }
 
 .form-label{
@@ -63,9 +60,9 @@
 }
 
 .custom-input {
-  background-color: #f5f5dc; /* light background color */
-  color: #000;               /* text color */
-  border: 1px solid #e1c212; /* border in your primary color */
+  background-color: #f5f5dc; 
+  color: #000;               
+  border: 1px solid #e1c212; 
 }
 
 .custom-input::placeholder {
@@ -398,9 +395,6 @@
 
 
 /*class Availability Styling */
-
-
-
 
 .wing-card {
   background-color: #e1c212;
