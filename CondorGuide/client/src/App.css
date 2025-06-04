@@ -1,5 +1,8 @@
 /* App.css */
 
+/* Mapbox GL CSS import*/
+@import 'mapbox-gl/dist/mapbox-gl.css';
+
 :root {
   --bs-primary: #e1c212;
   --bs-secondary: #000000;
@@ -273,4 +276,121 @@
 .wing-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(225, 194, 18, 0.3);
+}
+
+/* Map Component Styles */
+.map-page {
+  position: relative;
+}
+
+.map-container {
+  height: 50vh;
+  width: 70%;
+  margin: 0 auto;
+}
+
+.map-info-card {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 300px;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+.map-info-card.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.map-info-card.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.floor-switcher {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+.floor-switcher.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.floor-switcher.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.floor-button {
+  min-width: 50px;
+  min-height: 50px;
+}
+
+.map-controls {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  z-index: 1000;
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-info-modal {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  width: 300px;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  border-left: 4px solid #007bff;
+}
+
+.room-info-modal.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.room-info-modal.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.equipment-text {
+  font-size: 0.9em;
+  max-width: 60%;
+}
+
+.debug-info {
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.debug-info.dark-theme {
+  background-color: #000;
+  color: #fff;
+}
+
+.debug-info.light-theme {
+  background-color: #f8f9fa;
+  color: #343a40;
+}
+
+.text-dark-theme {
+  color: #fff;
+}
+
+.text-light-theme {
+  color: #343a40;
+}
+
+.text-muted-theme {
+  color: #6c757d;
+}
+
+.text-light-muted-theme {
+  color: #adb5bd;
 }

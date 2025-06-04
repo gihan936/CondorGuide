@@ -23,20 +23,19 @@ const Map = () => {
   });
 
   useEffect(() => {
-    //Mapbox access token
+    // Access token for Mapbox
     mapboxgl.accessToken = 'pk.eyJ1Ijoia3VzaGFkaW5pIiwiYSI6ImNtYjBxdnlzczAwNmUyanE0ejhqdnNibGMifQ.39lNqpWtEZ_flmjVch2V5g';
     
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/kushadini/cmbhfuxoj001j01qt5att3psz',
-      center: [-74.5, 40], // starting position [lng, lat]
-      zoom: 9 // starting zoom
+      style: 'mapbox://styles/kushadini/cmbhfuxoj001j01qt5att3psz',//Mapbox style
+      center: [-74.5, 40],
+      zoom: 9
     });
 
     mapRef.current.on('load', () => {
       setDebugInfo('Map loaded successfully!');
       
-      // Fly to your college location once loaded
       mapRef.current.flyTo({
         center: [-80.402, 43.391],
         zoom: 19,
@@ -60,7 +59,6 @@ const Map = () => {
     const layers = mapRef.current.getStyle().layers;
     const foundLayers = [];
     
-    // Reset floor layers
     floorLayersRef.current = { 1: [], 2: [], 3: [] };
     
     layers.forEach(layer => {
@@ -73,7 +71,6 @@ const Map = () => {
         
         foundLayers.push(layer);
         
-        // Categorize by floor
         if (layerId.includes('level-1') || layerId.includes('1')) {
           floorLayersRef.current[1].push(layer.id);
         } else if (layerId.includes('level-3') || layerId.includes('3')) {
@@ -103,11 +100,15 @@ const Map = () => {
         mapRef.current.on('click', layerId, (e) => {
           if (e.features.length > 0) {
             const roomData = e.features[0].properties;
+            
+            console.log('Available room properties:', roomData);
+            console.log('Property keys:', Object.keys(roomData));
+            
             setSelectedRoom({
-              id: roomData.location_number || roomData.location_id || 'Unknown',
-              name: roomData.location_name || roomData.location_number || 'Unknown',
+              id: roomData.room_number || roomData.location_id || roomData.room_id || 'Unknown',
+              name: roomData.location_name || roomData.room_number || roomData.room_id || 'Unknown',
               floor: currentFloor,
-              type: roomData.location_type || 'Classroom',
+              type: roomData.location_type || roomData.room_type || 'Classroom',
               status: roomData.status || 'Available',
               equipment: roomData.equipment || 'Standard classroom equipment',
               description: roomData.description || 'No description available'
@@ -128,7 +129,6 @@ const Map = () => {
   };
 
   const showFloorOnly = (floor) => {
-    // Hide all floor layers
     Object.keys(floorLayersRef.current).forEach(floorNum => {
       floorLayersRef.current[floorNum].forEach(layerId => {
         try {
@@ -139,7 +139,6 @@ const Map = () => {
       });
     });
     
-    // Show selected floor layers
     if (floorLayersRef.current[floor] && floorLayersRef.current[floor].length > 0) {
       floorLayersRef.current[floor].forEach(layerId => {
         try {
@@ -180,55 +179,44 @@ const Map = () => {
   };
 
   return (
-    <div className="map-page" style={{ minHeight: '100vh', position: 'relative' }}>
-      {/* Map Container*/}
+    <div className="map-page">
+      {/* Map Container */}
       <div 
         ref={mapContainerRef}
-        style={{ height: '100vh' }}
         className="map-container"
       />
 
-      {/* Info Card */}
-      <Card 
-        className="position-absolute shadow-lg"
-        style={{ 
-          top: '15px', 
-          left: '15px', 
-          width: '300px',
-          backgroundColor: theme === 'dark' ? '#1a1a1a' : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          zIndex: 1000
-        }}
-      >
+      {/* Building Info Card */}
+      <Card className={`map-info-card shadow-lg ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
         <Card.Body>
-          <Card.Title className={`h4 ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>
+          <Card.Title className={`h4 ${theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}`}>
             Conestoga College
           </Card.Title>
-          <Card.Subtitle className={`mb-3 ${theme === 'dark' ? 'text-light' : 'text-muted'}`}>
+          <Card.Subtitle className={`mb-3 ${theme === 'dark' ? 'text-light-muted-theme' : 'text-muted-theme'}`}>
             A Wing Interactive Map
           </Card.Subtitle>
           
           <div className="d-flex justify-content-between mb-2">
-            <span className={theme === 'dark' ? 'text-light' : 'text-dark'}>Current Floor:</span>
+            <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Current Floor:</span>
             <Badge bg="primary">Level {currentFloor}</Badge>
           </div>
           
           <div className="d-flex justify-content-between mb-2">
-            <span className={theme === 'dark' ? 'text-light' : 'text-dark'}>Room Layers:</span>
+            <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Room Layers:</span>
             <Badge bg="success">{roomLayers.length}</Badge>
           </div>
 
           <hr />
           
-          <h6 className={theme === 'dark' ? 'text-white' : 'text-dark'}>Instructions</h6>
-          <small className={theme === 'dark' ? 'text-light' : 'text-muted'}>
+          <h6 className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Instructions</h6>
+          <small className={theme === 'dark' ? 'text-light-muted-theme' : 'text-muted-theme'}>
             Click any room for details<br/>
             Use floor buttons to switch levels<br/>
             Toggle 3D view for better perspective
           </small>
 
           <div className="mt-3">
-            <small className={`d-block p-2 rounded ${theme === 'dark' ? 'bg-dark text-light' : 'bg-light text-dark'}`}>
+            <small className={`debug-info d-block rounded ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
               {debugInfo}
             </small>
           </div>
@@ -236,25 +224,14 @@ const Map = () => {
       </Card>
 
       {/* Floor Switcher */}
-      <Card
-        className="position-absolute shadow-lg"
-        style={{
-          top: '50%',
-          right: '15px',
-          transform: 'translateY(-50%)',
-          backgroundColor: theme === 'dark' ? '#1a1a1a' : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          zIndex: 1000
-        }}
-      >
+      <Card className={`floor-switcher shadow-lg ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
         <Card.Body className="text-center p-3">
-          <h6 className={theme === 'dark' ? 'text-white' : 'text-dark'}>Floor</h6>
+          <h6 className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Floor</h6>
           {[3, 2, 1].map(floor => (
             <Button
               key={floor}
               variant={currentFloor === floor ? "primary" : "outline-secondary"}
-              className="d-block w-100 mb-2"
-              style={{ minWidth: '50px', minHeight: '50px' }}
+              className="floor-button d-block w-100 mb-2"
               onClick={() => switchFloor(floor)}
             >
               {floor}
@@ -264,11 +241,8 @@ const Map = () => {
       </Card>
 
       {/* Controls */}
-      <div 
-        className="position-absolute"
-        style={{ bottom: '15px', right: '15px', zIndex: 1000 }}
-      >
-        <div className="d-flex flex-column gap-2">
+      <div className="map-controls">
+        <div className="controls-container">
           <Button variant="warning" onClick={toggle3D}>
             Toggle 3D
           </Button>
@@ -280,21 +254,10 @@ const Map = () => {
 
       {/* Room Info Modal */}
       {showRoomInfo && selectedRoom && (
-        <Card
-          className="position-absolute shadow-lg"
-          style={{
-            bottom: '15px',
-            left: '15px',
-            width: '300px',
-            backgroundColor: theme === 'dark' ? '#1a1a1a' : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            zIndex: 1000,
-            borderLeft: '4px solid #007bff'
-          }}
-        >
+        <Card className={`room-info-modal shadow-lg ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
           <Card.Body>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <Card.Title className={`h5 ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>
+              <Card.Title className={`h5 ${theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}`}>
                 {selectedRoom.name}
               </Card.Title>
               <Button 
@@ -308,35 +271,35 @@ const Map = () => {
             </div>
             
             <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-light' : 'text-dark'}>Room Number:</span>
+              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Room Number:</span>
               <Badge bg="primary">{selectedRoom.id}</Badge>
             </div>
             
             <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-light' : 'text-dark'}>Floor:</span>
+              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Floor:</span>
               <Badge bg="info">Level {selectedRoom.floor}</Badge>
             </div>
             
             <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-light' : 'text-dark'}>Type:</span>
+              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Type:</span>
               <Badge bg="warning">{selectedRoom.type}</Badge>
             </div>
             
             <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-light' : 'text-dark'}>Status:</span>
+              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Status:</span>
               <Badge bg="success">{selectedRoom.status}</Badge>
             </div>
             
             <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-light' : 'text-dark'}>Equipment:</span>
-              <span className={`${theme === 'dark' ? 'text-light' : 'text-dark'} text-end`} style={{fontSize: '0.9em', maxWidth: '60%'}}>
+              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Equipment:</span>
+              <span className={`equipment-text text-end ${theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}`}>
                 {selectedRoom.equipment}
               </span>
             </div>
             
             {selectedRoom.description && selectedRoom.description !== 'No description available' && (
               <div className="mt-3">
-                <small className={theme === 'dark' ? 'text-light' : 'text-muted'}>
+                <small className={theme === 'dark' ? 'text-light-muted-theme' : 'text-muted-theme'}>
                   <strong>Description:</strong> {selectedRoom.description}
                 </small>
               </div>
