@@ -6,9 +6,11 @@ import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
+import Map from './components/Map';
 import AvailableClassrooms from './components/AvailableClassrooms';
 import LoginPage from './components/LoginPage'; 
 import SignUpPage from './components/SignUp'; 
+
 
 import { ThemeContext } from './context/ThemeContext';
 
@@ -22,6 +24,7 @@ const App = () => {
         <main className="flex-grow-1">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/map" element={<Map />} />
             <Route path="/classrooms" element={<AvailableClassrooms />} />
              <Route path="/login" element={<LoginPage />} />       
             <Route path="/signup" element={<SignUpPage />} /> 
