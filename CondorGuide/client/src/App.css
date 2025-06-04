@@ -345,12 +345,10 @@
   }
 }
 
-/* Additional utility styles */
 .shadow-sm {
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-/* Ensure proper spacing */
 .py-4 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;

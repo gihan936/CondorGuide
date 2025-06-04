@@ -13,6 +13,7 @@ const Map = () => {
   const [roomLayers, setRoomLayers] = React.useState([]);
   const [selectedRoom, setSelectedRoom] = React.useState(null);
   const [is3D, setIs3D] = React.useState(true);
+  const [roomData, setRoomData] = React.useState({});
   const [debugInfo, setDebugInfo] = React.useState('Loading map...');
 
   const floorLayersRef = useRef({
@@ -23,6 +24,64 @@ const Map = () => {
 
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1Ijoia3VzaGFkaW5pIiwiYSI6ImNtYjBxdnlzczAwNmUyanE0ejhqdnNibGMifQ.39lNqpWtEZ_flmjVch2V5g';
+    
+    // Fetch room data from datasets API
+    const fetchRoomData = async () => {
+      try {
+        setDebugInfo('Fetching room data from dataset...');
+        
+        const datasetIds = [
+          'cmbhf0ndq2kld1on5g332amn7',
+          'cmbfb8tar52id1ump75xqao9r', 
+          'cmbhf2g8t36tf1pna7q2ed3bu'
+        ];
+        
+        const allRoomData = {};
+        
+        for (const datasetId of datasetIds) {
+          try {
+            const response = await fetch(`https://api.mapbox.com/datasets/v1/kushadini/${datasetId}/features?access_token=${mapboxgl.accessToken}`);
+            if (response.ok) {
+              const data = await response.json();
+              console.log(`Dataset ${datasetId} data:`, data);
+              
+              // Store room data by coordinates for lookup
+              data.features.forEach(feature => {
+                if (feature.geometry && feature.geometry.coordinates) {
+                  // Create a key based on the center point of the room
+                  const coords = feature.geometry.coordinates[0];
+                  if (coords && coords.length > 0) {
+                    // Calculate center point
+                    let centerLng = 0, centerLat = 0;
+                    coords.forEach(coord => {
+                      centerLng += coord[0];
+                      centerLat += coord[1];
+                    });
+                    centerLng /= coords.length;
+                    centerLat /= coords.length;
+                    
+                    const key = `${centerLng.toFixed(6)},${centerLat.toFixed(6)}`;
+                    allRoomData[key] = feature.properties;
+                  }
+                }
+              });
+            }
+          } catch (err) {
+            console.log(`Could not fetch dataset ${datasetId}:`, err);
+          }
+        }
+        
+        setRoomData(allRoomData);
+        console.log('All room data loaded:', allRoomData);
+        setDebugInfo('Room data loaded from datasets');
+        
+      } catch (error) {
+        console.error('Error fetching room data:', error);
+        setDebugInfo('Error loading room data');
+      }
+    };
+    
+    fetchRoomData();
     
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -40,6 +99,16 @@ const Map = () => {
         pitch: 45
       });
       
+      // Add global click handler for debugging
+      mapRef.current.on('click', (e) => {
+        const features = mapRef.current.queryRenderedFeatures(e.point);
+        console.log('=== GLOBAL CLICK DEBUG ===');
+        console.log('Click coordinates:', e.lngLat);
+        console.log('Features at click point:', features);
+        console.log('Feature layer IDs:', features.filter(f => f && f.layer && f.layer.id).map(f => f.layer.id));
+        console.log('==========================');
+      });
+      
       setTimeout(() => findRooms(), 1000);
     });
 
@@ -54,75 +123,156 @@ const Map = () => {
   const findRooms = () => {
     setDebugInfo('Scanning for room layers...');
     
-    const layers = mapRef.current.getStyle().layers;
-    const foundLayers = [];
+    // Check if map and style are ready
+    if (!mapRef.current || !mapRef.current.isStyleLoaded()) {
+      console.log('Map or style not ready, retrying in 1 second...');
+      setTimeout(() => findRooms(), 1000);
+      return;
+    }
     
-    floorLayersRef.current = { 1: [], 2: [], 3: [] };
-    
-    layers.forEach(layer => {
-      const layerId = layer.id.toLowerCase();
-      
-      if (layerId.includes('wing') || 
-          layerId.includes('room') || 
-          layerId.includes('level') ||
-          layerId.includes('a-wing')) {
-        
-        foundLayers.push(layer);
-        
-        if (layerId.includes('level-1') || layerId.includes('1')) {
-          floorLayersRef.current[1].push(layer.id);
-        } else if (layerId.includes('level-3') || layerId.includes('3')) {
-          floorLayersRef.current[3].push(layer.id);
-        } else {
-          floorLayersRef.current[2].push(layer.id);
-        }
+    try {
+      const style = mapRef.current.getStyle();
+      if (!style || !style.layers) {
+        console.log('Style or layers not available, retrying...');
+        setTimeout(() => findRooms(), 1000);
+        return;
       }
-    });
-    
-    setRoomLayers(foundLayers);
-    
-    if (foundLayers.length === 0) {
-      setDebugInfo('No room layers found');
-    } else {
-      setDebugInfo(`Found ${foundLayers.length} room layers!`);
-      setupInteractions(foundLayers);
-      showFloorOnly(currentFloor);
+      
+      const layers = style.layers;
+      const foundLayers = [];
+      
+      //Debugging for layer detection
+      console.log('=== LAYER DETECTION DEBUG ===');
+      console.log('Total layers found:', layers.length);
+      console.log('All layer IDs:', layers.filter(l => l && l.id).map(l => l.id));
+      console.log('================================');
+      
+      floorLayersRef.current = { 1: [], 2: [], 3: [] };
+      
+      layers.forEach(layer => {
+        // Check if layer exists and has an id
+        if (!layer || !layer.id) {
+          console.log('Skipping invalid layer:', layer);
+          return;
+        }
+        
+        const layerId = layer.id.toLowerCase();
+        
+        // Matching layer names
+        if (layerId.includes('a-wing-level') || 
+            layerId.includes('wing') || 
+            layerId.includes('room') || 
+            layerId.includes('level')) {
+          
+          foundLayers.push(layer);
+          console.log('Found potential room layer:', layer.id, 'Type:', layer.type);
+          
+          // Categorize by floor based on naming pattern
+          if (layerId.includes('a-wing-level-1')) {
+            floorLayersRef.current[1].push(layer.id);
+          } else if (layerId.includes('a-wing-level-3')) {
+            floorLayersRef.current[3].push(layer.id);
+          } else if (layerId.includes('a-wing-level-2')) {
+            floorLayersRef.current[2].push(layer.id);
+          }
+        }
+      });
+      
+      console.log('Final floor categorization:', floorLayersRef.current);
+      
+      setRoomLayers(foundLayers);
+      
+      if (foundLayers.length === 0) {
+        setDebugInfo('No room layers found - check layer names');
+        console.log('No room layers detected. Try looking for layers with these patterns:');
+        console.log('- Layers containing "wing", "room", "level", "floor", or "building"');
+      } else {
+        setDebugInfo(`Found ${foundLayers.length} room layers!`);
+        setupInteractions(foundLayers);
+        showFloorOnly(currentFloor);
+      }
+    } catch (error) {
+      console.error('Error in findRooms:', error);
+      setDebugInfo('Error finding room layers');
+      // Retry after a delay
+      setTimeout(() => findRooms(), 2000);
     }
   };
 
   const setupInteractions = (layers) => {
+    if (!layers || layers.length === 0) {
+      console.log('No layers provided to setupInteractions');
+      return;
+    }
+    
     layers.forEach(layer => {
+      if (!layer || !layer.id) {
+        console.log('Invalid layer object:', layer);
+        return;
+      }
+      
       const layerId = layer.id;
       
+      // Target fill and fill-extrusion layers (clickable room areas)
       if (layer.type === 'fill' || layer.type === 'fill-extrusion') {
-        mapRef.current.on('click', layerId, (e) => {
-          if (e.features.length > 0) {
-            const roomData = e.features[0].properties;
-            
-            console.log('Available room properties:', roomData);
-            console.log('Property keys:', Object.keys(roomData));
-            
-            setSelectedRoom({
-              id: roomData.room_number || roomData.location_id || roomData.room_id || 'Unknown',
-              name: roomData.location_name || roomData.room_number || roomData.room_id || 'Unknown',
-              floor: currentFloor,
-              type: roomData.location_type || roomData.room_type || 'Classroom',
-              status: roomData.status || 'Available',
-              equipment: roomData.equipment || 'Standard classroom equipment',
-              description: roomData.description || 'No description available'
-            });
-          }
-        });
+        console.log('Setting up interactions for layer:', layerId, 'Type:', layer.type);
         
-        mapRef.current.on('mouseenter', layerId, () => {
-          mapRef.current.getCanvas().style.cursor = 'pointer';
-        });
-        
-        mapRef.current.on('mouseleave', layerId, () => {
-          mapRef.current.getCanvas().style.cursor = '';
-        });
+        try {
+          mapRef.current.on('click', layerId, (e) => {
+            if (e.features.length > 0) {
+              const feature = e.features[0];
+              const geometry = feature.geometry;
+              
+              // Calculate center point of the clicked room
+              let foundRoomData = {};
+              if (geometry && geometry.coordinates && geometry.coordinates[0]) {
+                const coords = geometry.coordinates[0];
+                let centerLng = 0, centerLat = 0;
+                coords.forEach(coord => {
+                  centerLng += coord[0];
+                  centerLat += coord[1];
+                });
+                centerLng /= coords.length;
+                centerLat /= coords.length;
+                
+                const key = `${centerLng.toFixed(6)},${centerLat.toFixed(6)}`;
+                foundRoomData = roomData[key] || {};
+                
+                console.log('=== ROOM CLICK DEBUG ===');
+                console.log('Clicked layer:', layerId);
+                console.log('Room center coordinates:', key);
+                console.log('Found room data:', foundRoomData);
+                console.log('Available room data keys:', Object.keys(foundRoomData));
+                console.log('========================');
+              }
+              
+              setSelectedRoom({
+                id: foundRoomData.room_number || foundRoomData.location_id || foundRoomData.room_id || 'Unknown',
+                name: foundRoomData.location_name || foundRoomData.room_number || foundRoomData.name || 'Unknown',
+                floor: currentFloor,
+                type: foundRoomData.location_type || foundRoomData.room_type || foundRoomData.type || 'Classroom',
+                status: foundRoomData.status || 'Available', 
+                equipment: foundRoomData.equipment || 'Standard classroom equipment',
+                description: foundRoomData.description || 'No description available'
+              });
+            }
+          });
+          
+          mapRef.current.on('mouseenter', layerId, () => {
+            mapRef.current.getCanvas().style.cursor = 'pointer';
+          });
+          
+          mapRef.current.on('mouseleave', layerId, () => {
+            mapRef.current.getCanvas().style.cursor = '';
+          });
+        } catch (error) {
+          console.error('Error setting up interactions for layer:', layerId, error);
+        }
       }
     });
+    
+    const interactiveLayers = layers.filter(l => l.type === 'fill' || l.type === 'fill-extrusion');
+    console.log('Interactions set up for layers:', interactiveLayers.map(l => l.id));
   };
 
   const showFloorOnly = (floor) => {
@@ -183,7 +333,7 @@ const Map = () => {
           className="map-container"
         />
         
-        {/* Floor Switcher - Only floating element */}
+        {/* Floor Switcher */}
         <div className="floor-switcher position-absolute">
           <Card className={`shadow ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
             <Card.Body className="text-center p-3">
@@ -203,7 +353,7 @@ const Map = () => {
           </Card>
         </div>
 
-        {/* Map Controls - Floating */}
+        {/* Map Controls */}
         <div className="map-controls position-absolute">
           <div className="d-flex flex-column gap-2">
             <Button variant="warning" onClick={toggle3D}>
@@ -216,7 +366,7 @@ const Map = () => {
         </div>
       </div>
 
-      {/* Information Panel Below Map */}
+      {/* Information Panel Below*/}
       <Container fluid className="py-4">
         <Row>
           {/* Building Info */}
@@ -236,10 +386,6 @@ const Map = () => {
                     <Badge bg="primary">Level {currentFloor}</Badge>
                   </div>
                   
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Room Layers:</span>
-                    <Badge bg="success">{roomLayers.length}</Badge>
-                  </div>
                 </div>
 
                 <hr />
@@ -265,15 +411,8 @@ const Map = () => {
           <Col lg={8}>
             {selectedRoom ? (
               <Card className={`shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
-                <Card.Header className="d-flex justify-content-between align-items-center">
+                <Card.Header>
                   <h5 className="mb-0">Room Information</h5>
-                  <Button 
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => setSelectedRoom(null)}
-                  >
-                    Close
-                  </Button>
                 </Card.Header>
                 <Card.Body>
                   <Row>
