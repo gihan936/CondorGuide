@@ -1,11 +1,18 @@
 import React, { useContext } from 'react';
 import { Navbar, Nav, Dropdown, Image, Container } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import logo from '../assets/logo.png';
 import avatar from '../assets/avatar.png';
 
 const Header = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/');
+    };
 
   return (
     <Navbar
@@ -71,7 +78,7 @@ const Header = () => {
                 </Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item href="/login">Login</Dropdown.Item>
-                <Dropdown.Item href="/logout">Logout</Dropdown.Item>
+                <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </Nav>

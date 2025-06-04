@@ -1,6 +1,4 @@
-/* App.css */
 
-/* Mapbox GL CSS import*/
 @import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
@@ -8,7 +6,7 @@
   --bs-secondary: #000000;
 }
 
-/* Optional: customize text and background using new variables */
+
 .btn-primary {
   background-color: var(--bs-primary);
   border-color: var(--bs-primary);
@@ -22,7 +20,7 @@
 }
 
 .btn-primary:active {
-  background-color: #c89e2d !important;  /* a darker yellow or same */
+  background-color: #c89e2d !important; 
   border-color: #c89e2d !important;
   color: black !important;
   box-shadow: none;
@@ -46,16 +44,15 @@
   width: 100%;
 }
 .overlay {
-  background-color: rgba(0, 0, 0, 0.6); /* semi-transparent black */
-  width: 100%;
+  background-color: rgba(0, 0, 0, 0.6); 
   min-height: 100vh;
-  padding-top: 50px; /* optional: space from top */
+  padding-top: 50px; 
 }
 
 
 
 .card-overlay {
-    background-color: rgba(0, 0, 0, 0.6); /* semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.6); 
 }
 
 .form-label{
@@ -63,9 +60,9 @@
 }
 
 .custom-input {
-  background-color: #f5f5dc; /* light background color */
-  color: #000;               /* text color */
-  border: 1px solid #e1c212; /* border in your primary color */
+  background-color: #f5f5dc; 
+  color: #000;               
+  border: 1px solid #e1c212; 
 }
 
 .custom-input::placeholder {
@@ -279,38 +276,106 @@
 }
 
 /* Map Component Styles */
-/* Map Component Styles - Scrolling Layout */
 .map-page {
-  min-height: 100vh;
-}
-
-.map-container-wrapper {
-  height: 70vh; /* 70% of viewport height for the map */
-  min-height: 500px;
+  position: relative;
 }
 
 .map-container {
-  height: 100%;
-  width: 100%;
+  height: 50vh;
+  width: 70%;
+  margin: 0 auto;
 }
 
-/* Floor Switcher - Only floating element */
+.map-info-card {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 300px;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+.map-info-card.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.map-info-card.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
 .floor-switcher {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  backdrop-filter: blur(10px);
   z-index: 1000;
 }
 
-/* Map Controls - Floating */
+.floor-switcher.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.floor-switcher.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.floor-button {
+  min-width: 50px;
+  min-height: 50px;
+}
+
 .map-controls {
   position: absolute;
-  bottom: 50px;
-  right: 20px;
+  bottom: 15px;
+  right: 15px;
   z-index: 1000;
 }
 
-/* Theme-aware text colors */
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-info-modal {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  width: 300px;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  border-left: 4px solid #007bff;
+}
+
+.room-info-modal.dark-theme {
+  background-color: #1a1a1a;
+}
+
+.room-info-modal.light-theme {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.equipment-text {
+  font-size: 0.9em;
+  max-width: 60%;
+}
+
+.debug-info {
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.debug-info.dark-theme {
+  background-color: #000;
+  color: #fff;
+}
+
+.debug-info.light-theme {
+  background-color: #f8f9fa;
+  color: #343a40;
+}
+
 .text-dark-theme {
   color: #fff;
 }
@@ -327,34 +392,32 @@
   color: #adb5bd;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .map-container-wrapper {
-    height: 50vh;
-    min-height: 400px;
-  }
-  
-  .floor-switcher {
-    top: 10px;
-    right: 10px;
-  }
-  
-  .map-controls {
-    bottom: 10px;
-    right: 10px;
-  }
+
+
+/*class Availability Styling */
+
+.wing-card {
+  background-color: #e1c212;
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
 }
 
-.shadow-sm {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+.wing-card:hover {
+  transform: scale(1.05);
 }
 
-.py-4 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
+.classroom-section-heading {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
-.py-5 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+.table {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
 }

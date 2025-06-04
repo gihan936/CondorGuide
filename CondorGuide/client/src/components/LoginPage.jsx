@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setError] = useState({});
+    const [message, setMessage] = useState('');      
+  const [variant, setVariant] = useState('');      
+  const navigate = useNavigate(); 
 
   const validateForm = () => {
     const newErrors = {}
@@ -35,15 +38,16 @@ const handleSubmit = async (e) => {
         password
       });
       if(response.status == 200){
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-        alert("login successfull");
-      }else{
-        alert("invalid login");
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+    setMessage('Login successful!');
+    setVariant('success');
+    setTimeout(() => {
+      navigate('/');
+    }, 1000);
       }
-      alert(response.data.message);
     } catch (error) {
-      alert("Error saving user login");
-      console.error(error);
+      setMessage('Login failed. Please check credentials.');
+      setVariant('danger');
     }
   }
 };
@@ -86,6 +90,11 @@ const handleSubmit = async (e) => {
             <button type="submit" className="btn btn-primary">Login</button>
           </div>
         </form>
+        {message && (
+          <div className={`alert alert-${variant} text-center mt-3`} role="alert">
+            {message}
+          </div>
+        )}
         <p className="text-center mt-3"  style={{ color: '#e1c212' }}>
           Don’t have an account? <Link to="/signup" style={{ color: '#8c8888' }}>Sign up</Link>
         </p>
