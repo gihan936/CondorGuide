@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
 
 const SignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
@@ -26,6 +28,7 @@ const SignUpPage = () => {
     try {
       const res = await axios.post('http://localhost:5000/api/users/signUp', { email, password });
       setMessage(res.data.message);
+      setTimeout(() => navigate('/login'), 1500);
     } catch (error) {
       setMessage(error.response?.data?.message || 'Registration failed');
     }
@@ -53,7 +56,15 @@ const SignUpPage = () => {
 
           <button type="submit" className="btn btn-warning w-100">Register</button>
         </form>
-        {message && <p className="mt-3 text-center">{message}</p>}
+
+        {message && (
+          <div className="alert alert-info text-center mt-3" role="alert">
+            {message}
+          </div>
+        )}
+        <p className="text-center mt-3">
+          Already have an account? <Link to="/login">Login here</Link>
+        </p>
       </div>
     </div>
   );
