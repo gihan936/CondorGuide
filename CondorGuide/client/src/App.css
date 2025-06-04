@@ -205,8 +205,35 @@
 /* home page */
 .home-banner-section {
   background-image: url('/CondorGuide/client/src/assets/room-interior-design.jpg');
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
 
 }
+
+.banner-overlay {
+  position: absolute;
+  top: 10;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  z-index: 1;
+}
+
+.banner-text {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.8);
+}
+
+
 
 .feature-card-img {
   height: 250px;
@@ -411,10 +438,18 @@
 }
 
 .classroom-section-heading {
-  color: #fff;
   font-size: 2rem;
   font-weight: 600;
 }
+
+body.dark .classroom-section-heading {
+  color: white !important;
+}
+
+body.light .classroom-section-heading {
+  color: black !important;
+}
+
 
 .table {
   background-color: white;

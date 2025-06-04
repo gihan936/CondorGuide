@@ -32,7 +32,7 @@ const Classrooms = () => {
   return (
     <section className={`classroom-section ${theme}`}>
       <Container className="py-5">
-        <h2 className="text-center mb-5 classroom-section-heading">Check Available Classrooms</h2>
+        <h2 className="text-center mb-5 classroom-section-heading">Check Available Class Rooms</h2>
         <Card className="shadow classroom-form-card mb-5">
           <Card.Body>
             <Form>

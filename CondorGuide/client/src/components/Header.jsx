@@ -2,17 +2,18 @@ import React, { useContext } from 'react';
 import { Navbar, Nav, Dropdown, Image, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
-import logo from '../assets/logo.png';
+import logoLight from '../assets/logo.png';
+import logoDark from '../assets/white_logo.png';
 import avatar from '../assets/avatar.png';
 
 const Header = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem('user');
     navigate('/');
-    };
+  };
 
   return (
     <Navbar
@@ -25,12 +26,11 @@ const Header = () => {
         {/* Logo */}
         <Navbar.Brand href="/" className="d-flex align-items-center">
           <Image
-            src={logo}
+            src={theme === 'dark' ? logoDark : logoLight}
             alt="Condor Guide"
             height="70"
             width="70"
             className="me-2"
-            style={{ filter: theme === 'dark' ? 'brightness(1.5)' : 'none' }}
           />
           <span
             className="fw-bold fs-4"
@@ -68,9 +68,9 @@ const Header = () => {
               </Dropdown.Toggle>
               <Dropdown.Menu className={`dropdown-menu-${theme}`}>
                 {localStorage.getItem('user') && (
-                       <Dropdown.Header>
-                       {JSON.parse(localStorage.getItem('user')).email}
-                       </Dropdown.Header>
+                  <Dropdown.Header>
+                    {JSON.parse(localStorage.getItem('user')).email}
+                  </Dropdown.Header>
                 )}
                 <Dropdown.Item href="/profile">Profile</Dropdown.Item>
                 <Dropdown.Item onClick={toggleTheme}>
