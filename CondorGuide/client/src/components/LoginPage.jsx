@@ -54,8 +54,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="app-background">
-      <div className="overlay d-flex justify-content-center align-items-center">
+
+      <div className="app-background d-flex justify-content-center align-items-center">
         <div className="card shadow p-4 card-overlay" style={{ width: '100%', maxWidth: '400px' }}>
           <h2 className="text-center mb-4" style={{ color: '#e1c212' }}>Condor Guide Login</h2>
           <form onSubmit={handleSubmit}>
@@ -99,7 +99,6 @@ const LoginPage = () => {
           </p>
         </div>
       </div>
-    </div>
   );
 };
 
