@@ -35,9 +35,9 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
-      <div className="card p-4" style={{ width: '400px' }}>
-        <h3 className="text-center">Sign Up</h3>
+    <div className="app-background d-flex justify-content-center align-items-center">
+      <div className="card shadow p-4 card-overlay" style={{ width: '100%', maxWidth: '400px' }}>
+        <h3 className="text-center mb-4" style={{ color: '#e1c212' }}>Sign Up</h3>
         <form onSubmit={handleSubmit}>
           <input
             className={`form-control mb-3 ${errors.email ? 'is-invalid' : ''}`}
@@ -54,7 +54,9 @@ const SignUpPage = () => {
           />
           {errors.password && <div className="invalid-feedback">{errors.password}</div>}
 
-          <button type="submit" className="btn btn-warning w-100">Register</button>
+          <div className="d-grid">
+              <button type="submit" className="btn btn-primary">Register</button>
+            </div>
         </form>
 
         {message && (
@@ -62,8 +64,9 @@ const SignUpPage = () => {
             {message}
           </div>
         )}
-        <p className="text-center mt-3">
-          Already have an account? <Link to="/login">Login here</Link>
+
+        <p className="text-center mt-3" style={{ color: '#e1c212' }}>
+          Already have an account? <Link to="/login" style={{ color: '#8c8888' }}>Login here</Link>
         </p>
       </div>
     </div>
