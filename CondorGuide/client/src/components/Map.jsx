@@ -15,6 +15,8 @@ const Map = () => {
   const [is3D, setIs3D] = React.useState(true);
   const [roomData, setRoomData] = React.useState({});
   const [debugInfo, setDebugInfo] = React.useState('Loading map...');
+  const [isMapReady, setIsMapReady] = React.useState(false);
+  const [isDataReady, setIsDataReady] = React.useState(false);
 
   const floorLayersRef = useRef({
     1: [],
@@ -22,65 +24,102 @@ const Map = () => {
     3: []
   });
 
+  // Helper function to generate multiple coordinate keys with different precisions
+  const generateCoordinateKeys = (lng, lat) => {
+    return [
+      `${lng.toFixed(6)},${lat.toFixed(6)}`,  // High precision
+      `${lng.toFixed(5)},${lat.toFixed(5)}`,  // Medium-high precision
+      `${lng.toFixed(4)},${lat.toFixed(4)}`,  // Medium precision
+      `${lng.toFixed(3)},${lat.toFixed(3)}`,  // Lower precision (like old center)
+      `${lng.toFixed(2)},${lat.toFixed(2)}`   // Very low precision
+    ];
+  };
+
+  // Helper function to find room data using multiple precision levels
+  const findRoomData = (lng, lat, roomDataObj) => {
+    const keys = generateCoordinateKeys(lng, lat);
+    
+    for (const key of keys) {
+      if (roomDataObj[key] && Object.keys(roomDataObj[key]).length > 0) {
+        return { data: roomDataObj[key], matchedKey: key };
+      }
+    }
+    
+    return { data: {}, matchedKey: null };
+  };
+
+  // Fetch room data from datasets API
+  const fetchRoomData = async () => {
+    try {
+      setDebugInfo('Fetching room data from dataset...');
+      
+      const datasetIds = [
+        'cmbhf0ndq2kld1on5g332amn7',
+        'cmbfb8tar52id1ump75xqao9r', 
+        'cmbhf2g8t36tf1pna7q2ed3bu'
+      ];
+      
+      const allRoomData = {};
+      
+      for (const datasetId of datasetIds) {
+        try {
+          const response = await fetch(`https://api.mapbox.com/datasets/v1/kushadini/${datasetId}/features?access_token=${mapboxgl.accessToken}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`Dataset ${datasetId} data:`, data);
+            
+            // Store room data by coordinates for lookup
+            data.features.forEach(feature => {
+              if (feature.geometry && feature.geometry.coordinates && feature.properties) {
+                // Create a key based on the center point of the room
+                const coords = feature.geometry.coordinates[0];
+                if (coords && coords.length > 0) {
+                  // Calculate center point
+                  let centerLng = 0, centerLat = 0;
+                  coords.forEach(coord => {
+                    centerLng += coord[0];
+                    centerLat += coord[1];
+                  });
+                  centerLng /= coords.length;
+                  centerLat /= coords.length;
+                  
+                  // Generate multiple precision keys for this room
+                  const keys = generateCoordinateKeys(centerLng, centerLat);
+                  
+                  // Store the room data under all precision levels
+                  keys.forEach(key => {
+                    allRoomData[key] = feature.properties;
+                  });
+                }
+              }
+            });
+          }
+        } catch (err) {
+          console.log(`Could not fetch dataset ${datasetId}:`, err);
+        }
+      }
+      
+      setRoomData(allRoomData);
+      console.log('=== ROOM DATA LOADED ===');
+      console.log('Total room entries:', Object.keys(allRoomData).length);
+      console.log('Sample room data keys:', Object.keys(allRoomData).slice(0, 10));
+      console.log('Sample room data values:', Object.values(allRoomData).slice(0, 2));
+      console.log('========================');
+      setDebugInfo(`Room data loaded: ${Object.keys(allRoomData).length} entries`);
+      setIsDataReady(true);
+      
+    } catch (error) {
+      console.error('Error fetching room data:', error);
+      setDebugInfo('Error loading room data');
+      setIsDataReady(true); // Set to true even on error so the map can continue
+    }
+  };
+
+  // Initialize map
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1Ijoia3VzaGFkaW5pIiwiYSI6ImNtYjBxdnlzczAwNmUyanE0ejhqdnNibGMifQ.39lNqpWtEZ_flmjVch2V5g';
     
-    // Fetch room data from datasets API
-    const fetchRoomData = async () => {
-      try {
-        setDebugInfo('Fetching room data from dataset...');
-        
-        const datasetIds = [
-          'cmbhf0ndq2kld1on5g332amn7',
-          'cmbfb8tar52id1ump75xqao9r', 
-          'cmbhf2g8t36tf1pna7q2ed3bu'
-        ];
-        
-        const allRoomData = {};
-        
-        for (const datasetId of datasetIds) {
-          try {
-            const response = await fetch(`https://api.mapbox.com/datasets/v1/kushadini/${datasetId}/features?access_token=${mapboxgl.accessToken}`);
-            if (response.ok) {
-              const data = await response.json();
-              console.log(`Dataset ${datasetId} data:`, data);
-              
-              // Store room data by coordinates for lookup
-              data.features.forEach(feature => {
-                if (feature.geometry && feature.geometry.coordinates) {
-                  // Create a key based on the center point of the room
-                  const coords = feature.geometry.coordinates[0];
-                  if (coords && coords.length > 0) {
-                    // Calculate center point
-                    let centerLng = 0, centerLat = 0;
-                    coords.forEach(coord => {
-                      centerLng += coord[0];
-                      centerLat += coord[1];
-                    });
-                    centerLng /= coords.length;
-                    centerLat /= coords.length;
-                    
-                    const key = `${centerLng.toFixed(6)},${centerLat.toFixed(6)}`;
-                    allRoomData[key] = feature.properties;
-                  }
-                }
-              });
-            }
-          } catch (err) {
-            console.log(`Could not fetch dataset ${datasetId}:`, err);
-          }
-        }
-        
-        setRoomData(allRoomData);
-        console.log('All room data loaded:', allRoomData);
-        setDebugInfo('Room data loaded from datasets');
-        
-      } catch (error) {
-        console.error('Error fetching room data:', error);
-        setDebugInfo('Error loading room data');
-      }
-    };
-    
+    // Start fetching room data immediately
     fetchRoomData();
     
     mapRef.current = new mapboxgl.Map({
@@ -94,7 +133,7 @@ const Map = () => {
       setDebugInfo('Map loaded successfully!');
       
       mapRef.current.flyTo({
-        center: [-80.4028162176618, 43.39082441630751],
+        center: [-80.402816, 43.390824],
         zoom: 19,
         pitch: 45
       });
@@ -109,7 +148,7 @@ const Map = () => {
         console.log('==========================');
       });
       
-      setTimeout(() => findRooms(), 1000);
+      setIsMapReady(true);
     });
 
     mapRef.current.on('error', (e) => {
@@ -119,6 +158,14 @@ const Map = () => {
 
     return () => mapRef.current?.remove();
   }, []);
+
+  // Set up room interactions when both map and data are ready
+  useEffect(() => {
+    if (isMapReady && isDataReady) {
+      console.log('Both map and data ready, setting up room interactions...');
+      setTimeout(() => findRooms(), 1000);
+    }
+  }, [isMapReady, isDataReady]);
 
   const findRooms = () => {
     setDebugInfo('Scanning for room layers...');
@@ -205,6 +252,8 @@ const Map = () => {
       return;
     }
     
+    console.log('Setting up interactions with room data entries:', Object.keys(roomData).length);
+    
     layers.forEach(layer => {
       if (!layer || !layer.id) {
         console.log('Invalid layer object:', layer);
@@ -218,6 +267,11 @@ const Map = () => {
         console.log('Setting up interactions for layer:', layerId, 'Type:', layer.type);
         
         try {
+          // Remove existing listeners to avoid duplicates
+          mapRef.current.off('click', layerId);
+          mapRef.current.off('mouseenter', layerId);
+          mapRef.current.off('mouseleave', layerId);
+          
           mapRef.current.on('click', layerId, (e) => {
             if (e.features.length > 0) {
               const feature = e.features[0];
@@ -225,6 +279,8 @@ const Map = () => {
               
               // Calculate center point of the clicked room
               let foundRoomData = {};
+              let matchedKey = null;
+              
               if (geometry && geometry.coordinates && geometry.coordinates[0]) {
                 const coords = geometry.coordinates[0];
                 let centerLng = 0, centerLat = 0;
@@ -235,14 +291,19 @@ const Map = () => {
                 centerLng /= coords.length;
                 centerLat /= coords.length;
                 
-                const key = `${centerLng.toFixed(6)},${centerLat.toFixed(6)}`;
-                foundRoomData = roomData[key] || {};
+                // Use the improved room data finder with current roomData
+                const result = findRoomData(centerLng, centerLat, roomData);
+                foundRoomData = result.data;
+                matchedKey = result.matchedKey;
                 
                 console.log('=== ROOM CLICK DEBUG ===');
                 console.log('Clicked layer:', layerId);
-                console.log('Room center coordinates:', key);
+                console.log('Room center coordinates:', centerLng, centerLat);
+                console.log('Tried coordinate keys:', generateCoordinateKeys(centerLng, centerLat));
+                console.log('Matched key:', matchedKey);
                 console.log('Found room data:', foundRoomData);
                 console.log('Available room data keys:', Object.keys(foundRoomData));
+                console.log('Total roomData entries:', Object.keys(roomData).length);
                 console.log('========================');
               }
               
@@ -315,7 +376,7 @@ const Map = () => {
 
   const resetView = () => {
     mapRef.current.flyTo({
-      center: [-80.4028162176618, 43.39082441630751],
+      center: [-80.402816, 43.390824],
       zoom: 19,
       pitch: is3D ? 45 : 0,
       bearing: 0,
@@ -412,7 +473,7 @@ const Map = () => {
             {selectedRoom ? (
               <Card className={`shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
                 <Card.Header>
-                  <h5 className="mb-0">Room Information</h5>
+                  <h5 className="mb-0">Location Information</h5>
                 </Card.Header>
                 <Card.Body>
                   <Row>
@@ -421,7 +482,7 @@ const Map = () => {
                       <table className="table table-borderless">
                         <tbody>
                           <tr>
-                            <td><strong>Room Number:</strong></td>
+                            <td><strong>Location Number:</strong></td>
                             <td><Badge bg="primary">{selectedRoom.id}</Badge></td>
                           </tr>
                           <tr>
