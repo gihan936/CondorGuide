@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useContext } from 'react';
-import { Card, Button, Badge } from 'react-bootstrap';
+import { Card, Button, Badge, Container, Row, Col } from 'react-bootstrap';
 import { ThemeContext } from '../context/ThemeContext';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -14,7 +14,6 @@ const Map = () => {
   const [selectedRoom, setSelectedRoom] = React.useState(null);
   const [is3D, setIs3D] = React.useState(true);
   const [debugInfo, setDebugInfo] = React.useState('Loading map...');
-  const [showRoomInfo, setShowRoomInfo] = React.useState(false);
 
   const floorLayersRef = useRef({
     1: [],
@@ -23,12 +22,11 @@ const Map = () => {
   });
 
   useEffect(() => {
-    // Access token for Mapbox
     mapboxgl.accessToken = 'pk.eyJ1Ijoia3VzaGFkaW5pIiwiYSI6ImNtYjBxdnlzczAwNmUyanE0ejhqdnNibGMifQ.39lNqpWtEZ_flmjVch2V5g';
     
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/kushadini/cmbhfuxoj001j01qt5att3psz',//Mapbox style
+      style: 'mapbox://styles/kushadini/cmbhfuxoj001j01qt5att3psz',
       center: [-74.5, 40],
       zoom: 9
     });
@@ -113,7 +111,6 @@ const Map = () => {
               equipment: roomData.equipment || 'Standard classroom equipment',
               description: roomData.description || 'No description available'
             });
-            setShowRoomInfo(true);
           }
         });
         
@@ -154,7 +151,6 @@ const Map = () => {
   const switchFloor = (floor) => {
     setCurrentFloor(floor);
     showFloorOnly(floor);
-    setShowRoomInfo(false);
     setSelectedRoom(null);
   };
 
@@ -175,138 +171,169 @@ const Map = () => {
       bearing: 0,
       duration: 1000
     });
-    setShowRoomInfo(false);
+    setSelectedRoom(null);
   };
 
   return (
-    <div className="map-page">
-      {/* Map Container */}
-      <div 
-        ref={mapContainerRef}
-        className="map-container"
-      />
+    <div className={`map-page ${theme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
+      {/* Map Section */}
+      <div className="map-container-wrapper position-relative">
+        <div 
+          ref={mapContainerRef}
+          className="map-container"
+        />
+        
+        {/* Floor Switcher - Only floating element */}
+        <div className="floor-switcher position-absolute">
+          <Card className={`shadow ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+            <Card.Body className="text-center p-3">
+              <h6 className="mb-3">Floor</h6>
+              {[3, 2, 1].map(floor => (
+                <Button
+                  key={floor}
+                  variant={currentFloor === floor ? "primary" : "outline-secondary"}
+                  className="d-block w-100 mb-2"
+                  style={{ minWidth: '50px', minHeight: '50px' }}
+                  onClick={() => switchFloor(floor)}
+                >
+                  {floor}
+                </Button>
+              ))}
+            </Card.Body>
+          </Card>
+        </div>
 
-      {/* Building Info Card */}
-      <Card className={`map-info-card shadow-lg ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
-        <Card.Body>
-          <Card.Title className={`h4 ${theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}`}>
-            Conestoga College
-          </Card.Title>
-          <Card.Subtitle className={`mb-3 ${theme === 'dark' ? 'text-light-muted-theme' : 'text-muted-theme'}`}>
-            A Wing Interactive Map
-          </Card.Subtitle>
-          
-          <div className="d-flex justify-content-between mb-2">
-            <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Current Floor:</span>
-            <Badge bg="primary">Level {currentFloor}</Badge>
-          </div>
-          
-          <div className="d-flex justify-content-between mb-2">
-            <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Room Layers:</span>
-            <Badge bg="success">{roomLayers.length}</Badge>
-          </div>
-
-          <hr />
-          
-          <h6 className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Instructions</h6>
-          <small className={theme === 'dark' ? 'text-light-muted-theme' : 'text-muted-theme'}>
-            Click any room for details<br/>
-            Use floor buttons to switch levels<br/>
-            Toggle 3D view for better perspective
-          </small>
-
-          <div className="mt-3">
-            <small className={`debug-info d-block rounded ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
-              {debugInfo}
-            </small>
-          </div>
-        </Card.Body>
-      </Card>
-
-      {/* Floor Switcher */}
-      <Card className={`floor-switcher shadow-lg ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
-        <Card.Body className="text-center p-3">
-          <h6 className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Floor</h6>
-          {[3, 2, 1].map(floor => (
-            <Button
-              key={floor}
-              variant={currentFloor === floor ? "primary" : "outline-secondary"}
-              className="floor-button d-block w-100 mb-2"
-              onClick={() => switchFloor(floor)}
-            >
-              {floor}
+        {/* Map Controls - Floating */}
+        <div className="map-controls position-absolute">
+          <div className="d-flex flex-column gap-2">
+            <Button variant="warning" onClick={toggle3D}>
+              Toggle 3D
             </Button>
-          ))}
-        </Card.Body>
-      </Card>
-
-      {/* Controls */}
-      <div className="map-controls">
-        <div className="controls-container">
-          <Button variant="warning" onClick={toggle3D}>
-            Toggle 3D
-          </Button>
-          <Button variant="secondary" onClick={resetView}>
-            Reset View
-          </Button>
+            <Button variant="secondary" onClick={resetView}>
+              Reset View
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Room Info Modal */}
-      {showRoomInfo && selectedRoom && (
-        <Card className={`room-info-modal shadow-lg ${theme === 'dark' ? 'dark-theme' : 'light-theme'}`}>
-          <Card.Body>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <Card.Title className={`h5 ${theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}`}>
-                {selectedRoom.name}
-              </Card.Title>
-              <Button 
-                variant="link" 
-                size="sm" 
-                onClick={() => setShowRoomInfo(false)}
-                className="p-0"
-              >
-                ×
-              </Button>
-            </div>
-            
-            <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Room Number:</span>
-              <Badge bg="primary">{selectedRoom.id}</Badge>
-            </div>
-            
-            <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Floor:</span>
-              <Badge bg="info">Level {selectedRoom.floor}</Badge>
-            </div>
-            
-            <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Type:</span>
-              <Badge bg="warning">{selectedRoom.type}</Badge>
-            </div>
-            
-            <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Status:</span>
-              <Badge bg="success">{selectedRoom.status}</Badge>
-            </div>
-            
-            <div className="mb-2 d-flex justify-content-between">
-              <span className={theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}>Equipment:</span>
-              <span className={`equipment-text text-end ${theme === 'dark' ? 'text-dark-theme' : 'text-light-theme'}`}>
-                {selectedRoom.equipment}
-              </span>
-            </div>
-            
-            {selectedRoom.description && selectedRoom.description !== 'No description available' && (
-              <div className="mt-3">
-                <small className={theme === 'dark' ? 'text-light-muted-theme' : 'text-muted-theme'}>
-                  <strong>Description:</strong> {selectedRoom.description}
-                </small>
-              </div>
+      {/* Information Panel Below Map */}
+      <Container fluid className="py-4">
+        <Row>
+          {/* Building Info */}
+          <Col lg={4}>
+            <Card className={`h-100 shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+              <Card.Body>
+                <Card.Title className="h4">
+                  Conestoga College
+                </Card.Title>
+                <Card.Subtitle className="mb-3 text-muted">
+                  A Wing Interactive Map
+                </Card.Subtitle>
+                
+                <div className="mb-3">
+                  <div className="d-flex justify-content-between mb-2">
+                    <span>Current Floor:</span>
+                    <Badge bg="primary">Level {currentFloor}</Badge>
+                  </div>
+                  
+                  <div className="d-flex justify-content-between mb-2">
+                    <span>Room Layers:</span>
+                    <Badge bg="success">{roomLayers.length}</Badge>
+                  </div>
+                </div>
+
+                <hr />
+                
+                <h6>Instructions</h6>
+                <ul className="small mb-0">
+                  <li>Click any room on the map for details</li>
+                  <li>Use floor buttons to switch levels</li>
+                  <li>Toggle 3D view for better perspective</li>
+                  <li>Room information appears below</li>
+                </ul>
+
+                <div className="mt-3">
+                  <small className={`d-block p-2 rounded ${theme === 'dark' ? 'bg-secondary' : 'bg-light'}`}>
+                    <strong>Status:</strong> {debugInfo}
+                  </small>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Selected Room Info */}
+          <Col lg={8}>
+            {selectedRoom ? (
+              <Card className={`shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+                <Card.Header className="d-flex justify-content-between align-items-center">
+                  <h5 className="mb-0">Room Information</h5>
+                  <Button 
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={() => setSelectedRoom(null)}
+                  >
+                    Close
+                  </Button>
+                </Card.Header>
+                <Card.Body>
+                  <Row>
+                    <Col md={6}>
+                      <h4 className="text-primary">{selectedRoom.name}</h4>
+                      <table className="table table-borderless">
+                        <tbody>
+                          <tr>
+                            <td><strong>Room Number:</strong></td>
+                            <td><Badge bg="primary">{selectedRoom.id}</Badge></td>
+                          </tr>
+                          <tr>
+                            <td><strong>Floor:</strong></td>
+                            <td><Badge bg="info">Level {selectedRoom.floor}</Badge></td>
+                          </tr>
+                          <tr>
+                            <td><strong>Type:</strong></td>
+                            <td><Badge bg="warning">{selectedRoom.type}</Badge></td>
+                          </tr>
+                          <tr>
+                            <td><strong>Status:</strong></td>
+                            <td><Badge bg="success">{selectedRoom.status}</Badge></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </Col>
+                    <Col md={6}>
+                      <h6>Equipment</h6>
+                      <p className="mb-3">{selectedRoom.equipment}</p>
+                      
+                      {selectedRoom.description && selectedRoom.description !== 'No description available' && (
+                        <>
+                          <h6>Description</h6>
+                          <p>{selectedRoom.description}</p>
+                        </>
+                      )}
+                      
+                      <div className="mt-3">
+                        <Button variant="outline-primary" size="sm" className="me-2">
+                          Book Room
+                        </Button>
+                        <Button variant="outline-secondary" size="sm">
+                          Report Issue
+                        </Button>
+                      </div>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            ) : (
+              <Card className={`shadow-sm text-center ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+                <Card.Body className="py-5">
+                  <h5 className="text-muted">No Room Selected</h5>
+                  <p className="text-muted">Click on any room in the map above to view detailed information.</p>
+                </Card.Body>
+              </Card>
             )}
-          </Card.Body>
-        </Card>
-      )}
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };
