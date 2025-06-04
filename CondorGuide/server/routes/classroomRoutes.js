@@ -1,5 +1,6 @@
 import express from 'express';
 import Classroom from '../models/classroom.js';
+import Schedule from '../models/schedule.js';
 
 const router = express.Router();
 
@@ -7,22 +8,25 @@ router.post('/available', async (req, res) => {
   const { date, from, to, wing } = req.body;
 
   try {
-    const classrooms = await Classroom.find({ wing });
+    const allRooms = await Classroom.find({ wing });
 
-    const available = classrooms.filter(room => {
-      return !room.bookings.some(booking => {
-        return booking.date === date &&
-          (
-            (from >= booking.from && from < booking.to) || // overlaps
-            (to > booking.from && to <= booking.to) || 
-            (from <= booking.from && to >= booking.to)
-          );
-      });
+    const roomNumbers = allRooms.map(r => r.roomNumber);
+
+    const bookings = await Schedule.find({
+      date,
+      roomNumber: { $in: roomNumbers },
+      $or: [
+        { from: { $lt: to }, to: { $gt: from } } 
+      ]
     });
 
-    res.json(available);
+    const bookedRooms = bookings.map(b => b.roomNumber);
+    const availableRooms = allRooms.filter(r => !bookedRooms.includes(r.roomNumber));
+
+    res.json(availableRooms);
   } catch (err) {
-    res.status(500).json({ error: 'Error fetching classrooms' });
+    console.error(err);
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
