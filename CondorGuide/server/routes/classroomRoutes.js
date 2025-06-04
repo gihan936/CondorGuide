@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Classroom from '../models/classroom.js';
 import Schedule from '../models/schedule.js';
 
@@ -8,25 +9,34 @@ router.post('/available', async (req, res) => {
   const { date, from, to, wing } = req.body;
 
   try {
-    const allRooms = await Classroom.find({ wing });
+    const inputDate = new Date(date);
+    const day = inputDate.toLocaleDateString('en-US', { weekday: 'long' });
 
-    const roomNumbers = allRooms.map(r => r.roomNumber);
+    const fromTime = `1900-01-01T${from}:00`;
+    const toTime = `1900-01-01T${to}:00`;
 
-    const bookings = await Schedule.find({
-      date,
-      roomNumber: { $in: roomNumbers },
+    const allClassrooms = await Classroom.find({
+      location_number: { $regex: `^2${wing}`, $options: 'i' },
+      location_type: "Classroom"
+    });
+
+    const locationIds = allClassrooms.map(c => c.location_id);
+
+    const overlappingSchedules = await Schedule.find({
+      day,
+      location_id: { $in: locationIds },
       $or: [
-        { from: { $lt: to }, to: { $gt: from } } 
+        { start_time: { $lt: toTime }, end_time: { $gt: fromTime } }
       ]
     });
 
-    const bookedRooms = bookings.map(b => b.roomNumber);
-    const availableRooms = allRooms.filter(r => !bookedRooms.includes(r.roomNumber));
+    const bookedIds = overlappingSchedules.map(s => s.location_id);
+    const availableRooms = allClassrooms.filter(c => !bookedIds.includes(c.location_id));
 
     res.json(availableRooms);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: 'Server error occurred.' });
   }
 });
 
