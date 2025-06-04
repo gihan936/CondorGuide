@@ -94,7 +94,7 @@ const Map = () => {
       setDebugInfo('Map loaded successfully!');
       
       mapRef.current.flyTo({
-        center: [-80.402, 43.391],
+        center: [-80.4028162176618, 43.39082441630751],
         zoom: 19,
         pitch: 45
       });
@@ -315,7 +315,7 @@ const Map = () => {
 
   const resetView = () => {
     mapRef.current.flyTo({
-      center: [-80.402, 43.391],
+      center: [-80.4028162176618, 43.39082441630751],
       zoom: 19,
       pitch: is3D ? 45 : 0,
       bearing: 0,
