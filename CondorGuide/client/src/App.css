@@ -328,6 +328,7 @@
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .map-container-wrapper {
@@ -360,6 +361,8 @@
   padding-bottom: 3rem;
 }
 =======
+=======
+>>>>>>> Stashed changes
 
 
 /*class Availability Styling */
@@ -392,4 +395,7 @@
   border-radius: 8px;
   overflow: hidden;
 }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
