@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, Button, Card, Table } from 'react-bootstrap'
 import { ThemeContext } from '../context/ThemeContext';
 import axios from 'axios';
 
- const wings = ['2A', '2B', '2C', '2D', '2E', '2F'];
+const wings = ['2A', '2B', '2C', '2D', '2E', '2F'];
 
 const AvailableClassrooms = () => {
   const { theme } = useContext(ThemeContext);
