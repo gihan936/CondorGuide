@@ -8,13 +8,47 @@ const ReportIssue = () => {
     title: '',
     description: '',
     category: '',
+    subcategory: '',
     priority: '',
     image: null,
   });
+
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
-  const categories = ['Facility', 'Technical', 'Security', 'Other'];
+  const categoryOptions = {
+    'Facilities & Maintenance': [
+      'Broken furniture (desks, chairs, benches)',
+      'Damaged walls, ceilings, or floors',
+      'Washroom maintenance issues',
+      'Leaking pipes or water damage',
+    ],
+    'Lighting & Electrical': [
+      'Flickering or broken lights',
+      'Power outages in classrooms/hallways',
+      'Exposed or faulty wiring',
+      'Broken power outlets or switches',
+    ],
+    'HVAC & Air Quality': [
+      'Classroom too hot or cold',
+      'No air circulation or ventilation',
+      'AC or heater not functioning',
+      'Odour or smoke from vents',
+    ],
+    'Safety & Accessibility': [
+      'Broken door handles or locks',
+      'Inaccessible entryways or ramps',
+      'Emergency exits blocked or non-functional',
+      'Missing or damaged signage',
+    ],
+    'Cleanliness & Sanitation': [
+      'Overflowing garbage bins',
+      'Unclean washrooms',
+      'Spills or stains in public areas',
+      'Pest or rodent presence',
+    ],
+  };
+
   const priorities = ['Low', 'Medium', 'High', 'Urgent'];
 
   const handleChange = e => {
@@ -30,6 +64,7 @@ const ReportIssue = () => {
     if (!formData.title.trim()) errs.title = 'Title is required.';
     if (!formData.description.trim()) errs.description = 'Description is required.';
     if (!formData.category) errs.category = 'Please select a category.';
+    if (!formData.subcategory) errs.subcategory = 'Please select a subcategory.';
     if (!formData.priority) errs.priority = 'Please select a priority level.';
     return errs;
   };
@@ -40,10 +75,11 @@ const ReportIssue = () => {
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
-      // Submit to backend API
+      // Submit to backend API (placeholder)
       console.log('Issue submitted:', formData);
       setSubmitted(true);
       setErrors({});
+      // Optionally reset form
     }
   };
 
@@ -57,6 +93,7 @@ const ReportIssue = () => {
             <h2 className="mb-4 text-center" style={{ color: '#e1c212' }}>Report an Issue</h2>
             {submitted && <Alert variant="success">Issue reported successfully!</Alert>}
             <Form onSubmit={handleSubmit} encType="multipart/form-data">
+
               <Form.Group className="mb-3">
                 <Form.Label>Issue Title</Form.Label>
                 <Form.Control
@@ -86,15 +123,18 @@ const ReportIssue = () => {
 
               <Row className="mb-3">
                 <Col md={6}>
-                  <Form.Label>Category</Form.Label>
+                  <Form.Label>Main Category</Form.Label>
                   <Form.Select
                     name="category"
                     value={formData.category}
-                    onChange={handleChange}
+                    onChange={e => {
+                      handleChange(e);
+                      setFormData(prev => ({ ...prev, subcategory: '' }));
+                    }}
                     isInvalid={!!errors.category}
                   >
-                    <option value="">Select Category</option>
-                    {categories.map(cat => (
+                    <option value="">Select Main Category</option>
+                    {Object.keys(categoryOptions).map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </Form.Select>
@@ -102,6 +142,25 @@ const ReportIssue = () => {
                 </Col>
 
                 <Col md={6}>
+                  <Form.Label>Subcategory</Form.Label>
+                  <Form.Select
+                    name="subcategory"
+                    value={formData.subcategory}
+                    onChange={handleChange}
+                    disabled={!formData.category}
+                    isInvalid={!!errors.subcategory}
+                  >
+                    <option value="">Select Subcategory</option>
+                    {categoryOptions[formData.category]?.map((sub, idx) => (
+                      <option key={idx} value={sub}>{sub}</option>
+                    ))}
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">{errors.subcategory}</Form.Control.Feedback>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col md={12}>
                   <Form.Label>Priority</Form.Label>
                   <Form.Select
                     name="priority"
@@ -139,6 +198,7 @@ const ReportIssue = () => {
                   Submit
                 </Button>
               </div>
+
             </Form>
           </Card>
         </Col>
