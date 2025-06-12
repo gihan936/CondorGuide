@@ -10,7 +10,8 @@ import Home from './components/Home';
 import Map from './components/Map';
 import AvailableClassrooms from './components/AvailableClassrooms';
 import LoginPage from './components/LoginPage'; 
-import SignUpPage from './components/SignUp'; 
+import SignUpPage from './components/SignUp';
+import ReportIssue from './components/ReportIssue';
 
 import { ThemeContext } from './context/ThemeContext';
 
@@ -27,9 +28,10 @@ const AppWrapper = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/map" element={<Map />} />
+          <Route path="/ReportIssue" element={<ReportIssue />} />
           <Route path="/classrooms" element={<AvailableClassrooms />} />
-          <Route path="/login" element={<LoginPage />} />       
-          <Route path="/signup" element={<SignUpPage />} /> 
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
         </Routes>
       </main>
       {!hideHeaderFooter && <Footer />}

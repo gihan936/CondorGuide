@@ -456,3 +456,20 @@ body.light .classroom-section-heading {
   border-radius: 8px;
   overflow: hidden;
 }
+
+/*report issue page*/
+
+form label {
+  font-weight: 600;
+  color: #e1c212 !important;
+}
+
+.card input, .card select, .card textarea {
+  border-radius: 0.5rem;
+  padding: 10px;
+}
+
+.card input:focus, .card select:focus, .card textarea:focus {
+  border-color: #e1c212;
+  box-shadow: 0 0 5px #e1c212;
+}
