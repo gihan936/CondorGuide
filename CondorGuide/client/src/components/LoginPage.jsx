@@ -42,9 +42,19 @@ const LoginPage = () => {
           localStorage.setItem('user', JSON.stringify(response.data.user));
           setMessage('Login successful!');
           setVariant('success');
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
+          if(response.data.user.role == 'superadmin') {
+            setTimeout(() => {
+              navigate('/super-admin');
+            }, 1000);
+          } else if(response.data.user.role == 'admin'){
+            setTimeout(() => {
+              navigate('/');
+            }, 1000);
+          } else {
+            setTimeout(() => {
+              navigate('/');
+            }, 1000);
+          }
         }
       } catch {
         setMessage('Login failed. Please check credentials.');

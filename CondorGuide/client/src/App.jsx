@@ -14,6 +14,8 @@ import SignUpPage from './components/SignUp';
 import ReportIssue from './components/ReportIssue';
 
 import { ThemeContext } from './context/ThemeContext';
+import SuperAdminDashboard from './components/SuperAdminHome';
+import ProtectedRoute from './components/ProtectedRoute'
 
 const AppWrapper = () => {
   const { theme } = useContext(ThemeContext);
@@ -27,6 +29,14 @@ const AppWrapper = () => {
       <main className="flex-grow-1">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route
+            path="/super-admin"
+            element={
+              <ProtectedRoute allowedRoles={['superadmin']}>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/map" element={<Map />} />
           <Route path="/issues" element={<ReportIssue />} />
           <Route path="/classrooms" element={<AvailableClassrooms />} />

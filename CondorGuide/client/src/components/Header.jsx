@@ -15,6 +15,8 @@ const Header = () => {
     navigate('/');
   };
 
+  const user = JSON.parse(localStorage.getItem('user'));
+
   return (
     <Navbar
       expand="lg"
@@ -67,18 +69,25 @@ const Header = () => {
                 />
               </Dropdown.Toggle>
               <Dropdown.Menu className={`dropdown-menu-${theme}`}>
-                {localStorage.getItem('user') && (
+                {user && (
                   <Dropdown.Header>
-                    {JSON.parse(localStorage.getItem('user')).email}
+                    {user.email}
                   </Dropdown.Header>
                 )}
-                <Dropdown.Item href="/profile">Profile</Dropdown.Item>
+
+                {user && <Dropdown.Item href="/profile">Profile</Dropdown.Item>}
+
                 <Dropdown.Item onClick={toggleTheme}>
                   Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
                 </Dropdown.Item>
+
                 <Dropdown.Divider />
-                <Dropdown.Item href="/login">Login</Dropdown.Item>
-                <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+
+                {!user ? (
+                  <Dropdown.Item href="/login">Login</Dropdown.Item>
+                ) : (
+                  <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </Nav>

@@ -1,10 +1,21 @@
-// import React, { useContext } from 'react';
-// import { Navigate } from 'react-router-dom';
-// import { AuthContext } from '../context/AuthContext';
+// components/ProtectedRoute.jsx
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
-// const ProtectedRoute = ({ children }) => {
-//   const { isAuthenticated } = useContext(AuthContext);
-//   return isAuthenticated ? children : <Navigate to="/login" />;
-// };
+const ProtectedRoute = ({ allowedRoles = [], children }) => {
+  const storedUser = JSON.parse(localStorage.getItem('user'));
 
-// export default ProtectedRoute;
+  if (!storedUser) {
+    // Not logged in
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(storedUser.role)) {
+    // Logged in but doesn't have required role
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+export default ProtectedRoute;

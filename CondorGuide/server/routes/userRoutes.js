@@ -37,5 +37,19 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.put('/update-role', async (req, res) => {
+  const { email, role } = req.body;
+
+  await User.updateOne({ email }, { $set: { role } });
+  res.json({ success: true });
+});
+
+router.get('/users', async (req, res) => {
+  const users = await User.find({}, 'email role'); // protect sensitive info
+  res.json(users);
+});
+
+
+
 export default router;
 
