@@ -16,7 +16,7 @@ router.post('/available', async (req, res) => {
     const toTime = `1900-01-01T${to}:00`;
 
     const allClassrooms = await Classroom.find({
-      location_number: { $regex: `^${wing}`, $options: 'i' },
+      location_number: { $regex: `^${wing}|^.${wing}`, $options: 'i' },
       location_type: "Classroom"
     });
 

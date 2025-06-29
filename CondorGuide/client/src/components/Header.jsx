@@ -15,6 +15,8 @@ const Header = () => {
     navigate('/');
   };
 
+  const user = JSON.parse(localStorage.getItem('user'));
+
   return (
     <Navbar
       expand="lg"
@@ -46,11 +48,33 @@ const Header = () => {
         {/* Nav Links & Avatar */}
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
-            <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
-            <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
-            <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
-            <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
-            <Nav.Link href="/security" className="nav-link-custom">Security Alarm</Nav.Link>
+            {/* ROLE: user */}
+            {user?.role === 'user' || !user && (
+              <>
+                <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
+                <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
+                <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
+                <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
+                <Nav.Link href="/security" className="nav-link-custom">Security Alarm</Nav.Link>
+              </>
+            )}
+
+            {/* ROLE: superadmin only */}
+            {user?.role === 'superadmin' && (
+              <Nav.Link href="/admin-management" className="nav-link-custom text-warning fw-bold">
+                Admin Management
+              </Nav.Link>
+            )}
+
+            {/* ROLE: admin or superadmin */}
+            {(user?.role === 'admin' || user?.role === 'superadmin') && (
+              <>
+                <Nav.Link href="/issues-management" className="nav-link-custom">Issue Management</Nav.Link>
+                <Nav.Link href="/classrooms-management" className="nav-link-custom">Classroom Management</Nav.Link>
+                <Nav.Link href="/security-management" className="nav-link-custom">Security Alert Management</Nav.Link>
+                <Nav.Link href="/users-management" className="nav-link-custom">User Management</Nav.Link>
+              </>
+            )}
 
             {/* Avatar Dropdown */}
             <Dropdown align="end">
@@ -67,18 +91,21 @@ const Header = () => {
                 />
               </Dropdown.Toggle>
               <Dropdown.Menu className={`dropdown-menu-${theme}`}>
-                {localStorage.getItem('user') && (
+                {user && (
                   <Dropdown.Header>
-                    {JSON.parse(localStorage.getItem('user')).email}
+                    {user.email}
                   </Dropdown.Header>
                 )}
-                <Dropdown.Item href="/profile">Profile</Dropdown.Item>
+                {user && <Dropdown.Item href="/profile">Profile</Dropdown.Item>}
                 <Dropdown.Item onClick={toggleTheme}>
                   Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
                 </Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item href="/login">Login</Dropdown.Item>
-                <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+                {!user ? (
+                  <Dropdown.Item href="/login">Login</Dropdown.Item>
+                ) : (
+                  <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </Nav>
