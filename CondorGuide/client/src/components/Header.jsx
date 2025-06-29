@@ -48,17 +48,33 @@ const Header = () => {
         {/* Nav Links & Avatar */}
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
-            <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
-             {/* Show only if user is superadmin */}
+            {/* ROLE: user */}
+            {user?.role === 'user' || !user && (
+              <>
+                <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
+                <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
+                <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
+                <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
+                <Nav.Link href="/security" className="nav-link-custom">Security Alarm</Nav.Link>
+              </>
+            )}
+
+            {/* ROLE: superadmin only */}
             {user?.role === 'superadmin' && (
-              <Nav.Link href="/super-admin" className="nav-link-custom">
-                Super Admin Panel
+              <Nav.Link href="/admin-management" className="nav-link-custom text-warning fw-bold">
+                Admin Management
               </Nav.Link>
             )}
-            <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
-            <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
-            <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
-            <Nav.Link href="/security" className="nav-link-custom">Security Alarm</Nav.Link>
+
+            {/* ROLE: admin or superadmin */}
+            {(user?.role === 'admin' || user?.role === 'superadmin') && (
+              <>
+                <Nav.Link href="/issues-management" className="nav-link-custom">Issue Management</Nav.Link>
+                <Nav.Link href="/classrooms-management" className="nav-link-custom">Classroom Management</Nav.Link>
+                <Nav.Link href="/security-management" className="nav-link-custom">Security Alert Management</Nav.Link>
+                <Nav.Link href="/users-management" className="nav-link-custom">User Management</Nav.Link>
+              </>
+            )}
 
             {/* Avatar Dropdown */}
             <Dropdown align="end">
@@ -80,15 +96,11 @@ const Header = () => {
                     {user.email}
                   </Dropdown.Header>
                 )}
-
                 {user && <Dropdown.Item href="/profile">Profile</Dropdown.Item>}
-
                 <Dropdown.Item onClick={toggleTheme}>
                   Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
                 </Dropdown.Item>
-
                 <Dropdown.Divider />
-
                 {!user ? (
                   <Dropdown.Item href="/login">Login</Dropdown.Item>
                 ) : (

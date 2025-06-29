@@ -14,7 +14,7 @@ import SignUpPage from './components/SignUp';
 import ReportIssue from './components/ReportIssue';
 
 import { ThemeContext } from './context/ThemeContext';
-import SuperAdminDashboard from './components/SuperAdminHome';
+import AdminManagement from './components/AdminManagement';
 import ProtectedRoute from './components/ProtectedRoute'
 
 const AppWrapper = () => {
@@ -30,10 +30,10 @@ const AppWrapper = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route
-            path="/super-admin"
+            path="/admin-management"
             element={
               <ProtectedRoute allowedRoles={['superadmin']}>
-                <SuperAdminDashboard />
+                <AdminManagement />
               </ProtectedRoute>
             }
           />

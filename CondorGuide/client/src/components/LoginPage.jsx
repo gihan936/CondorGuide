@@ -44,7 +44,7 @@ const LoginPage = () => {
           setVariant('success');
           if(response.data.user.role == 'superadmin') {
             setTimeout(() => {
-              navigate('/super-admin');
+              navigate('/admin-management');
             }, 1000);
           } else if(response.data.user.role == 'admin'){
             setTimeout(() => {
