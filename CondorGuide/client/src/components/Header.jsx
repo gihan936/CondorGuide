@@ -49,6 +49,12 @@ const Header = () => {
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
             <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
+             {/* Show only if user is superadmin */}
+            {user?.role === 'superadmin' && (
+              <Nav.Link href="/super-admin" className="nav-link-custom">
+                Super Admin Panel
+              </Nav.Link>
+            )}
             <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
             <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
             <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
