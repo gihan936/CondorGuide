@@ -84,10 +84,16 @@ const IssueManagement = () => {
         ...(commentText ? { comment: commentText } : {}),
       };
 
-      const res = await fetch(`http://localhost:5000/api/issues/${selectedIssue._id}`, {
+      const res = await fetch('http://localhost:5000/api/issues/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatePayload),
+        body: JSON.stringify({
+          issueId: selectedIssue._id,
+          status: editFields.status,
+          priority: editFields.priority,
+          mainCategory: editFields.mainCategory,
+          ...(commentText ? { comment: commentText } : {}),
+        }),
       });
 
       if (!res.ok) throw new Error('Update failed');

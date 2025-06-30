@@ -53,4 +53,43 @@ router.get('/all', async (req, res) => {
   }
 });
 
+// PUT route to update issue (ID comes from body, not URL)
+router.put('/update', async (req, res) => {
+  const { issueId, status, priority, mainCategory, comment } = req.body;
+
+  if (!issueId) {
+    return res.status(400).json({ error: 'Missing issue ID' });
+  }
+
+  try {
+    const issue = await Issue.findById(issueId);
+    if (!issue) {
+      return res.status(404).json({ error: 'Issue not found' });
+    }
+
+    if (status) issue.status = status;
+    if (priority) issue.priority = priority;
+    if (mainCategory) issue.mainCategory = mainCategory;
+
+    if (comment && req.user) {
+      issue.comments.push({
+        text: comment,
+        admin: req.user._id,
+        createdAt: new Date(),
+      });
+    }
+
+    const updated = await issue.save();
+    const populated = await Issue.findById(updated._id)
+      .populate('reportedBy', 'name email')
+      .populate('comments.admin', 'name email');
+
+    res.json(populated);
+  } catch (err) {
+    console.error('Error updating issue:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 export default router;
