@@ -13,11 +13,7 @@ const ReportIssue = () => {
     subcategory: '',
     priority: '',
     image: null,
-<<<<<<< Updated upstream
-    location: '',
-=======
-    location: '', // Location field added
->>>>>>> Stashed changes
+    location: '', 
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -75,7 +71,7 @@ const ReportIssue = () => {
     if (!formData.category) errs.category = 'Please select a category.';
     if (!formData.subcategory) errs.subcategory = 'Please select a subcategory.';
     if (!formData.priority) errs.priority = 'Please select a priority level.';
-<<<<<<< Updated upstream
+
     if (!formData.location.trim()) errs.location = 'Location number is required.';
     return errs;
   };
@@ -88,50 +84,6 @@ const handleSubmit = async e => {
     setFormErrors(validationErrors);
     return;
   }
-=======
-    if (!formData.location.trim()) errs.location = 'Location number is required.'; 
-    return errs;
-  };
-
-  const handleSubmit = async e => {
-  e.preventDefault();
-  const errs = validateForm();
-  if (Object.keys(errs).length) return setErrors(errs);
-
-  const data = new FormData();
-  // Append all fields including the image
-  data.append('title', formData.title);
-  data.append('description', formData.description);
-  data.append('category', formData.category);
-  data.append('subcategory', formData.subcategory);
-  data.append('priority', formData.priority);
-  data.append('location', formData.location);
-  if (formData.image) {
-    data.append('image', formData.image);
-  }
-
-  try {
-    const response = await fetch('http://localhost:5000/api/issues', {
-      method: 'POST',
-      body: data,
-      // Don't set Content-Type header - let the browser set it with the correct boundary
-    });
-
-    const resJson = await response.json();
-    
-    if (response.ok) {
-      setSubmitted(true);
-      setErrors({});
-    } else {
-      setErrors({ submit: resJson.message || 'Submission failed' });
-    }
-  } catch (err) {
-    console.error('Network or server error:', err);
-    setErrors({ submit: 'Network or server error' });
-  }
-};
-
->>>>>>> Stashed changes
 
   setIsSubmitting(true);
   setSubmitError('');
@@ -289,21 +241,6 @@ const handleSubmit = async e => {
                     isInvalid={!!formErrors.location}
                   />
                   <Form.Control.Feedback type="invalid">{formErrors.location}</Form.Control.Feedback>
-                </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col md={12}>
-                  <Form.Label>Location Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter location number (e.g., Room 204)"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    isInvalid={!!errors.location}
-                  />
-                  <Form.Control.Feedback type="invalid">{errors.location}</Form.Control.Feedback>
                 </Col>
               </Row>
 
