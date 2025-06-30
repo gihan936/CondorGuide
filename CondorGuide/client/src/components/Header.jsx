@@ -61,7 +61,7 @@ const Header = () => {
 
             {/* ROLE: superadmin only */}
             {user?.role === 'superadmin' && (
-              <Nav.Link href="/admin-management" className="nav-link-custom text-warning fw-bold">
+              <Nav.Link href="/admin-management" className="nav-link-custom">
                 Admin Management
               </Nav.Link>
             )}
@@ -69,9 +69,9 @@ const Header = () => {
             {/* ROLE: admin or superadmin */}
             {(user?.role === 'admin' || user?.role === 'superadmin') && (
               <>
-                <Nav.Link href="/issues-management" className="nav-link-custom">Issue Management</Nav.Link>
-                <Nav.Link href="/classrooms-management" className="nav-link-custom">Classroom Management</Nav.Link>
-                <Nav.Link href="/security-management" className="nav-link-custom">Security Alert Management</Nav.Link>
+                <Nav.Link href="/issue-management" className="nav-link-custom">Issue Management</Nav.Link>
+                <Nav.Link href="/classroom-management" className="nav-link-custom">Classroom Management</Nav.Link>
+                <Nav.Link href="/alert-management" className="nav-link-custom">Security Alert Management</Nav.Link>
                 <Nav.Link href="/users-management" className="nav-link-custom">User Management</Nav.Link>
               </>
             )}

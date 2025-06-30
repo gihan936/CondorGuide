@@ -51,9 +51,9 @@ const ReportIssue = () => {
 
   const priorities = ['Low', 'Medium', 'High', 'Urgent'];
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: files ? files[0] : value,
     }));
@@ -69,17 +69,39 @@ const ReportIssue = () => {
     return errs;
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-    } else {
-      // Submit to backend API (placeholder)
-      console.log('Issue submitted:', formData);
+      return;
+    }
+
+    try {
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) data.append(key, value);
+      });
+
+      const response = await fetch('http://localhost:5000/api/issues/report', {
+        method: 'POST',
+        body: data,
+      });
+
+      if (!response.ok) throw new Error('Submission failed');
+
       setSubmitted(true);
+      setFormData({
+        title: '',
+        description: '',
+        category: '',
+        subcategory: '',
+        priority: '',
+        image: null,
+      });
       setErrors({});
-      // Optionally reset form
+    } catch (error) {
+      alert('Failed to submit the issue. Please try again.');
     }
   };
 
@@ -90,10 +112,11 @@ const ReportIssue = () => {
       <Row className="justify-content-center">
         <Col lg={8}>
           <Card className={`p-4 shadow ${themeClasses}`}>
-            <h2 className="mb-4 text-center" style={{ color: '#e1c212' }}>Report an Issue</h2>
+            <h2 className="mb-4 text-center" style={{ color: '#e1c212' }}>
+              Report an Issue
+            </h2>
             {submitted && <Alert variant="success">Issue reported successfully!</Alert>}
             <Form onSubmit={handleSubmit} encType="multipart/form-data">
-
               <Form.Group className="mb-3">
                 <Form.Label>Issue Title</Form.Label>
                 <Form.Control
@@ -127,15 +150,17 @@ const ReportIssue = () => {
                   <Form.Select
                     name="category"
                     value={formData.category}
-                    onChange={e => {
+                    onChange={(e) => {
                       handleChange(e);
-                      setFormData(prev => ({ ...prev, subcategory: '' }));
+                      setFormData((prev) => ({ ...prev, subcategory: '' }));
                     }}
                     isInvalid={!!errors.category}
                   >
                     <option value="">Select Main Category</option>
-                    {Object.keys(categoryOptions).map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                    {Object.keys(categoryOptions).map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
                     ))}
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">{errors.category}</Form.Control.Feedback>
@@ -152,7 +177,9 @@ const ReportIssue = () => {
                   >
                     <option value="">Select Subcategory</option>
                     {categoryOptions[formData.category]?.map((sub, idx) => (
-                      <option key={idx} value={sub}>{sub}</option>
+                      <option key={idx} value={sub}>
+                        {sub}
+                      </option>
                     ))}
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">{errors.subcategory}</Form.Control.Feedback>
@@ -169,8 +196,10 @@ const ReportIssue = () => {
                     isInvalid={!!errors.priority}
                   >
                     <option value="">Select Priority</option>
-                    {priorities.map(p => (
-                      <option key={p} value={p}>{p}</option>
+                    {priorities.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
                     ))}
                   </Form.Select>
                   <Form.Control.Feedback type="invalid">{errors.priority}</Form.Control.Feedback>
@@ -198,7 +227,6 @@ const ReportIssue = () => {
                   Submit
                 </Button>
               </div>
-
             </Form>
           </Card>
         </Col>

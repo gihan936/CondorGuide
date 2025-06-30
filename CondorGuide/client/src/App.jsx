@@ -15,6 +15,7 @@ import ReportIssue from './components/ReportIssue';
 
 import { ThemeContext } from './context/ThemeContext';
 import AdminManagement from './components/AdminManagement';
+import IssueManagement from './components/IssueManagement';
 import ProtectedRoute from './components/ProtectedRoute'
 
 const AppWrapper = () => {
@@ -33,6 +34,30 @@ const AppWrapper = () => {
             path="/admin-management"
             element={
               <ProtectedRoute allowedRoles={['superadmin']}>
+                <AdminManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/issue-management"
+            element={
+              <ProtectedRoute allowedRoles={['admin','superadmin']}>
+                <IssueManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/classroom-management"
+            element={
+              <ProtectedRoute allowedRoles={['admin','superadmin']}>
+                <AdminManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/alert-management"
+            element={
+              <ProtectedRoute allowedRoles={['admin','superadmin']}>
                 <AdminManagement />
               </ProtectedRoute>
             }
