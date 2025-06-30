@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes.js';
 import classroomRoutes from './routes/classroomRoutes.js';
+import scheduleRoutes from './routes/scheduleRoutes.js';
 import issueRoutes from './routes/issueRoutes.js';
 import securityAlertRoutes from './routes/securityAlertRoutes.js'
 import connectDB from './config/db.js'; 
@@ -20,6 +21,7 @@ app.use(express.json());
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/classrooms', classroomRoutes);
+app.use('/api/schedules', scheduleRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/security-alerts', securityAlertRoutes);
 

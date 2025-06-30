@@ -40,4 +40,94 @@ router.post('/available', async (req, res) => {
   }
 });
 
+router.get('/all', async (req, res) => {
+  try {
+    const classrooms = await Classroom.find();
+    res.json(classrooms);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch classrooms.' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Classroom.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ error: 'Classroom not found' });
+    res.json({ message: 'Classroom deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete classroom.' });
+  }
+});
+
+// PUT /api/classrooms/:id/status
+router.put('/:id/status', async (req, res) => {
+  const { isActive } = req.body;
+  try {
+    const updated = await Classroom.findByIdAndUpdate(
+      req.params.id,
+      { isActive },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update classroom status.' });
+  }
+});
+
+
+// Update classroom details by ID
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Optional: Validate updateData fields here if needed
+
+    const updated = await Classroom.findByIdAndUpdate(id, updateData, { new: true });
+    if (!updated) return res.status(404).json({ error: 'Classroom not found' });
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update classroom.' });
+  }
+});
+
+router.post('/', async (req, res) => {
+  try {
+    const {
+      location_id,
+      location_name,
+      location_type,
+      location_number,
+      description,
+      capacity,
+      equipment,
+      isActive = true,
+      availability = [],
+    } = req.body;
+
+    const newClassroom = new Classroom({
+      location_id,
+      location_name,
+      location_type,
+      location_number,
+      description,
+      capacity,
+      equipment,
+      isActive,
+      availability,
+    });
+
+    const saved = await newClassroom.save();
+    res.status(201).json(saved);
+  } catch (err) {
+    console.error('Error creating classroom:', err);
+    res.status(500).json({ error: 'Failed to add new classroom' });
+  }
+});
+
 export default router;
