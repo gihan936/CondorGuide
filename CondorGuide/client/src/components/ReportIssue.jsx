@@ -1,6 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { Form, Button, Container, Row, Col, Alert, Card } from 'react-bootstrap';
 import { ThemeContext } from '../context/ThemeContext';
+import axios from 'axios';
+
 
 const ReportIssue = () => {
   const { theme } = useContext(ThemeContext);
@@ -11,10 +13,13 @@ const ReportIssue = () => {
     subcategory: '',
     priority: '',
     image: null,
+    location: '',
   });
 
-  const [errors, setErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const categoryOptions = {
     'Facilities & Maintenance': [
@@ -51,9 +56,9 @@ const ReportIssue = () => {
 
   const priorities = ['Low', 'Medium', 'High', 'Urgent'];
 
-  const handleChange = (e) => {
+  const handleInputChange = e => {
     const { name, value, files } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: files ? files[0] : value,
     }));
@@ -66,31 +71,46 @@ const ReportIssue = () => {
     if (!formData.category) errs.category = 'Please select a category.';
     if (!formData.subcategory) errs.subcategory = 'Please select a subcategory.';
     if (!formData.priority) errs.priority = 'Please select a priority level.';
+    if (!formData.location.trim()) errs.location = 'Location number is required.';
     return errs;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
+const handleSubmit = async e => {
+  e.preventDefault();
+  const validationErrors = validateForm();
+  
+  if (Object.keys(validationErrors).length > 0) {
+    setFormErrors(validationErrors);
+    return;
+  }
+
+  setIsSubmitting(true);
+  setSubmitError('');
+
+  try {
+    const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('subcategory', formData.subcategory);
+    formDataToSend.append('priority', formData.priority);
+    formDataToSend.append('location', formData.location);
+    if (formData.image) {
+      formDataToSend.append('image', formData.image);
     }
 
-    try {
-      const data = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) data.append(key, value);
-      });
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '';
+    
+    const response = await axios.post(`${baseURL}/api/issues`, formDataToSend, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+      // Remove withCredentials since we're not using auth
+    });
 
-      const response = await fetch('http://localhost:5000/api/issues/report', {
-        method: 'POST',
-        body: data,
-      });
-
-      if (!response.ok) throw new Error('Submission failed');
-
+    if (response.data.success) {
       setSubmitted(true);
+      setFormErrors({});
       setFormData({
         title: '',
         description: '',
@@ -98,13 +118,21 @@ const ReportIssue = () => {
         subcategory: '',
         priority: '',
         image: null,
+        location: '',
       });
-      setErrors({});
-    } catch (error) {
-      alert('Failed to submit the issue. Please try again.');
     }
-  };
-
+  } catch (error) {
+    console.error('Full error:', error);
+    console.error('Error response:', error.response);
+    setSubmitError(
+      error.response?.data?.message || 
+      error.message || 
+      'Failed to submit issue. Please try again.'
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   const themeClasses = theme === 'light' ? 'bg-white text-dark' : 'bg-black text-white';
 
   return (
@@ -112,11 +140,11 @@ const ReportIssue = () => {
       <Row className="justify-content-center">
         <Col lg={8}>
           <Card className={`p-4 shadow ${themeClasses}`}>
-            <h2 className="mb-4 text-center" style={{ color: '#e1c212' }}>
-              Report an Issue
-            </h2>
+            <h2 className="mb-4 text-center" style={{ color: '#e1c212' }}>Report an Issue</h2>
             {submitted && <Alert variant="success">Issue reported successfully!</Alert>}
+            {submitError && <Alert variant="danger">{submitError}</Alert>}
             <Form onSubmit={handleSubmit} encType="multipart/form-data">
+
               <Form.Group className="mb-3">
                 <Form.Label>Issue Title</Form.Label>
                 <Form.Control
@@ -124,10 +152,10 @@ const ReportIssue = () => {
                   placeholder="Enter issue title"
                   name="title"
                   value={formData.title}
-                  onChange={handleChange}
-                  isInvalid={!!errors.title}
+                  onChange={handleInputChange}
+                  isInvalid={!!formErrors.title}
                 />
-                <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formErrors.title}</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group className="mb-3">
@@ -138,10 +166,10 @@ const ReportIssue = () => {
                   placeholder="Describe the issue"
                   name="description"
                   value={formData.description}
-                  onChange={handleChange}
-                  isInvalid={!!errors.description}
+                  onChange={handleInputChange}
+                  isInvalid={!!formErrors.description}
                 />
-                <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{formErrors.description}</Form.Control.Feedback>
               </Form.Group>
 
               <Row className="mb-3">
@@ -150,20 +178,18 @@ const ReportIssue = () => {
                   <Form.Select
                     name="category"
                     value={formData.category}
-                    onChange={(e) => {
-                      handleChange(e);
-                      setFormData((prev) => ({ ...prev, subcategory: '' }));
+                    onChange={e => {
+                      handleInputChange(e);
+                      setFormData(prev => ({ ...prev, subcategory: '' }));
                     }}
-                    isInvalid={!!errors.category}
+                    isInvalid={!!formErrors.category}
                   >
                     <option value="">Select Main Category</option>
-                    {Object.keys(categoryOptions).map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
+                    {Object.keys(categoryOptions).map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </Form.Select>
-                  <Form.Control.Feedback type="invalid">{errors.category}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">{formErrors.category}</Form.Control.Feedback>
                 </Col>
 
                 <Col md={6}>
@@ -171,18 +197,16 @@ const ReportIssue = () => {
                   <Form.Select
                     name="subcategory"
                     value={formData.subcategory}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     disabled={!formData.category}
-                    isInvalid={!!errors.subcategory}
+                    isInvalid={!!formErrors.subcategory}
                   >
                     <option value="">Select Subcategory</option>
                     {categoryOptions[formData.category]?.map((sub, idx) => (
-                      <option key={idx} value={sub}>
-                        {sub}
-                      </option>
+                      <option key={idx} value={sub}>{sub}</option>
                     ))}
                   </Form.Select>
-                  <Form.Control.Feedback type="invalid">{errors.subcategory}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">{formErrors.subcategory}</Form.Control.Feedback>
                 </Col>
               </Row>
 
@@ -192,17 +216,30 @@ const ReportIssue = () => {
                   <Form.Select
                     name="priority"
                     value={formData.priority}
-                    onChange={handleChange}
-                    isInvalid={!!errors.priority}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.priority}
                   >
                     <option value="">Select Priority</option>
-                    {priorities.map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
+                    {priorities.map(p => (
+                      <option key={p} value={p}>{p}</option>
                     ))}
                   </Form.Select>
-                  <Form.Control.Feedback type="invalid">{errors.priority}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">{formErrors.priority}</Form.Control.Feedback>
+                </Col>
+              </Row>
+
+              <Row className="mb-3">
+                <Col md={12}>
+                  <Form.Label>Location Number</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter location number (e.g., Room 204)"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.location}
+                  />
+                  <Form.Control.Feedback type="invalid">{formErrors.location}</Form.Control.Feedback>
                 </Col>
               </Row>
 
@@ -213,7 +250,7 @@ const ReportIssue = () => {
                   name="image"
                   accept="image/*"
                   capture="environment"
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                 />
               </Form.Group>
 
@@ -223,10 +260,12 @@ const ReportIssue = () => {
                   type="submit"
                   className="px-5 py-2 fw-bold"
                   style={{ backgroundColor: '#e1c212', color: '#000', border: 'none' }}
+                  disabled={isSubmitting}
                 >
-                  Submit
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
                 </Button>
               </div>
+
             </Form>
           </Card>
         </Col>
