@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Container, Row, Col, Button, Modal, Form, Table, Badge
 } from 'react-bootstrap';
+import ManageClassroomModal from './ManageClassroomModal';
 
 const ClassroomManagement = () => {
   const [classrooms, setClassrooms] = useState([]);
@@ -168,7 +169,6 @@ const ClassroomManagement = () => {
             <tr key={cls._id}>
               <td>{cls.location_id}</td>
               <td>{cls.location_name}</td>
-              {/* ({cls.location_number}) */}
               <td>{cls.location_type}</td>
               <td>{cls.capacity}</td>
               <td>{cls.equipment?.join(', ')}</td>
@@ -280,28 +280,15 @@ const ClassroomManagement = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Manage Modal */}
-      <Modal show={showManageModal} onHide={handleCloseManageModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Manage Classroom</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>
-            What would you like to do with{' '}
-            <strong>{selectedClassroom?.location_name}</strong>?
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseManageModal}>Cancel</Button>
-          <Button
-            variant={selectedClassroom?.isActive ? 'warning' : 'success'}
-            onClick={handleStatusChange}
-          >
-            {selectedClassroom?.isActive ? 'Deactivate' : 'Activate'}
-          </Button>
-          <Button variant="danger" onClick={handleDelete}>Delete</Button>
-        </Modal.Footer>
-      </Modal>
+      {/* Manage Classroom Modal */}
+      <ManageClassroomModal
+        show={showManageModal}
+        classroom={selectedClassroom}
+        onClose={handleCloseManageModal}
+        onStatusChange={handleStatusChange}
+        onDelete={handleDelete}
+        onSaveSchedules={fetchClassrooms} // refresh classrooms if schedules affect anything
+      />
     </Container>
   );
 };

@@ -31,8 +31,8 @@ const scheduleSchema = new mongoose.Schema({
   },
   is_recurring: {
     type: Boolean,
-    default: true, // whether this is a weekly pattern
+    default: false, // whether this is a weekly pattern
   },
 });
 
-export default mongoose.model('Schedule', scheduleSchema);
+export default mongoose.model('Schedule', scheduleSchema, 'Schedule');
