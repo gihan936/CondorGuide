@@ -1,11 +1,16 @@
-import React, { useContext, useState } from 'react';
-import { Form, Button, Container, Row, Col, Alert, Card } from 'react-bootstrap';
+import React, { useContext, useState, useEffect } from 'react';
+import { Form, Button, Container, Row, Col, Alert, Card, Spinner } from 'react-bootstrap';
 import { ThemeContext } from '../context/ThemeContext';
 import axios from 'axios';
-
+import { useAuth } from '../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ReportIssue = () => {
   const { theme } = useContext(ThemeContext);
+  const {  isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -13,13 +18,22 @@ const ReportIssue = () => {
     subcategory: '',
     priority: '',
     image: null,
-    location: '', 
+    location: '',
   });
 
   const [formErrors, setFormErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location }, replace: true });
+    } else {
+      setLoading(false);
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const categoryOptions = {
     'Facilities & Maintenance': [
@@ -71,77 +85,89 @@ const ReportIssue = () => {
     if (!formData.category) errs.category = 'Please select a category.';
     if (!formData.subcategory) errs.subcategory = 'Please select a subcategory.';
     if (!formData.priority) errs.priority = 'Please select a priority level.';
-
     if (!formData.location.trim()) errs.location = 'Location number is required.';
     return errs;
   };
 
-const handleSubmit = async e => {
-  e.preventDefault();
-  const validationErrors = validateForm();
-  
-  if (Object.keys(validationErrors).length > 0) {
-    setFormErrors(validationErrors);
-    return;
-  }
-
-  setIsSubmitting(true);
-  setSubmitError('');
-
-  try {
-    const formDataToSend = new FormData();
-    formDataToSend.append('title', formData.title);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('category', formData.category);
-    formDataToSend.append('subcategory', formData.subcategory);
-    formDataToSend.append('priority', formData.priority);
-    formDataToSend.append('location', formData.location);
-    if (formData.image) {
-      formDataToSend.append('image', formData.image);
-    }
-
-    const baseURL = import.meta.env.VITE_API_BASE_URL || '';
+  const handleSubmit = async e => {
+    e.preventDefault();
+    const validationErrors = validateForm();
     
-    const response = await axios.post(`${baseURL}/api/issues`, formDataToSend, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-      // Remove withCredentials since we're not using auth
-    });
-
-    if (response.data.success) {
-      setSubmitted(true);
-      setFormErrors({});
-      setFormData({
-        title: '',
-        description: '',
-        category: '',
-        subcategory: '',
-        priority: '',
-        image: null,
-        location: '',
-      });
+    if (Object.keys(validationErrors).length > 0) {
+      setFormErrors(validationErrors);
+      return;
     }
-  } catch (error) {
-    console.error('Full error:', error);
-    console.error('Error response:', error.response);
-    setSubmitError(
-      error.response?.data?.message || 
-      error.message || 
-      'Failed to submit issue. Please try again.'
+
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('subcategory', formData.subcategory);
+      formDataToSend.append('priority', formData.priority);
+      formDataToSend.append('location', formData.location);
+      if (formData.image) {
+        formDataToSend.append('image', formData.image);
+      }
+
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '';
+      const token = localStorage.getItem('token');
+      
+      const response = await axios.post(`${baseURL}/api/issues`, formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        setSubmitted(true);
+        setFormErrors({});
+        setFormData({
+          title: '',
+          description: '',
+          category: '',
+          subcategory: '',
+          priority: '',
+          image: null,
+          location: '',
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setSubmitError(
+        error.response?.data?.message || 
+        error.message || 
+        'Failed to submit issue. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+    const themeClasses = theme === 'light' ? 'bg-white text-dark' : 'bg-black text-white';
+
+  if (loading) {
+    return (
+      <div className={`d-flex justify-content-center align-items-center ${themeClasses}`} style={{ height: '100vh' }}>
+        <Spinner animation="border" variant="primary" />
+      </div>
     );
-  } finally {
-    setIsSubmitting(false);
   }
-};
-  const themeClasses = theme === 'light' ? 'bg-white text-dark' : 'bg-black text-white';
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <Container className={`py-5 ${themeClasses}`}>
       <Row className="justify-content-center">
         <Col lg={8}>
           <Card className={`p-4 shadow ${themeClasses}`}>
-            <h2 className="mb-4 text-center" style={{ color: '#e1c212' }}>Report an Issue</h2>
+            <h2 className="mb-4 text-center" style={{ color: '#e1c212' }}>Report an Issue </h2>
             {submitted && <Alert variant="success">Issue reported successfully!</Alert>}
             {submitError && <Alert variant="danger">{submitError}</Alert>}
             <Form onSubmit={handleSubmit} encType="multipart/form-data">

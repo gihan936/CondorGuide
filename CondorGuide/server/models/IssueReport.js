@@ -38,6 +38,16 @@ const issueReportSchema = new mongoose.Schema({
     default: 'Open',
     enum: ['Open', 'In Progress', 'Resolved', 'Closed']
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  userEmail: {
+    type: String
+  },
+  userRole: {
+    type: String
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -1,14 +1,27 @@
 import express from 'express';
 import IssueReport from '../models/IssueReport.js';
 import upload from '../config/multerConfig.js';
-
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-// Report a new issue (without auth middleware)
+// Middleware to extract user info from token
+const getUserInfo = (req) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return null;
+  
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+// Report a new issue
 router.post('/', upload.single('image'), async (req, res) => {
   try {
     const { title, description, category, subcategory, priority, location } = req.body;
+    const userInfo = getUserInfo(req) || {};
     
     const newIssue = new IssueReport({
       title,
@@ -17,7 +30,10 @@ router.post('/', upload.single('image'), async (req, res) => {
       subcategory,
       priority,
       location,
-      image: req.file ? req.file.path : null
+      image: req.file ? req.file.path : null,
+      createdBy: userInfo.userId,
+      userEmail: userInfo.email,
+      userRole: userInfo.role
     });
 
     const savedIssue = await newIssue.save();
@@ -37,10 +53,10 @@ router.post('/', upload.single('image'), async (req, res) => {
   }
 });
 
-// Get all issues (without auth)
+// Get all issues
 router.get('/', async (req, res) => {
   try {
-    const issues = await IssueReport.find();
+    const issues = await IssueReport.find().populate('createdBy', 'email role');
     res.json({
       success: true,
       data: issues
