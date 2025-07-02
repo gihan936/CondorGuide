@@ -368,6 +368,7 @@ const Map = () => {
     }
 
     console.log(`Selected ${isStart ? 'start' : 'end'} room:`, roomInfo);
+    console.log('Selected room geometry:', roomInfo.data.geometry);
   };
 
   // Highlight selected room on map
