@@ -41,7 +41,8 @@ const Header = () => {
 
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
-
+            {/* ROLE: user */}
+            {(user?.role === 'user' || !user) && (
             <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
             {user?.role !== 'admin' &&  user?.role !== 'superadmin' && (
               <>
@@ -54,6 +55,10 @@ const Header = () => {
             {user?.role === 'user' && (
               <>
                 <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
+              </>
+            )}
+            {(user?.role === 'user') && (
+              <>
                 <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
                 <Nav.Link href="/security" className="nav-link-custom">Security Alarm</Nav.Link>
               </>
