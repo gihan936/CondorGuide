@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import '../App.css';
 
 const LoginPage = () => {
@@ -10,20 +11,19 @@ const LoginPage = () => {
   const [message, setMessage] = useState('');
   const [variant, setVariant] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
+  // Get the previous location or default to home
+  const from = location.state?.from?.pathname || '/';
 
   const validateForm = () => {
     const newErrors = {};
-    if (!email) {
-      newErrors.email = 'email required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'enter valid email';
-    }
+    if (!email) newErrors.email = 'Email required';
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Enter valid email';
 
-    if (!password) {
-      newErrors.password = 'password required';
-    } else if (password.length < 6) {
-      newErrors.password = 'password must be at least 6 characters';
-    }
+    if (!password) newErrors.password = 'Password required';
+    else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
 
     setError(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -39,22 +39,14 @@ const LoginPage = () => {
         });
 
         if (response.status === 200) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+          login(response.data.user, response.data.token);
           setMessage('Login successful!');
           setVariant('success');
-          if(response.data.user.role == 'superadmin') {
-            setTimeout(() => {
-              navigate('/admin-management');
-            }, 1000);
-          } else if(response.data.user.role == 'admin'){
-            setTimeout(() => {
-              navigate('/');
-            }, 1000);
-          } else {
-            setTimeout(() => {
-              navigate('/');
-            }, 1000);
-          }
+
+          setTimeout(() => {
+            // Clear the from state to prevent redirect loops
+            navigate(from, { state: { from: undefined }, replace: true });
+          }, 1000);
         }
       } catch {
         setMessage('Login failed. Please check credentials.');
@@ -64,51 +56,50 @@ const LoginPage = () => {
   };
 
   return (
-
-      <div className="app-background d-flex justify-content-center align-items-center">
-        <div className="card shadow p-4 card-overlay" style={{ width: '100%', maxWidth: '400px' }}>
-          <h2 className="text-center mb-4" style={{ color: '#e1c212' }}>Condor Guide Login</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">Email address</label>
-              <input
-                type="email"
-                className={`form-control custom-input ${errors.email ? 'is-invalid' : ''}`}
-                id="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
-            </div>
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label">Password</label>
-              <input
-                type="password"
-                className={`form-control custom-input ${errors.password ? 'is-invalid' : ''}`}
-                id="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              {errors.password && <div className="invalid-feedback d-block">{errors.password}</div>}
-            </div>
-            <div className="d-grid">
-              <button type="submit" className="btn btn-primary">Login</button>
-            </div>
-          </form>
-          {message && (
-            <div className={`alert alert-${variant} text-center mt-3`} role="alert">
-              {message}
-            </div>
-          )}
-          <p className="text-center mt-3" style={{ color: '#e1c212' }}>
-            Don’t have an account? <Link to="/signup" style={{ color: '#8c8888' }}>Sign up</Link>
-          </p>
-        </div>
+    <div className="app-background d-flex justify-content-center align-items-center">
+      <div className="card shadow p-4 card-overlay" style={{ width: '100%', maxWidth: '400px' }}>
+        <h2 className="text-center mb-4" style={{ color: '#e1c212' }}>Condor Guide Login</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email address</label>
+            <input
+              type="email"
+              className={`form-control custom-input ${errors.email ? 'is-invalid' : ''}`}
+              id="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
+          </div>
+          <div className="mb-3">
+            <label htmlFor="password" className="form-label">Password</label>
+            <input
+              type="password"
+              className={`form-control custom-input ${errors.password ? 'is-invalid' : ''}`}
+              id="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            {errors.password && <div className="invalid-feedback d-block">{errors.password}</div>}
+          </div>
+          <div className="d-grid">
+            <button type="submit" className="btn btn-primary">Login</button>
+          </div>
+        </form>
+        {message && (
+          <div className={`alert alert-${variant} text-center mt-3`} role="alert">
+            {message}
+          </div>
+        )}
+        <p className="text-center mt-3" style={{ color: '#e1c212' }}>
+          Don't have an account? <Link to="/signup" style={{ color: '#8c8888' }}>Sign up</Link>
+        </p>
       </div>
+    </div>
   );
 };
 

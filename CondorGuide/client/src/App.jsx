@@ -1,34 +1,45 @@
-import React, { useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
+import React, { useContext } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
 
-import Header from './components/Header';
-import Footer from './components/Footer';
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
-import Home from './components/Home';
-import Map from './components/Map';
-import AvailableClassrooms from './components/AvailableClassrooms';
-import LoginPage from './components/LoginPage'; 
-import SignUpPage from './components/SignUp';
-import ReportIssue from './components/ReportIssue';
+import Home from "./components/Home";
+import Map from "./components/Map";
+import AvailableClassrooms from "./components/AvailableClassrooms";
+import LoginPage from "./components/LoginPage";
+import SignUpPage from "./components/SignUp";
+import ReportIssue from "./components/ReportIssue";
 
-import { ThemeContext } from './context/ThemeContext';
-import AdminManagement from './components/AdminManagement';
-import IssueManagement from './components/IssueManagement';
-import ClassroomManagement from './components/classroomManagement';
-import AlertManagement from './components/AlertManagement'
-import UserManagement from './components/UserManagement'
-import ProtectedRoute from './components/ProtectedRoute'
+import { ThemeContext } from "./context/ThemeContext";
+import AdminManagement from "./components/AdminManagement";
+import IssueManagement from "./components/IssueManagement";
+import ClassroomManagement from "./components/classroomManagement";
+import AlertManagement from "./components/AlertManagement";
+import UserManagement from "./components/UserManagement";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const AppWrapper = () => {
   const { theme } = useContext(ThemeContext);
   const location = useLocation();
 
-  const hideHeaderFooter = ['/login', '/signup'].includes(location.pathname);
+  const hideHeaderFooter = ["/login", "/signup"].includes(location.pathname);
 
   return (
-    <div className={theme === 'dark' ? 'bg-dark text-light min-vh-100 d-flex flex-column' : 'bg-light text-dark min-vh-100 d-flex flex-column'}>
+    <div
+      className={
+        theme === "dark"
+          ? "bg-dark text-light min-vh-100 d-flex flex-column"
+          : "bg-light text-dark min-vh-100 d-flex flex-column"
+      }
+    >
       {!hideHeaderFooter && <Header />}
       <main className="flex-grow-1">
         <Routes>
@@ -36,7 +47,7 @@ const AppWrapper = () => {
           <Route
             path="/admin-management"
             element={
-              <ProtectedRoute allowedRoles={['superadmin']}>
+              <ProtectedRoute allowedRoles={["superadmin"]}>
                 <AdminManagement />
               </ProtectedRoute>
             }
@@ -44,7 +55,7 @@ const AppWrapper = () => {
           <Route
             path="/issue-management"
             element={
-              <ProtectedRoute allowedRoles={['admin','superadmin']}>
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <IssueManagement />
               </ProtectedRoute>
             }
@@ -52,7 +63,7 @@ const AppWrapper = () => {
           <Route
             path="/classroom-management"
             element={
-              <ProtectedRoute allowedRoles={['admin','superadmin']}>
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <ClassroomManagement />
               </ProtectedRoute>
             }
@@ -60,7 +71,7 @@ const AppWrapper = () => {
           <Route
             path="/alert-management"
             element={
-              <ProtectedRoute allowedRoles={['admin','superadmin']}>
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <AlertManagement />
               </ProtectedRoute>
             }
@@ -68,14 +79,21 @@ const AppWrapper = () => {
           <Route
             path="/user-management"
             element={
-              <ProtectedRoute allowedRoles={['admin','superadmin']}>
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <UserManagement />
               </ProtectedRoute>
             }
           />
           <Route path="/map" element={<Map />} />
-          <Route path="/issues" element={<ReportIssue />} />
-          <Route path="/classrooms" element={<AvailableClassrooms />} />
+          <Route
+            path="/issues"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <ReportIssue />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/classrooms" element={<ProtectedRoute allowedRoles={["user"]}> <AvailableClassrooms /> </ProtectedRoute>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
         </Routes>

@@ -9,13 +9,12 @@ import avatar from '../assets/avatar.png';
 const Header = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user'));
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     navigate('/');
   };
-
-  const user = JSON.parse(localStorage.getItem('user'));
 
   return (
     <Navbar
@@ -25,7 +24,6 @@ const Header = () => {
       className={`py-3 shadow-sm ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
     >
       <Container fluid className="px-4 d-flex justify-content-between align-items-center">
-        {/* Logo */}
         <Navbar.Brand href="/" className="d-flex align-items-center">
           <Image
             src={theme === 'dark' ? logoDark : logoLight}
@@ -34,25 +32,28 @@ const Header = () => {
             width="70"
             className="me-2"
           />
-          <span
-            className="fw-bold fs-4"
-            style={{ color: '#e1c212', letterSpacing: '0.5px' }}
-          >
+          <span className="fw-bold fs-4" style={{ color: '#e1c212' }}>
             Condor Guide
           </span>
         </Navbar.Brand>
 
-        {/* Responsive Toggle */}
         <Navbar.Toggle aria-controls="main-navbar" />
 
-        {/* Nav Links & Avatar */}
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
             {/* ROLE: user */}
             {(user?.role === 'user' || !user) && (
+            <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
+            {user?.role !== 'admin' &&  user?.role !== 'superadmin' && (
               <>
-                <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
-                <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
+            <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
+                   </>
+            )}
+
+
+            {/* USER ONLY */}
+            {user?.role === 'user' && (
+              <>
                 <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
               </>
             )}
@@ -63,16 +64,20 @@ const Header = () => {
               </>
             )}
 
-            {/* ROLE: superadmin only */}
-            {user?.role === 'superadmin' && (
-              <Nav.Link href="/admin-management" className="nav-link-custom">
-                Admin Management
-              </Nav.Link>
+            {/* ADMIN ONLY */}
+            {user?.role === 'admin' && (
+              <>
+                <Nav.Link href="/issue-management" className="nav-link-custom">Issue Management</Nav.Link>
+                <Nav.Link href="/classroom-management" className="nav-link-custom">Classroom Management</Nav.Link>
+                <Nav.Link href="/alert-management" className="nav-link-custom">Security Alert Management</Nav.Link>
+                <Nav.Link href="/user-management" className="nav-link-custom">User Management</Nav.Link>
+              </>
             )}
 
-            {/* ROLE: admin or superadmin */}
-            {(user?.role === 'admin' || user?.role === 'superadmin') && (
+            {/* SUPERADMIN ONLY */}
+            {user?.role === 'superadmin' && (
               <>
+                <Nav.Link href="/admin-management" className="nav-link-custom">Admin Management</Nav.Link>
                 <Nav.Link href="/issue-management" className="nav-link-custom">Issue Management</Nav.Link>
                 <Nav.Link href="/classroom-management" className="nav-link-custom">Classroom Management</Nav.Link>
                 <Nav.Link href="/alert-management" className="nav-link-custom">Security Alert Management</Nav.Link>
@@ -96,9 +101,7 @@ const Header = () => {
               </Dropdown.Toggle>
               <Dropdown.Menu className={`dropdown-menu-${theme}`}>
                 {user && (
-                  <Dropdown.Header>
-                    {user.email}
-                  </Dropdown.Header>
+                  <Dropdown.Header>{user.email}</Dropdown.Header>
                 )}
                 {user && <Dropdown.Item href="/profile">Profile</Dropdown.Item>}
                 <Dropdown.Item onClick={toggleTheme}>

@@ -1,17 +1,16 @@
-// components/ProtectedRoute.jsx
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ allowedRoles = [], children }) => {
-  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const { currentUser, isAuthenticated } = useAuth();
+  const location = useLocation();
 
-  if (!storedUser) {
-    // Not logged in
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(storedUser.role)) {
-    // Logged in but doesn't have required role
+  if (allowedRoles.length > 0 && !allowedRoles.includes(currentUser?.role)) {
     return <Navigate to="/" replace />;
   }
 
