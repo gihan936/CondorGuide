@@ -59,6 +59,10 @@
   color: aliceblue;
 }
 
+.nav-label-color {
+  color: #343a40 !important; /* Dark grey */
+}
+
 .custom-input {
   background-color: #f5f5dc; 
   color: #000;               

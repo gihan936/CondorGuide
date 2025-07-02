@@ -1446,13 +1446,9 @@ const Map = () => {
   useEffect(() => {
     if (isMapReady && isDataReady) {
       console.log('Both map and data ready, setting up room interactions...');
-      setTimeout(() => {
-        initializeLayers();
-        setupRoomInteractions();
-        setTimeout(() => {
-          showFloorOnly(currentFloor);
-        }, 500);
-      }, 1000);
+      initializeLayers();
+      setupRoomInteractions();
+      showFloorOnly(currentFloor);
     }
   }, [isMapReady, isDataReady]);
 
@@ -1462,7 +1458,7 @@ const Map = () => {
     
     if (!mapRef.current || !mapRef.current.isStyleLoaded()) {
       console.log('Map not ready yet');
-      setTimeout(initializeLayers, 1000);
+      // If map is not ready, the useEffect will re-run when isMapReady becomes true
       return;
     }
     
@@ -1567,7 +1563,7 @@ const Map = () => {
     setDebugInfo(`Switching to floor ${floor}...`);
     
     if (!mapRef.current || !mapRef.current.isStyleLoaded()) {
-      console.log('⚠️ Map not ready for floor switching, retrying...');
+      console.log('Map not ready for floor switching, retrying...');
       setTimeout(() => showFloorOnly(floor), 500);
       return;
     }
@@ -1713,8 +1709,8 @@ const Map = () => {
           </Card>
         </div>
 
-        {/* Navigation Panel - LEFT SIDE BELOW FLOOR SWITCHER */}
-        <div className="position-absolute" style={{ top: '180px', left: '20px', zIndex: 1000 }}>
+        {/* Navigation Panel - RIGHT SIDE BELOW MAP CONTROLS */}
+        <div className="position-absolute" style={{ top: '210px', right: '20px', zIndex: 1000 }}>
           <Card className={`shadow ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`} style={{ width: '300px' }}>
             <Card.Header>
               <h6 className="mb-0">Navigation</h6>
@@ -1722,7 +1718,7 @@ const Map = () => {
             <Card.Body className="p-3">
               {/* Start Room Input */}
               <div className="mb-3">
-                <label className="form-label small">From (Room Name/Number):</label>
+                <label className="form-label small nav-label-color">From (Room Name/Number):</label>
                 <InputGroup size="sm">
                   <Form.Control
                     type="text"
@@ -1773,7 +1769,7 @@ const Map = () => {
 
               {/* End Room Input */}
               <div className="mb-3">
-                <label className="form-label small">To (Room Name/Number):</label>
+                <label className="form-label small nav-label-color">To (Room Name/Number):</label>
                 <InputGroup size="sm">
                   <Form.Control
                     type="text"
@@ -1906,47 +1902,8 @@ const Map = () => {
       {/* Information Panel Below */}
       <Container fluid className="py-4">
         <Row>
-          {/* Building Info */}
-          <Col lg={4}>
-            <Card className={`h-100 shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
-              <Card.Body>
-                <Card.Title className="h4">
-                  Conestoga College
-                </Card.Title>
-                <Card.Subtitle className="mb-3 text-muted">
-                  A Wing & B Wing Interactive Map
-                </Card.Subtitle>
-                
-                <div className="mb-3">
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Current Floor:</span>
-                    <span>Level {currentFloor}</span>
-                  </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Map Status:</span>
-                    <span>{isMapReady ? "Ready" : "Loading"}</span>
-                  </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Data Status:</span>
-                    <span>{isDataReady ? "Loaded" : "Loading"}</span>
-                  </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Navigation:</span>
-                    <span>{currentRoute ? "Route Active" : "No Route"}</span>
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <small className={`d-block p-2 rounded ${theme === 'dark' ? 'bg-secondary' : 'bg-light'}`}>
-                    <strong>Status:</strong> {debugInfo}
-                  </small>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
           {/* Selected Room Info */}
-          <Col lg={8}>
+          <Col lg={12}>
             {selectedRoom ? (
               <Card className={`shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
                 <Card.Header>
@@ -1960,23 +1917,23 @@ const Map = () => {
                         <tbody>
                           <tr>
                             <td><strong>Location Number:</strong></td>
-                            <td><Badge bg="primary">{selectedRoom.id}</Badge></td>
+                            <td>{selectedRoom.id}</td>
                           </tr>
                           <tr>
                             <td><strong>Floor:</strong></td>
-                            <td><Badge bg="info">Level {selectedRoom.floor}</Badge></td>
+                            <td>Level {selectedRoom.floor}</td>
                           </tr>
                           <tr>
                             <td><strong>Wing:</strong></td>
-                            <td><Badge bg="secondary">{selectedRoom.wing}</Badge></td>
+                            <td>{selectedRoom.wing}</td>
                           </tr>
                           <tr>
                             <td><strong>Type:</strong></td>
-                            <td><Badge bg="warning">{selectedRoom.type}</Badge></td>
+                            <td>{selectedRoom.type}</td>
                           </tr>
                           <tr>
                             <td><strong>Status:</strong></td>
-                            <td><Badge bg="success">{selectedRoom.status}</Badge></td>
+                            <td>{selectedRoom.status}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -1991,157 +1948,17 @@ const Map = () => {
                           <p>{selectedRoom.description}</p>
                         </>
                       )}
-                      
-                      <div className="mt-3">
-                        <Button 
-                          variant="outline-success" 
-                          size="sm" 
-                          className="me-2"
-                          onClick={() => {
-                            setStartRoomInput(selectedRoom.name);
-                            searchRooms(selectedRoom.name, true);
-                          }}
-                        >
-                          🧭 Navigate From Here
-                        </Button>
-                        <Button 
-                          variant="outline-info" 
-                          size="sm" 
-                          className="me-2"
-                          onClick={() => {
-                            setEndRoomInput(selectedRoom.name);
-                            searchRooms(selectedRoom.name, false);
-                          }}
-                        >
-                          📍 Navigate To Here
-                        </Button>
-                        <Button variant="outline-secondary" size="sm">
-                          📝 Report Issue
-                        </Button>
-                      </div>
                     </Col>
                   </Row>
                 </Card.Body>
               </Card>
             ) : (
-              <Card className={`shadow-sm text-center ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
-                <Card.Body className="py-5">
-                  <h5 className="text-muted">No Room Selected</h5>
-                  <p className="text-muted">
-                    Click on any room in the map above to view detailed information,<br/>
-                    or use the navigation panel to find and route between rooms.
-                  </p>
-                  
-                  {isDataReady && Object.keys(hallwayData).length > 0 && (
-                    <div className="mt-3">
-                      <small className="text-success">
-                        ✅ Advanced navigation ready with {Object.keys(hallwayData).length} route networks loaded
-                      </small>
-                      <br/>
-                      <small className="text-info">
-                        🎯 Features: Intersection-based routing, Room collision avoidance, Multi-floor support
-                      </small>
-                    </div>
-                  )}
+              <Card className={`shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+                <Card.Body>
+                  <p className="text-muted mb-0">Click on a room on the map to see its details here.</p>
                 </Card.Body>
               </Card>
             )}
-          </Col>
-        </Row>
-
-        {/* Advanced Features Info */}
-        <Row className="mt-4">
-          <Col>
-            <Card className={`shadow-sm ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
-              <Card.Header>
-                <h5 className="mb-0">🚀 Advanced Navigation Features</h5>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col md={3}>
-                    <h6 className="text-primary">🔄 Intersection Detection</h6>
-                    <p className="small">
-                      Automatically finds where hallway corridors intersect to create optimal turning points for navigation routes.
-                    </p>
-                  </Col>
-                  <Col md={3}>
-                    <h6 className="text-success">🛡️ Room Collision Avoidance</h6>
-                    <p className="small">
-                      Uses polygon geometry to ensure routes follow hallways and don't pass through room spaces.
-                    </p>
-                  </Col>
-                  <Col md={3}>
-                    <h6 className="text-warning">🗺️ Graph Pathfinding</h6>
-                    <p className="small">
-                      Implements Dijkstra-like algorithm using intersection points as nodes for shortest path calculation.
-                    </p>
-                  </Col>
-                  <Col md={3}>
-                    <h6 className="text-info">👁️ Debug Visualization</h6>
-                    <p className="small">
-                      Visual tools to inspect hallway networks, intersections, room boundaries, and route analysis.
-                    </p>
-                  </Col>
-                </Row>
-                
-                <hr/>
-                
-                <Row>
-                  <Col md={6}>
-                    <h6>🎯 How Intersection-Based Routing Works:</h6>
-                    <ol className="small">
-                      <li><strong>Detection:</strong> Scans all hallway LineStrings to find intersection points</li>
-                      <li><strong>Graph Building:</strong> Creates navigation nodes at each intersection</li>
-                      <li><strong>Path Planning:</strong> Connects rooms to nearest hallway points</li>
-                      <li><strong>Route Optimization:</strong> Finds shortest path through intersection network</li>
-                      <li><strong>Collision Check:</strong> Validates route doesn't pass through rooms</li>
-                    </ol>
-                  </Col>
-                  <Col md={6}>
-                    <h6>🛠️ Debug Console Commands:</h6>
-                    <ul className="small">
-                      <li><code>🔍 Debug Network</code> - Logs hallway segments and intersection analysis</li>
-                      <li><code>📊 Analyze Route</code> - Shows detailed route metrics and bearings</li>
-                      <li><code>🔄 Show Intersections</code> - Displays gold circles at turning points</li>
-                      <li><code>👁️ Show Hallways</code> - Shows green corridor network overlay</li>
-                      <li><code>🏠 Show Rooms</code> - Displays red room collision boundaries</li>
-                    </ul>
-                  </Col>
-                </Row>
-
-                {/* Real-time Status */}
-                {isDataReady && (
-                  <div className="mt-3 p-3 bg-light rounded">
-                    <Row className="text-center">
-                      <Col md={3}>
-                        <Badge bg="primary" className="p-2">
-                          Floor {currentFloor}
-                        </Badge>
-                        <div className="small mt-1">Current Level</div>
-                      </Col>
-                      <Col md={3}>
-                        <Badge bg="success" className="p-2">
-                          {Object.keys(roomData).length}
-                        </Badge>
-                        <div className="small mt-1">Room Entries</div>
-                      </Col>
-                      <Col md={3}>
-                        <Badge bg="info" className="p-2">
-                          {Object.keys(hallwayData).length}
-                        </Badge>
-                        <div className="small mt-1">Hallway Networks</div>
-                      </Col>
-                      <Col md={3}>
-                        <Badge bg={currentRoute ? "warning" : "secondary"} className="p-2">
-                          {currentRoute ? `${Math.round(currentRoute.distance)}m` : 'No Route'}
-                        </Badge>
-                        <div className="small mt-1">Active Route</div>
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
           </Col>
         </Row>
       </Container>
