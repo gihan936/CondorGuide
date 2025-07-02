@@ -16,6 +16,7 @@ const Header = () => {
   };
 
   const user = JSON.parse(localStorage.getItem('user'));
+  console.log(user,user?.role === 'user')
 
   return (
     <Navbar
@@ -49,7 +50,7 @@ const Header = () => {
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
             {/* ROLE: user */}
-            {user?.role === 'user' || !user && (
+            {(user?.role === 'user' || !user) && (
               <>
                 <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
                 <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>

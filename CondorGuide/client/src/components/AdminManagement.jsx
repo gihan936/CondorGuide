@@ -57,6 +57,7 @@ export default function AdminManagement() {
                   <td className="px-5 py-2 whitespace-nowrap text-center text-sm font-medium">
                       {user.role === "admin" ? (
                         <button
+                        style={{backgroundColor:'var(--bs-primary)',borderColor:'black'}}
                           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
                           onClick={() => updateRole(user.email, "user")}
                         >
@@ -64,6 +65,7 @@ export default function AdminManagement() {
                         </button>
                       ) : (
                         <button
+                        style={{backgroundColor:'var(--bs-primary)',borderColor:'black'}}
                           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
                           onClick={() => updateRole(user.email, "admin")}
                         >

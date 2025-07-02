@@ -180,7 +180,6 @@ const ClassroomManagement = () => {
               <td>
                 <Button
                   size="sm"
-                  variant="info"
                   onClick={() => handleOpenModal(cls)}
                   className="me-2"
                 >
@@ -188,7 +187,7 @@ const ClassroomManagement = () => {
                 </Button>
                 <Button
                   size="sm"
-                  variant="danger"
+                  style={{backgroundColor:'black',color:'var(--bs-primary)',borderColor:'black'}}
                   onClick={() => handleShowManageModal(cls)}
                 >
                   Manage
