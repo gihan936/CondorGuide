@@ -64,7 +64,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 // Get all issues
-router.get("/", async (req, res) => {
+router.get("/all", async (req, res) => {
   try {
     const issues = await IssueReport.find().populate("createdBy", "email role");
     

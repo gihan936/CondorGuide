@@ -36,8 +36,8 @@ const IssueManagement = () => {
       try {
         const res = await fetch('http://localhost:5000/api/issues/all'); // Updated fetch URL
         const data = await res.json();
-        setIssues(data);
-        setFilteredIssues(data);
+        setIssues(data.data);
+        setFilteredIssues(data.data);
       } catch (err) {
         console.error('Failed to fetch issues:', err);
       }
@@ -241,7 +241,7 @@ const IssueManagement = () => {
                 />
               )}
               <Form.Group className="mb-3">
-                <Form.Label>Status</Form.Label>
+                <Form.Label className="text-black">Status</Form.Label>
                 <Form.Select
                   value={editFields.status}
                   onChange={(e) =>
@@ -256,7 +256,7 @@ const IssueManagement = () => {
                 </Form.Select>
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Priority</Form.Label>
+                <Form.Label className="text-black">Priority</Form.Label>
                 <Form.Select
                   value={editFields.priority}
                   onChange={(e) =>
@@ -271,7 +271,7 @@ const IssueManagement = () => {
                 </Form.Select>
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Department</Form.Label>
+                <Form.Label className="text-black">Department</Form.Label>
                 <Form.Control
                   type="text"
                   value={editFields.mainCategory}
