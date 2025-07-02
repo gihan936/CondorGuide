@@ -16,7 +16,6 @@ const Header = () => {
   };
 
   const user = JSON.parse(localStorage.getItem('user'));
-  console.log(user,user?.role === 'user')
 
   return (
     <Navbar
@@ -55,6 +54,10 @@ const Header = () => {
                 <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
                 <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
                 <Nav.Link href="/classrooms" className="nav-link-custom">Available Classrooms</Nav.Link>
+              </>
+            )}
+            {(user?.role === 'user') && (
+              <>
                 <Nav.Link href="/issues" className="nav-link-custom">Report Issues</Nav.Link>
                 <Nav.Link href="/security" className="nav-link-custom">Security Alarm</Nav.Link>
               </>
