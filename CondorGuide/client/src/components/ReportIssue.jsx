@@ -285,10 +285,10 @@ const ReportIssue = () => {
                       src={getImageUrl(issue.image)}
                       alt="Issue"
                       style={{
-                        maxWidth: "200px",
-                        height: "auto",
+                        width: "auto",
+                        height: "200px",
                         borderRadius: "0.5rem",
-                        maxHeight: "300px",
+                        maxWidth: "300px",
                         objectFit: "contain",
                       }}
                       onError={(e) => {
