@@ -28,6 +28,7 @@ const Map = () => {
   const [routeSearchResults, setRouteSearchResults] = React.useState({ start: [], end: [] });
   const [currentRoute, setCurrentRoute] = React.useState(null);
   const animationFrameRef = React.useRef(null);
+  const [userLocation, setUserLocation] = React.useState(null); // New state for user's current map center
 
   // Helper function to generate multiple coordinate keys with different precisions
   const generateCoordinateKeys = (lng, lat) => {
@@ -172,6 +173,34 @@ const Map = () => {
     return null;
   };
 
+  // Find nearest location of a specific type
+  const findNearestLocationOfType = (type, referenceCoords) => {
+    let nearestRoom = null;
+    let minDistance = Infinity;
+
+    Object.values(roomData).forEach(room => {
+      // Ensure room has a location_type property and coordinates
+      if (room.location_type && room.center_coordinates) {
+        if (room.location_type.toLowerCase() === type.toLowerCase()) {
+          const distance = calculateDistance(referenceCoords, room.center_coordinates);
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestRoom = {
+              key: `${room.center_coordinates[0]},${room.center_coordinates[1]}`,
+              data: room,
+              matchType: 'Type',
+              matchScore: 100,
+              displayName: room.location_name || room.location_numk || room.room_number || 'Unknown',
+              displayNumber: room.location_numk || room.room_number || 'N/A',
+              coordinates: room.center_coordinates
+            };
+          }
+        }
+      }
+    });
+    return nearestRoom;
+  };
+
   // Fetch room data from datasets API
   const fetchRoomData = async () => {
     try {
@@ -180,7 +209,8 @@ const Map = () => {
       const datasetIds = [
         'cmbhf0ndq2kld1on5g332amn7',
         'cmbfb8tar52id1ump75xqao9r', 
-        'cmbhf2g8t36tf1pna7q2ed3bu'
+        'cmbhf2g8t36tf1pna7q2ed3bu',
+        'cmcmdryk90m2n1oo72ki4jmxm' // New A-Wing-level-2-hallways dataset
       ];
       
       const allRoomData = {};
@@ -192,9 +222,13 @@ const Map = () => {
           if (response.ok) {
             const data = await response.json();
             console.log(`Dataset ${datasetId} data:`, data);
+            if (datasetId === 'cmcmdryk90m2n1oo72ki4jmxm') {
+              console.log('CONFIRMED: A-Wing-level-2-hallways dataset loaded successfully!');
+            }
             
             data.features.forEach(feature => {
               if (feature.geometry && feature.properties) {
+                console.log(`Processing feature: type=${feature.geometry.type}, properties=`, feature.properties);
                 
                 // Check if this is a hallway (LineString) or room (Polygon)
                 if (feature.geometry.type === 'LineString' && feature.properties.hallway_id) {
@@ -219,6 +253,9 @@ const Map = () => {
                       };
                     });
                   }
+                  console.log(`Added room: ${feature.properties.location_name || feature.properties.location_numk}`);
+                } else {
+                  console.log(`Skipping feature with unexpected geometry type: ${feature.geometry.type}`);
                 }
               }
             });
@@ -260,7 +297,41 @@ const Map = () => {
       return;
     }
 
-    const results = findRoomByNameOrNumber(searchTerm, roomData);
+    const knownLocationTypes = ['washroom', 'staircase', 'elevator', 'exit', 'entrance', 'cafe', 'library', 'lab'];
+    const searchTermLower = searchTerm.toLowerCase().trim();
+
+    let results = [];
+
+    // Check if the search term is a known location type
+    if (knownLocationTypes.includes(searchTermLower)) {
+      const referenceCoords = isStart && startRoom ? startRoom.coordinates : userLocation;
+      if (referenceCoords) {
+        const nearestLocation = findNearestLocationOfType(searchTermLower, referenceCoords);
+        if (nearestLocation) {
+          results = [nearestLocation]; // Only one result for nearest
+        }
+      } else {
+        // If no reference coords, just list all of that type (or a few)
+        Object.values(roomData).forEach(room => {
+          if (room.location_type && room.location_type.toLowerCase() === searchTermLower) {
+            results.push({
+              key: `${room.center_coordinates[0]},${room.center_coordinates[1]}`,
+              data: room,
+              matchType: 'Type',
+              matchScore: 100,
+              displayName: room.location_name || room.location_numk || room.room_number || 'Unknown',
+              displayNumber: room.location_numk || room.room_number || 'N/A',
+              coordinates: room.center_coordinates
+            });
+          }
+        });
+        results = results.slice(0, 5); // Limit results for types
+      }
+    } else {
+      // Fallback to existing room name/number search
+      results = findRoomByNameOrNumber(searchTerm, roomData);
+    }
+    
     const limitedResults = results.slice(0, 5); // Limit to 5 results
 
     if (isStart) {
@@ -997,7 +1068,7 @@ const Map = () => {
         },
         paint: {
           'line-color': '#FF0000', // Bright red for visibility
-          'line-width': 10,        
+          'line-width': 5,        
           'line-opacity': 1.0      
         }
       });
@@ -1286,26 +1357,7 @@ const Map = () => {
     console.log(`Visualizing ${features.length} hallway segments`);
     
     // Add to map
-    mapRef.current.addSource(vizSourceId, {
-      type: 'geojson',
-      data: hallwayGeoJSON
-    });
     
-    mapRef.current.addLayer({
-      id: vizLayerId,
-      type: 'line',
-      source: vizSourceId,
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': '#00FF00',
-        'line-width': 3,
-        'line-opacity': 0.7,
-        'line-dasharray': [5, 5]
-      }
-    });
     
     setDebugInfo(`Showing ${features.length} hallway segments (green dashed lines)`);
     console.log('Hallway network visualization added (green dashed lines)');
@@ -1427,7 +1479,14 @@ const Map = () => {
         pitch: 45
       });
 
+      // Set initial user location
+      setUserLocation(mapRef.current.getCenter().toArray());
+
       setIsMapReady(true);
+    });
+
+    mapRef.current.on('move', () => {
+      setUserLocation(mapRef.current.getCenter().toArray());
     });
 
     mapRef.current.on('error', (e) => {
@@ -1471,13 +1530,14 @@ const Map = () => {
       'b-wing-level-3-fill', 'b-wing-level-3-borders', 'b-wing-level-3-label'
     ];
     
+    // Log all layers for debugging
+    console.log('All map style layers:', mapRef.current.getStyle().layers.map(layer => layer.id));
+
     allRoomLayers.forEach(layerId => {
       try {
-        if (layerId.includes('label')) {
-          mapRef.current.setPaintProperty(layerId, 'text-opacity', 1);
-          mapRef.current.setPaintProperty(layerId, 'text-halo-color', '#ffffff');
-          mapRef.current.setPaintProperty(layerId, 'text-halo-width', 1);
-        }
+        mapRef.current.setPaintProperty(layerId, 'text-opacity', 1);
+        mapRef.current.setPaintProperty(layerId, 'text-halo-color', '#ffffff');
+        mapRef.current.setPaintProperty(layerId, 'text-halo-width', 1);
         console.log(`Configured: ${layerId}`);
       } catch (e) {
         console.log(`Failed to configure: ${layerId}`, e.message);
