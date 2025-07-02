@@ -66,18 +66,25 @@ router.post("/", upload.single("image"), async (req, res) => {
 // Get all issues
 router.get("/all", async (req, res) => {
   try {
-    const issues = await IssueReport.find().populate("createdBy", "email role");
-    
+    const issues = await IssueReport.find().populate("reportedBy", "email role");
+
     // Log image paths for debugging
     issues.forEach(issue => {
       if (issue.image) {
         console.log(`Issue ${issue._id} image path:`, issue.image);
       }
     });
-    
+
+    const host = req.protocol + "://" + req.get("host");
+
+    const formattedIssues = issues.map((issue) => ({
+      ...issue.toObject(),
+      image: issue.image ? `${host}/${issue.image}` : null,
+    }));
+
     res.json({
       success: true,
-      data: issues,
+      data: formattedIssues,
     });
   } catch (error) {
     console.error("Error fetching issues:", error);
@@ -111,6 +118,48 @@ router.get("/user", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch user issues",
+      error: error.message,
+    });
+  }
+});
+
+router.put('/update', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { issueId, status, priority, mainCategory, comment } = req.body;
+
+    const issue = await IssueReport.findById(issueId);
+    if (!issue) {
+      return res.status(404).json({ success: false, message: 'Issue not found' });
+    }
+
+    // Apply updates
+    if (status) issue.status = status;
+    if (priority) issue.priority = priority;
+    if (mainCategory) issue.mainCategory = mainCategory;
+
+    // Add admin comment if provided
+    if (comment) {
+      issue.comments.push({
+        admin: decoded.userId,
+        comment: comment,
+        timestamp: new Date()
+      });
+    }
+
+    const updatedIssue = await issue.save();
+
+    res.json({ success: true, data: updatedIssue });
+  } catch (error) {
+    console.error("Error updating issue:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update issue",
       error: error.message,
     });
   }
