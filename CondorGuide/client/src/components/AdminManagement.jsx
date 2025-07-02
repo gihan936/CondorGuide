@@ -16,7 +16,7 @@ export default function AdminManagement() {
       setUsers(prev =>
         prev.map(user => user.email === email ? { ...user, role: newRole } : user)
       );
-    } catch (error) {
+    } catch {
       alert("Failed to update role"); // Keeping original alert as requested
     }
   };
