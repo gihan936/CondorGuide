@@ -4,57 +4,61 @@ const issueReportSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   description: {
     type: String,
     required: true,
-    trim: true
   },
   category: {
     type: String,
-    required: true
+    required: true,
   },
   subcategory: {
     type: String,
-    required: true
+    required: true,
   },
   priority: {
     type: String,
-    required: true,
-    enum: ['Low', 'Medium', 'High', 'Urgent']
-  },
-  location: {
-    type: String,
-    required: true,
-    trim: true
+    enum: ['Low', 'Medium', 'High', 'Urgent'],
+    default: 'Medium',
   },
   image: {
     type: String,
-    default: null
+    default: '',
   },
   status: {
     type: String,
-    default: 'Open',
-    enum: ['Open', 'In Progress', 'Resolved', 'Closed']
+    enum: ['Open', 'Pending', 'In Progress', 'Resolved'],
+    default: 'Pending',
   },
-  createdBy: {
+  reportedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: false, // now optional
+    default: null,
   },
-  userEmail: {
-    type: String
-  },
-  userRole: {
-    type: String
-  },
+  comments: [
+    {
+      admin: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Assuming admins are also in the User model
+        required: true,
+      },
+      comment: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      timestamp: {
+        type: Date,
+        default: Date.now,
+      },
+    }
+  ],
   createdAt: {
     type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+    default: Date.now,
   }
 });
 

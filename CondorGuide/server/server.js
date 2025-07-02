@@ -25,8 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // Add a test route to check if files exist
 app.get('/api/test-image/:filename', (req, res) => {
   const filename = req.params.filename;

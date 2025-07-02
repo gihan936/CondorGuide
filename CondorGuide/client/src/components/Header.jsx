@@ -38,17 +38,16 @@ const Header = () => {
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="main-navbar" />
-
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
 
+            {/* COMMON NAVS */}
             <Nav.Link href="/" className="nav-link-custom">Home</Nav.Link>
-            {user?.role !== 'admin' &&  user?.role !== 'superadmin' && (
-              <>
-            <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
-                   </>
-            )}
 
+            {/* Map visible to non-admins */}
+            {(user?.role !== 'admin' && user?.role !== 'superadmin') && (
+              <Nav.Link href="/map" className="nav-link-custom">College Map</Nav.Link>
+            )}
 
             {/* USER ONLY */}
             {user?.role === 'user' && (
@@ -96,9 +95,11 @@ const Header = () => {
               </Dropdown.Toggle>
               <Dropdown.Menu className={`dropdown-menu-${theme}`}>
                 {user && (
-                  <Dropdown.Header>{user.email}</Dropdown.Header>
+                  <>
+                    <Dropdown.Header>{user.email}</Dropdown.Header>
+                    <Dropdown.Item href="/profile">Profile</Dropdown.Item>
+                  </>
                 )}
-                {user && <Dropdown.Item href="/profile">Profile</Dropdown.Item>}
                 <Dropdown.Item onClick={toggleTheme}>
                   Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
                 </Dropdown.Item>
