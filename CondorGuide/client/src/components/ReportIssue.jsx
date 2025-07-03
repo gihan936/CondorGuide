@@ -42,29 +42,41 @@ const ReportIssue = () => {
   const [issues, setIssues] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: location }, replace: true });
     } else {
       fetchIssues();
+      fetchLocations();
     }
   }, [isAuthenticated]);
 
+  const fetchLocations = async () => {
+  try {
+    const baseURL = import.meta.env.VITE_API_BASE_URL;
+    const response = await axios.get(`${baseURL}/api/classrooms/locations`);
+    setLocations(response.data.data);
+  } catch (error) {
+    console.error("Error fetching locations:", error);
+  }
+};
+
   const fetchIssues = async () => {
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || "";
+      const baseURL = import.meta.env.VITE_API_BASE_URL;
       const token = localStorage.getItem("token");
 
-      const response = await axios.get(`${baseURL}/api/issues`, {
+      const response = await axios.get(`${baseURL}/api/issues/user`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      const userIssues = response.data.data.filter(
-        (issue) => issue.createdBy?._id === currentUser?._id
-      );
+      const userIssues = response.data.data;
+      // .filter(
+      //   (issue) => issue.createdBy?._id === currentUser?._id
+      // );
 
       setIssues(userIssues);
       setLoading(false);
@@ -127,7 +139,7 @@ const ReportIssue = () => {
       errs.subcategory = "Please select a subcategory.";
     if (!formData.priority) errs.priority = "Please select a priority level.";
     if (!formData.location.trim())
-      errs.location = "Location number is required.";
+      errs.location = "Location name is required.";
     return errs;
   };
 
@@ -263,51 +275,47 @@ const ReportIssue = () => {
         </Alert>
       ) : (
         filteredIssues.map((issue) => (
-          <Card key={issue._id} className={`mb-3 ${themeClasses} shadow`}>
+          <Card key={issue._id} className={`mb-2 ${themeClasses} shadow`}>
             <Card.Body>
-              <Card.Title>
-                {issue.title} <Badge bg="secondary">{issue.status}</Badge>
-              </Card.Title>
-              <Card.Subtitle className="mb-2 text-muted">
-                {issue.category} ➝ {issue.subcategory}
-              </Card.Subtitle>
-              <Card.Text>
-                <strong>Priority:</strong> {issue.priority}
-                <br />
-                <strong>Location:</strong> {issue.location}
-                <br />
-                <strong>Date:</strong>{" "}
-                {new Date(issue.createdAt).toLocaleString()}
-                <br />
-                {issue.image && (
-                  <div className="mt-2">
+              <Row>
+                {/* LEFT: Image */}
+                <Col md={4} className="d-flex align-items-left justify-content-center">
+                  {issue.image ? (
                     <img
                       src={getImageUrl(issue.image)}
                       alt="Issue"
                       style={{
-                        width: "auto",
-                        height: "200px",
+                        width: "100%",
+                        maxHeight: "300px",
                         borderRadius: "0.5rem",
-                        maxWidth: "300px",
-                        objectFit: "contain",
+                        objectFit: "cover",
                       }}
                       onError={(e) => {
-                        console.error(
-                          "Image failed to load:",
-                          getImageUrl(issue.image)
-                        );
+                        console.error("Image failed to load:", getImageUrl(issue.image));
                         e.target.style.display = "none";
                       }}
-                      onLoad={() => {
-                        console.log(
-                          "Image loaded successfully:",
-                          getImageUrl(issue.image)
-                        );
-                      }}
                     />
-                  </div>
-                )}
-              </Card.Text>
+                  ) : (
+                    <div className="text-muted">No image provided</div>
+                  )}
+                </Col>
+
+                {/* RIGHT: Text Content */}
+                <Col md={8}>
+                  <Card.Title>
+                    {issue.title} <Badge bg="secondary">{issue.status}</Badge>
+                  </Card.Title>
+                  <Card.Subtitle className="mb-2 text-muted">
+                    {issue.category} ➝ {issue.subcategory}
+                  </Card.Subtitle>
+                  <Card.Text>
+                    <strong>Priority:</strong> {issue.priority} <br />
+                    <strong>Location:</strong> {issue.location} <br />
+                    <strong>Date:</strong>{" "}
+                    {new Date(issue.createdAt).toLocaleString()}
+                  </Card.Text>
+                </Col>
+              </Row>
             </Card.Body>
           </Card>
         ))
@@ -444,15 +452,20 @@ const ReportIssue = () => {
                     </Col>
 
                     <Col md={6}>
-                      <Form.Label>Location Number</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter location number (e.g., 2A204)"
+                      <Form.Label>Location Name</Form.Label>
+                      <Form.Select
                         name="location"
                         value={formData.location}
                         onChange={handleInputChange}
                         isInvalid={!!formErrors.location}
-                      />
+                      >
+                        <option value="">Select Location</option>
+                        {locations.map((loc,i) => (
+                          <option key={i} value={loc.location_name}>
+                            {loc.location_name}
+                          </option>
+                        ))}
+                      </Form.Select>
                       <Form.Control.Feedback type="invalid">
                         {formErrors.location}
                       </Form.Control.Feedback>

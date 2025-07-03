@@ -35,8 +35,17 @@ const issueReportSchema = new mongoose.Schema({
   reportedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false, // now optional
+    required: false,
     default: null,
+  },
+  location: {
+    type: String
+  },
+  userEmail: {
+    type: String
+  },
+  userRole: {
+    type: String
   },
   comments: [
     {

@@ -130,4 +130,22 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get("/locations", async (req, res) => {
+  try {
+    const classrooms = await Classroom.find({}, "location_name");
+
+    res.json({
+      success: true,
+      data: classrooms,
+    });
+  } catch (error) {
+    console.error("Error fetching classroom locations:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch classroom locations",
+      error: error.message,
+    });
+  }
+});
+
 export default router;

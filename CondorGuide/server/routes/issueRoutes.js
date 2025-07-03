@@ -40,7 +40,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       priority,
       location,
       image: imagePath,
-      createdBy: userInfo.userId,
+      reportedBy: userInfo.userId,
       userEmail: userInfo.email,
       userRole: userInfo.role,
     });
@@ -105,7 +105,7 @@ router.get("/user", async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const issues = await IssueReport.find({ createdBy: decoded.userId }).sort({
+    const issues = await IssueReport.find({ reportedBy: decoded.userId }).sort({
       createdAt: -1,
     });
 
