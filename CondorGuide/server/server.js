@@ -10,6 +10,7 @@ import connectDB from './config/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
 // Get __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +50,7 @@ app.use('/api/classrooms', classroomRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/security-alerts', securityAlertRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

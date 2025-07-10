@@ -25,6 +25,7 @@ import ClassroomManagement from "./components/classroomManagement";
 import AlertManagement from "./components/AlertManagement";
 import UserManagement from "./components/UserManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SecurityAlert from './components/SecurityAlert';
 
 const AppWrapper = () => {
   const { theme } = useContext(ThemeContext);
@@ -69,14 +70,6 @@ const AppWrapper = () => {
             }
           />
           <Route
-            path="/alert-management"
-            element={
-              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-                <AlertManagement />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/user-management"
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
@@ -94,6 +87,11 @@ const AppWrapper = () => {
             }
           />
           <Route path="/classrooms" element={<ProtectedRoute allowedRoles={["user"]}> <AvailableClassrooms /> </ProtectedRoute>} />
+          <Route path="/security-alerts" element={
+  <ProtectedRoute allowedRoles={['user','admin','superadmin']}>
+    <SecurityAlert />
+  </ProtectedRoute>
+}/>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
         </Routes>

@@ -2,6 +2,8 @@ import express from "express";
 import IssueReport from "../models/IssueReport.js";
 import upload from "../config/multerConfig.js";
 import jwt from "jsonwebtoken";
+import { protect } from '../middleware/auth.js';
+
 
 const router = express.Router();
 
@@ -18,49 +20,16 @@ const getUserInfo = (req) => {
 };
 
 // Report a new issue
-router.post("/", upload.single("image"), async (req, res) => {
-  try {
-    const { title, description, category, subcategory, priority, location } =
-      req.body;
-    const userInfo = getUserInfo(req) || {};
-
-    let imagePath = null;
-    if (req.file) {
-      // Store just the relative path from uploads folder
-      imagePath = `uploads/${req.file.filename}`;
-      console.log("File uploaded:", req.file);
-      console.log("Image path stored:", imagePath);
-    }
-
-    const newIssue = new IssueReport({
-      title,
-      description,
-      category,
-      subcategory,
-      priority,
-      location,
-      image: imagePath,
-      reportedBy: userInfo.userId,
-      userEmail: userInfo.email,
-      userRole: userInfo.role,
-    });
-
-    const savedIssue = await newIssue.save();
-    console.log("Issue saved with image path:", savedIssue.image);
-
-    res.status(201).json({
-      success: true,
-      data: savedIssue,
-      message: "Issue reported successfully",
-    });
-  } catch (error) {
-    console.error("Error reporting issue:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to report issue",
-      error: error.message,
-    });
-  }
+router.post('/', async (req, res) => {
+  const { emergencyType, category = null } = req.body;
+  const alert = new SecurityAlert({
+    userId: req.user.userId,
+    username: req.user.email.split('@')[0],
+    emergencyType,
+    category,
+  });
+  await alert.save();
+  res.status(201).json(alert);
 });
 
 // Get all issues
@@ -164,5 +133,26 @@ router.put('/update', async (req, res) => {
     });
   }
 });
+
+router.patch('/:id/resolve', protect, async (req, res) => {
+  try {
+    const alert = await SecurityAlert.findById(req.params.id);
+
+    if (!alert) return res.status(404).json({ message: 'Alert not found' });
+
+    // Ensure the user resolving it is the one who created it
+    if (alert.userId !== req.user.userId)
+      return res.status(403).json({ message: 'Not authorized to resolve this alert' });
+
+    alert.resolved = true;
+    await alert.save();
+
+    res.json({ success: true, alert });
+  } catch (err) {
+    console.error('Resolve error:', err);
+    res.status(500).json({ message: 'Failed to resolve alert' });
+  }
+});
+
 
 export default router;
