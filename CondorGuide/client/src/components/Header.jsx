@@ -74,7 +74,7 @@ const Header = () => {
                 <Nav.Link href="/admin-management" className="nav-link-custom">Admin Management</Nav.Link>
                 <Nav.Link href="/issue-management" className="nav-link-custom">Issue Management</Nav.Link>
                 <Nav.Link href="/classroom-management" className="nav-link-custom">Classroom Management</Nav.Link>
-                <Nav.Link href="/alert-management" className="nav-link-custom">Security Alert Management</Nav.Link>
+                <Nav.Link href="/security-alerts" className="nav-link-custom">Security Alert Management</Nav.Link>
                 <Nav.Link href="/user-management" className="nav-link-custom">User Management</Nav.Link>
               </>
             )}
