@@ -77,13 +77,12 @@ const SecurityAlert = () => {
     return `${mins}m ${secs}s`;
   };
 
-  const filteredAlerts = alerts.filter(a => !a.resolved);
-  const totalPages = Math.ceil(filteredAlerts.length / alertsPerPage);
-  const paginatedAlerts = filteredAlerts.slice(
-    (currentPage - 1) * alertsPerPage,
-    currentPage * alertsPerPage
-  );
-
+const sortedAlerts = [...alerts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+const totalPages = Math.ceil(sortedAlerts.length / alertsPerPage);
+const paginatedAlerts = sortedAlerts.slice(
+  (currentPage - 1) * alertsPerPage,
+  currentPage * alertsPerPage
+);
   const hasActiveAlert = alerts.some(
     a => !a.resolved && a.userId === currentUser._id
   );
@@ -158,31 +157,32 @@ const SecurityAlert = () => {
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody>
-              {paginatedAlerts.map(alert => (
-                <tr key={alert._id} className={rowStyle(alert)}>
-                  <td>{alert.username}</td>
-                  <td>{alert.emergencyType === 'non-critical' ? `${alert.emergencyType} (${alert.category})` : alert.emergencyType}</td>
-                  <td>{!alert.isPicked ? getElapsedTime(alert.createdAt) : 'Picked'}</td>
-                  <td>
-                    <span className={`badge ${alert.isPicked ? 'bg-success' : 'bg-danger'}`}>
-                      {alert.isPicked ? `Picked by ${alert.pickedByName}` : 'Unclaimed'}
-                    </span>
-                  </td>
-                  <td>
-                    {!alert.isPicked && (
-                      <button
-                        className="btn btn-sm"
-                        style={{ backgroundColor: 'black', color: 'var(--bs-primary)', borderColor: 'black' }}
-                        onClick={() => pickAlert(alert._id)}
-                      >
-                        Pick Up
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+<tbody>
+  {paginatedAlerts.map(alert => (
+    <tr key={alert._id} className={rowStyle(alert)}>
+      <td>{alert.username}</td>
+      <td>{alert.emergencyType === 'non-critical' ? `${alert.emergencyType} (${alert.category})` : alert.emergencyType}</td>
+      <td>{!alert.isPicked ? getElapsedTime(alert.createdAt) : 'Picked'}</td>
+      <td>
+        <span className={`badge ${alert.isPicked ? 'bg-success' : 'bg-danger'}`}>
+          {alert.isPicked ? `Picked by ${alert.pickedByName}` : 'Unclaimed'}
+        </span>
+      </td>
+      <td>
+        {!alert.isPicked && (
+          <button
+            className="btn btn-sm"
+            style={{ backgroundColor: 'black', color: 'var(--bs-primary)', borderColor: 'black' }}
+            onClick={() => pickAlert(alert._id)}
+          >
+            Pick Up
+          </button>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
           </table>
 
           <nav className="mt-3">
