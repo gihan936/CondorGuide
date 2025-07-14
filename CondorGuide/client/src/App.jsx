@@ -26,6 +26,7 @@ import AlertManagement from "./components/AlertManagement";
 import UserManagement from "./components/UserManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SecurityAlert from './components/SecurityAlert';
+import Donation from './components/Donation';
 
 const AppWrapper = () => {
   const { theme } = useContext(ThemeContext);
@@ -90,6 +91,12 @@ const AppWrapper = () => {
           <Route path="/security-alerts" element={
   <ProtectedRoute allowedRoles={['user','admin','superadmin']}>
     <SecurityAlert />
+  </ProtectedRoute>
+
+} />
+          <Route path="/donate" element={
+  <ProtectedRoute allowedRoles={['user','admin','superadmin']}>
+    <Donation />
   </ProtectedRoute>
 }/>
           <Route path="/login" element={<LoginPage />} />

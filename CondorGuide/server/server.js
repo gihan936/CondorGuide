@@ -9,6 +9,7 @@ import securityAlertRoutes from './routes/securityAlertRoutes.js';
 import connectDB from './config/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import donationRoutes from './routes/donationRoutes.js';
 
 
 // Get __dirname equivalent for ES modules
@@ -50,6 +51,7 @@ app.use('/api/classrooms', classroomRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/security-alerts', securityAlertRoutes);
+app.use('/api/donations', donationRoutes);
 
 
 // Error handling middleware
