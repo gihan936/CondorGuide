@@ -179,17 +179,21 @@ const Map = () => {
     let minDistance = Infinity;
 
     Object.values(roomData).forEach(room => {
-      // Ensure room has a location_type property and coordinates
-      if (room.location_type && room.center_coordinates) {
-        if (room.location_type.toLowerCase() === type.toLowerCase()) {
+      // Ensure room has coordinates
+      if (room.center_coordinates) {
+        // Check both location_type and location_name for matches
+        const typeMatch = room.location_type && room.location_type.toLowerCase() === type.toLowerCase();
+        const nameMatch = room.location_name && room.location_name.toLowerCase().includes(type.toLowerCase());
+        
+        if (typeMatch || nameMatch) {
           const distance = calculateDistance(referenceCoords, room.center_coordinates);
           if (distance < minDistance) {
             minDistance = distance;
             nearestRoom = {
               key: `${room.center_coordinates[0]},${room.center_coordinates[1]}`,
               data: room,
-              matchType: 'Type',
-              matchScore: 100,
+              matchType: typeMatch ? 'Type' : 'Name',
+              matchScore: typeMatch ? 100 : 90,
               displayName: room.location_name || room.location_numk || room.room_number || 'Unknown',
               displayNumber: room.location_numk || room.room_number || 'N/A',
               coordinates: room.center_coordinates
@@ -302,8 +306,8 @@ const Map = () => {
 
     let results = [];
 
-    // Check if the search term is a known location type
-    if (knownLocationTypes.includes(searchTermLower)) {
+    // Check if the search term is a known location type or specific location name
+    if (knownLocationTypes.includes(searchTermLower) || searchTermLower.includes('staircase') || searchTermLower.includes('elevator')) {
       const referenceCoords = isStart && startRoom ? startRoom.coordinates : userLocation;
       if (referenceCoords) {
         const nearestLocation = findNearestLocationOfType(searchTermLower, referenceCoords);
@@ -313,12 +317,15 @@ const Map = () => {
       } else {
         // If no reference coords, just list all of that type (or a few)
         Object.values(roomData).forEach(room => {
-          if (room.location_type && room.location_type.toLowerCase() === searchTermLower) {
+          const roomTypeMatch = room.location_type && room.location_type.toLowerCase() === searchTermLower;
+          const roomNameMatch = room.location_name && room.location_name.toLowerCase().includes(searchTermLower);
+          
+          if (roomTypeMatch || roomNameMatch) {
             results.push({
               key: `${room.center_coordinates[0]},${room.center_coordinates[1]}`,
               data: room,
-              matchType: 'Type',
-              matchScore: 100,
+              matchType: roomTypeMatch ? 'Type' : 'Name',
+              matchScore: roomTypeMatch ? 100 : 90,
               displayName: room.location_name || room.location_numk || room.room_number || 'Unknown',
               displayNumber: room.location_numk || room.room_number || 'N/A',
               coordinates: room.center_coordinates
@@ -597,6 +604,7 @@ const Map = () => {
         segment.geometry.coordinates.forEach((coord) => {
           const distance = calculateDistance(targetPoint, coord);
           if (distance < minDistance) {
+            // Use less strict collision detection for hallway connections
             if (!doesLineIntersectRooms(targetPoint, coord, roomPolygons, ignoredPolygon)) {
               minDistance = distance;
               closestClearPoint = {
@@ -613,6 +621,31 @@ const Map = () => {
     return closestClearPoint;
   };
 
+  // Relaxed version that finds closest hallway point with minimal constraints
+  const findClosestHallwayPointRelaxed = (targetPoint, hallwaySegments, roomPolygons, maxDistance = 50) => {
+    console.log('Finding closest hallway point with relaxed constraints for:', targetPoint);
+    let closestPoint = null;
+    let minDistance = Infinity;
+
+    hallwaySegments.forEach((segment) => {
+      if (segment.geometry && segment.geometry.coordinates) {
+        segment.geometry.coordinates.forEach((coord) => {
+          const distance = calculateDistance(targetPoint, coord);
+          if (distance < minDistance && distance < maxDistance) {
+            minDistance = distance;
+            closestPoint = {
+              point: coord,
+              distance: distance,
+            };
+          }
+        });
+      }
+    });
+
+    console.log('Closest relaxed point found:', closestPoint);
+    return closestPoint;
+  };
+
   // Build a graph using intersection points as nodes
   const buildIntersectionGraph = (intersections, hallwaySegments) => {
     const nodes = intersections.map((intersection, index) => ({
@@ -621,6 +654,8 @@ const Map = () => {
       intersection: intersection,
       connections: []
     }));
+    
+    console.log(`Building intersection graph with ${nodes.length} nodes`);
     
     // Add connections between intersections that are on connected segments
     for (let i = 0; i < nodes.length; i++) {
@@ -640,41 +675,130 @@ const Map = () => {
           const distance = calculateDistance(node1.coordinates, node2.coordinates);
           node1.connections.push({ nodeId: j, distance: distance });
           node2.connections.push({ nodeId: i, distance: distance });
+          console.log(`Connected nodes ${i} and ${j} (distance: ${distance.toFixed(2)}m)`);
         }
       }
     }
+
+    // Also add connections between nearby intersections (within reasonable distance)
+    const maxConnectionDistance = 20; // 20 meters
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const node1 = nodes[i];
+        const node2 = nodes[j];
+        const distance = calculateDistance(node1.coordinates, node2.coordinates);
+        
+        // If nodes are close and not already connected, try to connect them
+        if (distance < maxConnectionDistance) {
+          const alreadyConnected = node1.connections.some(conn => conn.nodeId === j);
+          if (!alreadyConnected) {
+            // Check if there's a clear path between these intersections
+            const clearPath = isPathClearBetweenIntersections(node1.coordinates, node2.coordinates, hallwaySegments);
+            if (clearPath) {
+              node1.connections.push({ nodeId: j, distance: distance });
+              node2.connections.push({ nodeId: i, distance: distance });
+              console.log(`Added proximity connection between nodes ${i} and ${j} (distance: ${distance.toFixed(2)}m)`);
+            }
+          }
+        }
+      }
+    }
+    
+    // Log final connection counts
+    nodes.forEach((node, index) => {
+      console.log(`Node ${index} has ${node.connections.length} connections`);
+    });
     
     return { nodes, intersections };
   };
 
-  // Simple shortest path through intersection nodes
+  // Check if there's a clear path between two intersection points
+  const isPathClearBetweenIntersections = (point1, point2, hallwaySegments) => {
+    // Simple check - see if the direct line between intersections runs along any hallway segment
+    for (const segment of hallwaySegments) {
+      if (segment.geometry && segment.geometry.coordinates) {
+        const coords = segment.geometry.coordinates;
+        for (let i = 0; i < coords.length - 1; i++) {
+          if (isPointNearLineSegment(point1, coords[i], coords[i + 1], 3) &&
+              isPointNearLineSegment(point2, coords[i], coords[i + 1], 3)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  // Check if a point is near a line segment
+  const isPointNearLineSegment = (point, lineStart, lineEnd, threshold) => {
+    const distance = distanceFromPointToLineSegment(point, lineStart, lineEnd);
+    return distance < threshold;
+  };
+
+  // Enhanced shortest path through intersection nodes using Dijkstra's algorithm
   const findShortestIntersectionPath = (startNode, endNode, graph) => {
-    const queue = [{ node: startNode, path: [startNode], distance: 0 }];
-    const visited = new Set([startNode.id]);
+    console.log(`Finding path from node ${startNode.id} to node ${endNode.id}`);
     
-    while (queue.length > 0) {
-      // Sort by distance (simple Dijkstra-like approach)
-      queue.sort((a, b) => a.distance - b.distance);
-      const current = queue.shift();
-      
-      if (current.node.id === endNode.id) {
-        return current.path;
+    if (startNode.id === endNode.id) {
+      console.log('Start and end nodes are the same');
+      return [startNode];
+    }
+    
+    // Initialize distances
+    const distances = {};
+    const previous = {};
+    const unvisited = new Set();
+    
+    graph.nodes.forEach(node => {
+      distances[node.id] = node.id === startNode.id ? 0 : Infinity;
+      previous[node.id] = null;
+      unvisited.add(node.id);
+    });
+    
+    while (unvisited.size > 0) {
+      // Find unvisited node with minimum distance
+      let currentNodeId = null;
+      let minDistance = Infinity;
+      for (const nodeId of unvisited) {
+        if (distances[nodeId] < minDistance) {
+          minDistance = distances[nodeId];
+          currentNodeId = nodeId;
+        }
       }
       
-      current.node.connections.forEach(connection => {
-        if (!visited.has(connection.nodeId)) {
-          visited.add(connection.nodeId);
-          const nextNode = graph.nodes[connection.nodeId];
-          queue.push({
-            node: nextNode,
-            path: [...current.path, nextNode],
-            distance: current.distance + connection.distance
-          });
+      if (currentNodeId === null || minDistance === Infinity) {
+        console.log('No path found to remaining nodes');
+        break;
+      }
+      
+      unvisited.delete(currentNodeId);
+      
+      // If we reached the end node, reconstruct the path
+      if (currentNodeId === endNode.id) {
+        const path = [];
+        let current = endNode.id;
+        while (current !== null) {
+          path.unshift(graph.nodes[current]);
+          current = previous[current];
+        }
+        console.log(`Found path with ${path.length} nodes:`, path.map(n => n.id));
+        return path;
+      }
+      
+      // Update distances to neighbors
+      const currentNode = graph.nodes[currentNodeId];
+      currentNode.connections.forEach(connection => {
+        if (unvisited.has(connection.nodeId)) {
+          const tentativeDistance = distances[currentNodeId] + connection.distance;
+          if (tentativeDistance < distances[connection.nodeId]) {
+            distances[connection.nodeId] = tentativeDistance;
+            previous[connection.nodeId] = currentNodeId;
+          }
         }
       });
     }
     
-    // No path found, return direct connection
+    console.log('No path found, returning direct connection');
     return [startNode, endNode];
   };
 
@@ -770,6 +894,91 @@ const Map = () => {
     return false;
   };
 
+  // Enhanced collision detection that checks multiple points along the path
+  const doesPathIntersectRooms = (startPoint, endPoint, roomPolygons, ignoredPolygon = null) => {
+    // Check the direct line first
+    if (doesLineIntersectRooms(startPoint, endPoint, roomPolygons, ignoredPolygon)) {
+      return true;
+    }
+
+    // Check multiple intermediate points along the path for better accuracy
+    const numChecks = 15;
+    for (let i = 1; i < numChecks; i++) {
+      const t = i / numChecks;
+      const intermediatePoint = [
+        startPoint[0] + t * (endPoint[0] - startPoint[0]),
+        startPoint[1] + t * (endPoint[1] - startPoint[1])
+      ];
+      
+      // Check if any intermediate point is inside a room or too close to room boundaries
+      for (const roomPolygon of roomPolygons) {
+        if (ignoredPolygon && JSON.stringify(roomPolygon) === JSON.stringify(ignoredPolygon)) {
+          continue;
+        }
+        if (isPointInPolygon(intermediatePoint, roomPolygon)) {
+          console.log(`Intermediate point ${i} is inside a room polygon.`);
+          return true;
+        }
+        
+        // Check if point is too close to room boundaries (buffer zone)
+        if (isPointTooCloseToRoom(intermediatePoint, roomPolygon, 0.5)) {
+          console.log(`Intermediate point ${i} is too close to room boundary.`);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
+  // Check if a point is too close to a room boundary
+  const isPointTooCloseToRoom = (point, roomPolygon, bufferDistance) => {
+    const polygonCoords = roomPolygon.coordinates[0];
+    
+    for (let i = 0, j = polygonCoords.length - 1; i < polygonCoords.length; j = i++) {
+      const edgeStart = polygonCoords[j];
+      const edgeEnd = polygonCoords[i];
+      const distanceToEdge = distanceFromPointToLineSegment(point, edgeStart, edgeEnd);
+      
+      if (distanceToEdge < bufferDistance) {
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
+  // Calculate distance from a point to a line segment
+  const distanceFromPointToLineSegment = (point, lineStart, lineEnd) => {
+    const A = point[0] - lineStart[0];
+    const B = point[1] - lineStart[1];
+    const C = lineEnd[0] - lineStart[0];
+    const D = lineEnd[1] - lineStart[1];
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+    if (lenSq !== 0) {
+      param = dot / lenSq;
+    }
+
+    let xx, yy;
+    if (param < 0) {
+      xx = lineStart[0];
+      yy = lineStart[1];
+    } else if (param > 1) {
+      xx = lineEnd[0];
+      yy = lineEnd[1];
+    } else {
+      xx = lineStart[0] + param * C;
+      yy = lineStart[1] + param * D;
+    }
+
+    const dx = point[0] - xx;
+    const dy = point[1] - yy;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
   // Robust room collision detection using line-polygon intersection
   const doesLineIntersectRooms = (startPoint, endPoint, roomPolygons, ignoredPolygon = null) => {
     for (const roomPolygon of roomPolygons) {
@@ -777,6 +986,12 @@ const Map = () => {
         continue;
       }
       const polygonCoords = roomPolygon.coordinates[0]; // Get exterior ring
+
+      // First check if either endpoint is inside the polygon
+      if (isPointInPolygon(startPoint, roomPolygon) || isPointInPolygon(endPoint, roomPolygon)) {
+        console.log(`Route endpoint is inside a room polygon.`);
+        return true;
+      }
 
       // Check if the line segment intersects with any of the polygon's edges
       for (let i = 0, j = polygonCoords.length - 1; i < polygonCoords.length; j = i++) {
@@ -808,6 +1023,8 @@ const Map = () => {
   const createIntersectionBasedRoute = (startCoords, endCoords, hallwaySegments, startRoom, endRoom) => {
     console.log('--- Starting Intersection Based Route Creation ---');
     console.log('Start Coords:', startCoords, 'End Coords:', endCoords);
+    console.log('Start Room:', startRoom);
+    console.log('End Room:', endRoom);
 
     const roomPolygons = getRoomPolygons();
     const intersections = findLineIntersections(hallwaySegments);
@@ -817,12 +1034,40 @@ const Map = () => {
       return [startCoords, endCoords];
     }
 
-    const startConnection = findClosestHallwayPoint(startCoords, hallwaySegments, roomPolygons, startRoom.data.geometry);
-    const endConnection = findClosestHallwayPoint(endCoords, hallwaySegments, roomPolygons, endRoom.data.geometry);
+    // Try to find hallway connections, but be more lenient for certain location types
+    const startConnection = findClosestHallwayPoint(startCoords, hallwaySegments, roomPolygons, startRoom?.data?.geometry);
+    const endConnection = findClosestHallwayPoint(endCoords, hallwaySegments, roomPolygons, endRoom?.data?.geometry);
+
+    console.log('Start connection:', startConnection);
+    console.log('End connection:', endConnection);
 
     if (!startConnection || !endConnection) {
-      console.log('Could not find a clear connection to the hallway network. Returning simple route.');
-      return [startCoords, endCoords];
+      console.log('Could not find a clear connection to the hallway network.');
+      
+      // Try alternative approach - find connections with relaxed constraints
+      const relaxedStartConnection = findClosestHallwayPointRelaxed(startCoords, hallwaySegments, roomPolygons);
+      const relaxedEndConnection = findClosestHallwayPointRelaxed(endCoords, hallwaySegments, roomPolygons);
+      
+      console.log('Relaxed start connection:', relaxedStartConnection);
+      console.log('Relaxed end connection:', relaxedEndConnection);
+      
+      if (!relaxedStartConnection || !relaxedEndConnection) {
+        console.log('Even relaxed connections failed. Returning simple route.');
+        return [startCoords, endCoords];
+      }
+      
+      // Use relaxed connections
+      const intersectionGraph = buildIntersectionGraph(intersections, hallwaySegments);
+      const intersectionPath = findPathThroughIntersections(relaxedStartConnection, relaxedEndConnection, intersectionGraph);
+      
+      if (intersectionPath.length === 0) {
+        console.log('No path found through intersections with relaxed connections. Returning simple route.');
+        return [startCoords, endCoords];
+      }
+      
+      const route = [startCoords, relaxedStartConnection.point, ...intersectionPath, relaxedEndConnection.point, endCoords];
+      console.log('Route created with relaxed connections:', route);
+      return route;
     }
 
     const intersectionGraph = buildIntersectionGraph(intersections, hallwaySegments);
@@ -880,7 +1125,7 @@ const Map = () => {
   // Recursive route validation and rerouting
   const validateAndRerouteAroundRooms = (route, intersectionGraph, roomPolygons, depth = 0) => {
     console.log(`--- Validating route, depth: ${depth} ---`);
-    if (depth > 10) {
+    if (depth > 5) {
       console.error('Max recursion depth reached in route validation.');
       return route;
     }
@@ -892,7 +1137,15 @@ const Map = () => {
       const startNode = route[i];
       const endNode = route[i + 1];
 
-      if (doesLineIntersectRooms(startNode, endNode, roomPolygons)) {
+      // Use basic collision detection for most segments, enhanced only for long segments
+      const segmentDistance = calculateDistance(startNode, endNode);
+      const useEnhancedCheck = segmentDistance > 10; // Only use enhanced check for segments longer than 10 meters
+      
+      const hasCollision = useEnhancedCheck ? 
+        doesPathIntersectRooms(startNode, endNode, roomPolygons) :
+        doesLineIntersectRooms(startNode, endNode, roomPolygons);
+
+      if (hasCollision) {
         hasCollisions = true;
         console.log(`Collision detected between:', startNode, 'and', endNode`);
 
@@ -917,7 +1170,7 @@ const Map = () => {
       return acc;
     }, []);
 
-    if (hasCollisions) {
+    if (hasCollisions && depth < 3) {
       console.log('Rerouting complete, running final validation...');
       return validateAndRerouteAroundRooms(cleanedRoute, intersectionGraph, roomPolygons, depth + 1);
     }
