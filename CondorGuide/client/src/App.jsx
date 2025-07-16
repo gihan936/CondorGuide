@@ -23,6 +23,7 @@ import UserManagement from "./components/UserManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SecurityAlert from "./components/SecurityAlert";
 import Donation from "./components/Donation";
+import Security from "./components/SecuritySection";
 
 const AppWrapper = () => {
   const { theme } = useContext(ThemeContext);
@@ -109,6 +110,14 @@ const AppWrapper = () => {
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/security"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Security />
               </ProtectedRoute>
             }
           />
