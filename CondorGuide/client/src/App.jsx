@@ -1,10 +1,5 @@
 import React, { useContext } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
@@ -23,10 +18,11 @@ import AdminManagement from "./components/AdminManagement";
 import IssueManagement from "./components/IssueManagement";
 import ClassroomManagement from "./components/classroomManagement";
 import AlertManagement from "./components/AlertManagement";
+import ProfilePage from "./components/ProfilePage";
 import UserManagement from "./components/UserManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
-import SecurityAlert from './components/SecurityAlert';
-import Donation from './components/Donation';
+import SecurityAlert from "./components/SecurityAlert";
+import Donation from "./components/Donation";
 
 const AppWrapper = () => {
   const { theme } = useContext(ThemeContext);
@@ -35,13 +31,7 @@ const AppWrapper = () => {
   const hideHeaderFooter = ["/login", "/signup"].includes(location.pathname);
 
   return (
-    <div
-      className={
-        theme === "dark"
-          ? "bg-dark text-light min-vh-100 d-flex flex-column"
-          : "bg-light text-dark min-vh-100 d-flex flex-column"
-      }
-    >
+    <div className={theme === "dark" ? "bg-dark text-light min-vh-100 d-flex flex-column" : "bg-light text-dark min-vh-100 d-flex flex-column"}>
       {!hideHeaderFooter && <Header />}
       <main className="flex-grow-1">
         <Routes>
@@ -87,20 +77,41 @@ const AppWrapper = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/classrooms" element={<ProtectedRoute allowedRoles={["user"]}> <AvailableClassrooms /> </ProtectedRoute>} />
-          <Route path="/security-alerts" element={
-  <ProtectedRoute allowedRoles={['user','admin','superadmin']}>
-    <SecurityAlert />
-  </ProtectedRoute>
-
-} />
-          <Route path="/donate" element={
-  <ProtectedRoute allowedRoles={['user','admin','superadmin']}>
-    <Donation />
-  </ProtectedRoute>
-}/>
+          <Route
+            path="/classrooms"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                {" "}
+                <AvailableClassrooms />{" "}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/security-alerts"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <SecurityAlert />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/donate"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Donation />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
       {!hideHeaderFooter && <Footer />}

@@ -15,6 +15,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  id: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  userType: {
+    type: String,
+    enum: ['student', 'faculty', 'staff'],
+    default: 'student'
+  },
+  department: {
+    type: String,
+  },
   role: {
     type: String,
     enum: ['user', 'admin', 'superadmin'],
