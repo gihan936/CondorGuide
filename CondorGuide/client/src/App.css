@@ -122,6 +122,7 @@
 /* Header page */
 .nav-link-custom {
   color: #000;
+  font-size: 1.3rem;
   font-weight: 500;
   transition: color 0.3s ease, border-bottom 0.3s ease;
   position: relative;
