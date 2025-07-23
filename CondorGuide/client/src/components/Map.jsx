@@ -106,9 +106,7 @@ const Map = () => {
     
     // Special debugging for problematic rooms
     if (['2a101', '2a103', '2a105'].includes(searchTermLower)) {
-      console.log(`🔍 DEBUGGING ROOM ${searchTermLower.toUpperCase()}:`);
-      console.log('Total room entries in database:', Object.keys(roomDataObj).length);
-      console.log('Sample room keys:', Object.keys(roomDataObj).slice(0, 5));
+      // Debug logging removed for performance
     }
     
     Object.entries(roomDataObj).forEach(([key, roomData]) => {
@@ -155,8 +153,7 @@ const Map = () => {
         
         // Special debugging for problematic rooms
         if (['2a101', '2a103', '2a105'].includes(searchTermLower)) {
-          console.log(`📍 Found ${searchTermLower.toUpperCase()} at coordinates:`, coordinates);
-          console.log('Room data:', roomData);
+          // Debug logging removed for performance
         }
         
         results.push(result);
@@ -288,14 +285,12 @@ const Map = () => {
             });
           }
         } catch (err) {
-          console.log(`Could not fetch room dataset ${datasetId}:`, err);
         }
       }
       
       // Load hallway and intersection data for all floors
       let allIntersectionPoints = [];
       
-      console.log('Floor datasets configuration:', floorDatasets);
       
       for (const [floor, datasets] of Object.entries(floorDatasets)) {
         
@@ -337,7 +332,6 @@ const Map = () => {
               });
             }
           } catch (err) {
-            console.log(`Could not fetch hallway dataset ${datasetId} for floor ${floor} ${wingKey}:`, err);
           }
         }
         
@@ -375,12 +369,10 @@ const Map = () => {
                     connections: [] // Will be auto-generated
                   });
                 } else {
-                  console.warn('Invalid intersection feature:', feature);
                 }
               });
             }
           } catch (err) {
-            console.log(`Could not fetch intersection dataset ${datasetId} for floor ${floor} ${wingKey}:`, err);
           }
         }
       }
@@ -405,16 +397,6 @@ const Map = () => {
           floorIntersections[point.floor].push(point);
         });
         
-        console.log('=== FLOOR INTERSECTION BREAKDOWN ===');
-        Object.entries(floorIntersections).forEach(([floor, points]) => {
-          console.log(`Floor ${floor}: ${points.length} intersections`);
-          if (floor == 3) {
-            console.log('Floor 3 intersection details:');
-            points.forEach(point => {
-              console.log(`  - ${point.id}: ${point.type} (wing: ${point.wing})`);
-            });
-          }
-        });
         
         // Build connections within each floor
         for (const [floor, points] of Object.entries(floorIntersections)) {
@@ -432,17 +414,9 @@ const Map = () => {
             return roomEntry && roomEntry.floor == floor;
           });
           
-          console.log(`Floor ${floor} hallway segments: ${floorHallwaySegments.length}, room polygons: ${floorRoomPolygons.length}`);
           
           floorIntersections[floor] = buildAutoConnections(points, floorRoomPolygons, floorHallwaySegments);
           
-          // Debug connection results for floor 3
-          if (floor == 3) {
-            console.log(`Floor 3 connections built:`);
-            floorIntersections[floor].forEach(point => {
-              console.log(`  - ${point.id}: ${point.connections.length} connections`);
-            });
-          }
         }
         
         // Combine all floor intersections back
@@ -456,58 +430,19 @@ const Map = () => {
       setHallwayData(allHallwayData);
       setIntersectionData(allIntersectionPoints);
       
-      console.log('=== MULTI-FLOOR DATA LOADED ===');
-      console.log('Total room entries:', Object.keys(allRoomData).length);
-      console.log('Hallway networks:', Object.keys(allHallwayData));
-      console.log('Total intersection points:', allIntersectionPoints.length);
       
       // Debug hallway data for floors 1 and 3
-      console.log('=== HALLWAY DATA DEBUG ===');
-      Object.entries(allHallwayData).forEach(([hallwayKey, segments]) => {
-        const floor = hallwayKey.split('-')[0];
-        if (floor === '1' || floor === '3') {
-          console.log(`Floor ${floor} hallway: ${hallwayKey} with ${segments.length} segments`);
-          if (segments.length > 0) {
-            console.log(`  Sample segment:`, segments[0].geometry.coordinates.length, 'coordinates');
-          }
-        }
-      });
-      
       // Log intersections by floor
       const floorCounts = {};
       allIntersectionPoints.forEach(point => {
         floorCounts[point.floor] = (floorCounts[point.floor] || 0) + 1;
       });
-      console.log('Intersections by floor:', floorCounts);
       
-      // Debug connection counts per floor
-      console.log('=== FINAL INTERSECTION CONNECTION SUMMARY ===');
-      Object.entries(floorCounts).forEach(([floor, count]) => {
-        const floorIntersections = allIntersectionPoints.filter(p => p.floor == floor);
-        const totalConnections = floorIntersections.reduce((sum, p) => sum + p.connections.length, 0);
-        console.log(`Floor ${floor}: ${count} intersections, ${totalConnections} total connections`);
-        
-        if (floor == 3) {
-          console.log('Floor 3 detailed breakdown:');
-          const aWingPoints = floorIntersections.filter(p => p.wing?.toLowerCase().includes('a'));
-          const bWingPoints = floorIntersections.filter(p => p.wing?.toLowerCase().includes('b'));
-          console.log(`  A-wing: ${aWingPoints.length} intersections`);
-          console.log(`  B-wing: ${bWingPoints.length} intersections`);
-          
-          // Show connection details for problematic intersections
-          floorIntersections.forEach(point => {
-            if (point.connections.length === 0) {
-              console.log(`  ❌ ${point.id} has NO connections!`);
-            }
-          });
-        }
-      });
       
       setDebugInfo(`Multi-floor data loaded: ${Object.keys(allRoomData).length} rooms, ${allIntersectionPoints.length} intersections across ${Object.keys(floorCounts).length} floors`);
       setIsDataReady(true);
       
     } catch (error) {
-      console.error('Error fetching data:', error);
       setDebugInfo('Error loading data');
       setIsDataReady(true);
     }
@@ -658,7 +593,6 @@ const Map = () => {
     const poorlyConnectedTurns = corridorTurnPoints.filter(p => p.connections.length < 2);
     
     if (poorlyConnectedTurns.length > 0) {
-      console.log(`🔧 Enhancing connections for ${poorlyConnectedTurns.length} poorly connected corridor turns...`);
       
       poorlyConnectedTurns.forEach((point, idx) => {
         const pointIndex = intersectionPoints.indexOf(point);
@@ -698,7 +632,6 @@ const Map = () => {
               pathType: 'enhanced-corridor-connection'
             });
             
-            console.log(`🔗 Enhanced: ${point.id} ↔ ${nearbyItem.point.id} (${nearbyItem.distance.toFixed(1)}m)`);
           }
         });
       });
@@ -709,7 +642,6 @@ const Map = () => {
     const bWingPoints = intersectionPoints.filter(p => p.wing && p.wing.toLowerCase().includes('b'));
     
     if (aWingPoints.length > 0 && bWingPoints.length > 0) {
-      console.log(`🔧 Enhancing cross-wing connectivity: ${aWingPoints.length} A-wing, ${bWingPoints.length} B-wing points`);
       
       // Find the closest junction/stair/elevator points between wings
       const crossWingCandidateTypes = ['corridor_junction', 'staircase_entrance', 'elevator_entrance'];
@@ -728,7 +660,6 @@ const Map = () => {
       });
       
       if (crossWingConnections === 0) {
-        console.log('🚨 No cross-wing connections found, creating emergency connections...');
         
         // Create emergency connections between closest candidates
         let minDistance = Infinity;
@@ -766,17 +697,14 @@ const Map = () => {
             pathType: 'emergency-cross-wing'
           });
           
-          console.log(`🆘 Emergency cross-wing connection: ${bestA.id} (${bestA.wing}) ↔ ${bestB.id} (${bestB.wing}) (${minDistance.toFixed(1)}m)`);
         }
       } else {
-        console.log(`✅ Found ${crossWingConnections / 2} existing cross-wing connections`);
       }
     }
     
     // Fallback 3: If no connections were made at all, create basic distance-based connections
     const totalConnections = intersectionPoints.reduce((sum, point) => sum + point.connections.length, 0);
     if (totalConnections === 0) {
-      console.log('No connections made, falling back to distance-based connections...');
       
       // Create connections based purely on distance without room polygon checking
       for (let i = 0; i < intersectionPoints.length; i++) {
@@ -809,7 +737,6 @@ const Map = () => {
     
     // Log connection summary
     intersectionPoints.forEach(point => {
-      console.log(`${point.id} (${point.type}): ${point.connections.length} connections`);
     });
     
     return intersectionPoints;
@@ -817,7 +744,6 @@ const Map = () => {
 
   // NEW: Add inter-floor connections for stairs and elevators
   const addInterFloorConnections = (intersectionPoints) => {
-    console.log('=== ADDING INTER-FLOOR CONNECTIONS ===');
     
     // Group intersections by location_id (stairs/elevators with same location_id are connected vertically)
     const locationGroups = {};
@@ -833,8 +759,6 @@ const Map = () => {
     // Add connections between floors for each location group
     Object.entries(locationGroups).forEach(([locationId, points]) => {
       if (points.length > 1) {
-        console.log(`Connecting ${points.length} points for location ${locationId}:`);
-        points.forEach(point => console.log(`  - Floor ${point.floor}: ${point.id} (${point.type})`));
         
         // Connect each point to all other points in different floors
         for (let i = 0; i < points.length; i++) {
@@ -862,7 +786,6 @@ const Map = () => {
                 transport_type: point2.type === 'staircase_entrance' ? 'stairs' : 'elevator'
               });
               
-              console.log(`  Connected ${point1.id} (floor ${point1.floor}) ↔ ${point2.id} (floor ${point2.floor}) via ${point1.type}`);
             }
           }
         }
@@ -873,7 +796,6 @@ const Map = () => {
       .filter(group => group.length > 1)
       .reduce((sum, group) => sum + (group.length * (group.length - 1)), 0);
       
-    console.log(`Added ${totalInterFloorConnections} inter-floor connections across ${Object.keys(locationGroups).length} vertical locations`);
     
     return intersectionPoints;
   };
@@ -989,7 +911,6 @@ const Map = () => {
           waypoints.push(adjustedWaypoint);
         } else {
           // If adjustment is too large, skip this waypoint
-          console.log(`Waypoint adjustment too large (${distanceFromOriginal.toFixed(1)}m), skipping`);
         }
       }
     }
@@ -1168,9 +1089,6 @@ const Map = () => {
 
   // Select room for navigation
   const selectRoomForNavigation = (roomResult, isStart = true) => {
-    console.log('=== ROOM SELECTION DEBUG ===');
-    console.log('Selected room result:', roomResult);
-    console.log('Room data:', roomResult.data);
     
     const coordinates = getRoomCoordinates(roomResult);
     
@@ -1187,7 +1105,6 @@ const Map = () => {
       name: roomResult.displayName || roomResult.data?.room_name || roomResult.data?.name
     };
     
-    console.log('Final room info for navigation:', roomInfo);
 
     if (isStart) {
       setStartRoom(roomInfo);
@@ -1197,7 +1114,6 @@ const Map = () => {
       if (roomInfo.floor === currentFloor) {
         highlightRoom(coordinates, 'start');
       } else {
-        console.log(`Start room is on floor ${roomInfo.floor}, current floor is ${currentFloor}. Not highlighting.`);
       }
     } else {
       setEndRoom(roomInfo);
@@ -1207,11 +1123,9 @@ const Map = () => {
       if (roomInfo.floor === currentFloor) {
         highlightRoom(coordinates, 'end');
       } else {
-        console.log(`End room is on floor ${roomInfo.floor}, current floor is ${currentFloor}. Not highlighting.`);
       }
     }
 
-    console.log(`Selected ${isStart ? 'start' : 'end'} room:`, roomInfo);
   };
 
   // Highlight selected room on map
@@ -1273,8 +1187,6 @@ const Map = () => {
     candidateDistances.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
     
     if (!closestIntersection) {
-      console.log(`❌ NO INTERSECTION FOUND within ${maxDistance}m of [${coordinates[0].toFixed(6)}, ${coordinates[1].toFixed(6)}]`);
-      console.log('Closest intersections:', candidateDistances.slice(0, 5));
       
       // Try with expanded radius for isolated rooms like 2A101, 2A103, 2A105
       const expandedMaxDistance = 100; // Double the search radius
@@ -1292,10 +1204,7 @@ const Map = () => {
       }
       
       if (closestIntersection) {
-        console.log(`✅ EXPANDED SEARCH: Found intersection ${closestIntersection.id} at ${minDistance.toFixed(1)}m (beyond normal ${maxDistance}m radius)`);
       } else {
-        console.log(`❌ EXPANDED SEARCH ALSO FAILED: No intersection found within ${expandedMaxDistance}m`);
-        console.log('Closest intersections from expanded search:', candidateDistances.slice(0, 10));
         
         // For rooms 2A101, 2A103, 2A105, try an even larger radius as last resort
         const veryExpandedMaxDistance = 200; // Even larger search radius
@@ -1310,13 +1219,10 @@ const Map = () => {
         
         if (closestIntersection) {
           minDistance = veryExpandedMinDistance;
-          console.log(`🔧 EMERGENCY SEARCH: Found intersection ${closestIntersection.id} at ${minDistance.toFixed(1)}m (within ${veryExpandedMaxDistance}m emergency radius)`);
         } else {
-          console.log(`💀 ALL SEARCHES FAILED: No intersection found within ${veryExpandedMaxDistance}m emergency radius`);
         }
       }
     } else {
-      console.log(`✅ Closest intersection to [${coordinates[0].toFixed(6)}, ${coordinates[1].toFixed(6)}]: ${closestIntersection?.id} (${minDistance.toFixed(1)}m)`);
     }
     
     return closestIntersection;
@@ -1324,7 +1230,6 @@ const Map = () => {
 
   // NEW: A* pathfinding algorithm with detailed debugging
   const findShortestIntersectionPath = (startIntersection, endIntersection, intersections) => {
-    console.log(`🔍 A* PATHFINDING: ${startIntersection.id} (${startIntersection.wing}) → ${endIntersection.id} (${endIntersection.wing})`);
     
     if (startIntersection.id === endIntersection.id) {
       return [startIntersection];
@@ -1333,23 +1238,18 @@ const Map = () => {
     // Check if this is cross-wing pathfinding
     const isCrossWing = startIntersection.wing !== endIntersection.wing;
     if (isCrossWing) {
-      console.log('🔍 CROSS-WING A* DEBUG:');
-      console.log('Start intersection connections:', startIntersection.connections.length);
-      console.log('End intersection connections:', endIntersection.connections.length);
       
       // Check if start has any cross-wing connections
       const startCrossWingConns = startIntersection.connections.filter(conn => {
         const target = intersections.find(i => i.id === conn.targetId);
         return target && target.wing !== startIntersection.wing;
       });
-      console.log('Start has cross-wing connections:', startCrossWingConns.length);
       
       // Check if end has any cross-wing connections  
       const endCrossWingConns = endIntersection.connections.filter(conn => {
         const target = intersections.find(i => i.id === conn.targetId);
         return target && target.wing !== endIntersection.wing;
       });
-      console.log('End has cross-wing connections:', endCrossWingConns.length);
     }
     
     // A* algorithm implementation
@@ -1383,7 +1283,6 @@ const Map = () => {
       }
       
       if (currentId === null) {
-        if (isCrossWing) console.log('❌ A* failed: no valid currentId found');
         break;
       }
       
@@ -1397,10 +1296,7 @@ const Map = () => {
           current = cameFrom[current];
         }
         if (isCrossWing) {
-          console.log(`✅ CROSS-WING A* SUCCESS: Found path with ${path.length} intersections`);
-          console.log('Cross-wing path:', path.map(i => `${i.id} (${i.wing})`));
         } else {
-          console.log(`A* found path with ${path.length} intersections:`, path.map(i => i.id));
         }
         return path;
       }
@@ -1410,7 +1306,6 @@ const Map = () => {
       
       const currentIntersection = intersections.find(i => i.id === currentId);
       if (!currentIntersection) {
-        if (isCrossWing) console.log('❌ A* error: current intersection not found');
         continue;
       }
       
@@ -1429,12 +1324,10 @@ const Map = () => {
           if (connection.type === 'inter_floor') {
             // This is expected for floor-specific pathfinding
             if (iterations === 1) {
-              console.log(`🚫 Skipping inter-floor connection: ${currentIntersection.id} → ${neighborId} (${connection.transport_type})`);
             }
             return;
           }
           if (iterations === 1) { // Only log once to avoid spam
-            console.log(`❌ A* neighbor not found: ${neighborId} from ${currentIntersection.id}`);
           }
           return;
         }
@@ -1447,7 +1340,6 @@ const Map = () => {
             !(connection.pathType && connection.pathType.includes('emergency'))) {
           // Skip this room entrance - we don't want to route through other rooms
           if (connection.pathType && connection.pathType.includes('emergency')) {
-            console.log(`🚨 A* allowing emergency connection to room entrance: ${neighborId}`);
           }
           return;
         }
@@ -1493,55 +1385,32 @@ const Map = () => {
       });
       
       if (isCrossWing && iterations % 100 === 0) {
-        console.log(`A* iteration ${iterations}: examining ${currentIntersection.id} (${currentIntersection.wing}), ${validNeighborsExamined} neighbors, ${crossWingNeighborsFound} cross-wing`);
       }
     }
     
     if (isCrossWing) {
-      console.log(`❌ CROSS-WING A* FAILED after ${iterations} iterations`);
-      console.log('Final openSet size:', openSet.size);
-      console.log('Final closedSet size:', closedSet.size);
     } else {
-      console.log(`❌ A* FAILED after ${iterations} iterations`);
-      console.log(`Final openSet size: ${openSet.size}`);
-      console.log(`Final closedSet size: ${closedSet.size}`);
-      console.log(`Total intersections available: ${intersections.length}`);
       
       // Check if end intersection was ever reached
       if (gScore[endIntersection.id] === Infinity) {
-        console.log(`❌ End intersection ${endIntersection.id} was never reached by A*`);
-        console.log(`This indicates network fragmentation - start and end are in different connected components`);
-        console.log(`Start intersection connections: ${startIntersection.connections.length}`);
-        console.log(`End intersection connections: ${endIntersection.connections.length}`);
         
         // Check if start intersection has any valid connections
         const validConnections = startIntersection.connections.filter(conn => {
           const target = intersections.find(i => i.id === conn.targetId);
           return target && target.coordinates && target.coordinates.length === 2;
         });
-        console.log(`Start intersection valid connections: ${validConnections.length}`);
-        
-        if (validConnections.length > 0) {
-          console.log(`Sample valid connection targets:`, validConnections.slice(0, 3).map(c => c.targetId));
-        }
         
         // Network fragmentation detected - return null to trigger emergency connection creation
-        console.log(`🚨 NETWORK FRAGMENTATION DETECTED - returning null to trigger emergency connections`);
       } else {
-        console.log(`End intersection was reachable (gScore: ${gScore[endIntersection.id]}), but path reconstruction failed`);
       }
     }
     
     // Return null when pathfinding fails instead of a direct line
-    console.log('🚨 A* RETURNING NULL - NO VALID PATH FOUND');
     return null;
   };
 
   // NEW: Updated navigation route calculation using intersection graph
   const calculateIntersectionNavigationRoute = () => {
-    console.log('🚀 ROUTE CALCULATION STARTED');
-    console.log('Start room exists:', !!startRoom);
-    console.log('End room exists:', !!endRoom);
     
     if (!startRoom || !endRoom) {
       setDebugInfo('Please select both start and end rooms');
@@ -1549,60 +1418,40 @@ const Map = () => {
     }
 
     setDebugInfo('Calculating route using intersection network...');
-    console.log('=== CALCULATING INTERSECTION NAVIGATION ROUTE ===');
     
     try {
       const startCoords = startRoom.coordinates;
       const endCoords = endRoom.coordinates;
       
-      console.log('Start coordinates:', startCoords);
-      console.log('End coordinates:', endCoords);
-      console.log('Available intersections:', intersectionData.length);
       
       // Enhanced debugging for room data
-      console.log('Start room data:', startRoom);
-      console.log('End room data:', endRoom);
       
       // Check if we can determine wings from room data
       const startWing = startRoom.data?.wing || startRoom.wing || 'Unknown';
       const endWing = endRoom.data?.wing || endRoom.wing || 'Unknown';
-      console.log('Start wing:', startWing, 'End wing:', endWing);
       
       const isCrossWingNavigation = startWing !== endWing && startWing !== 'Unknown' && endWing !== 'Unknown';
-      console.log('Cross-wing navigation:', isCrossWingNavigation);
       
       // Check for cross-floor navigation
-      console.log('=== CROSS-FLOOR DETECTION DEBUG ===');
-      console.log('Start room full data:', startRoom);
-      console.log('End room full data:', endRoom);
       
       // Enhanced floor detection with fallback logic
       let startFloor = startRoom.floor || startRoom.data?.floor;
       let endFloor = endRoom.floor || endRoom.data?.floor;
       
-      console.log('Initial floor detection:');
-      console.log('  startRoom.floor:', startRoom.floor);
-      console.log('  startRoom.data?.floor:', startRoom.data?.floor);
-      console.log('  endRoom.floor:', endRoom.floor);
-      console.log('  endRoom.data?.floor:', endRoom.data?.floor);
       
       // If still no floor, try to detect from room name/displayName
       if (!startFloor) {
         const roomName = startRoom.name || startRoom.displayName || '';
-        console.log('Trying to detect start floor from name:', roomName);
         const floorMatch = roomName.match(/^(\d+)[ABC]/);
         if (floorMatch) {
           startFloor = parseInt(floorMatch[1]);
-          console.log('Detected start floor from name:', startFloor);
         }
       }
       if (!endFloor) {
         const roomName = endRoom.name || endRoom.displayName || '';
-        console.log('Trying to detect end floor from name:', roomName);
         const floorMatch = roomName.match(/^(\d+)[ABC]/);
         if (floorMatch) {
           endFloor = parseInt(floorMatch[1]);
-          console.log('Detected end floor from name:', endFloor);
         }
       }
       
@@ -1621,26 +1470,20 @@ const Map = () => {
           if (!isNaN(startFloorFromName) && !isNaN(endFloorFromName)) {
             startFloor = startFloorFromName;
             endFloor = endFloorFromName;
-            console.log('🔧 FORCED floor detection from room names:', startFloor, '->', endFloor);
           }
         }
       }
       
       const isCrossFloorNavigation = startFloor !== endFloor;
-      console.log('Detected start floor:', startFloor, 'end floor:', endFloor);
-      console.log('Cross-floor navigation needed:', isCrossFloorNavigation);
       
       // If cross-floor navigation is needed, show transport selection
       if (isCrossFloorNavigation) {
-        console.log('CROSS-FLOOR NAVIGATION DETECTED!');
-        console.log(`From floor ${startFloor} to floor ${endFloor}`);
         setDebugInfo(`Cross-floor navigation: Floor ${startFloor} → Floor ${endFloor}. Select transport method.`);
         findAvailableTransports(startFloor, endFloor);
         return;
       }
       
       if (intersectionData.length === 0) {
-        console.log('❌ No intersection data available, using simple route');
         const simpleRoute = [startCoords, endCoords];
         displayRoute(simpleRoute);
         return;
@@ -1651,26 +1494,18 @@ const Map = () => {
       const endIntersection = findClosestIntersection(endCoords, intersectionData);
       
       if (!startIntersection || !endIntersection) {
-        console.log('❌ Could not find nearby intersections, using simple route');
-        console.log('Start intersection found:', !!startIntersection);
-        console.log('End intersection found:', !!endIntersection);
         const simpleRoute = [startCoords, endCoords];
         displayRoute(simpleRoute);
         return;
       }
       
-      console.log('✅ Start intersection:', startIntersection.id, '(type:', startIntersection.type, ', wing:', startIntersection.wing, ')');
-      console.log('✅ End intersection:', endIntersection.id, '(type:', endIntersection.type, ', wing:', endIntersection.wing, ')');
       
       // Create a proper copy of intersection data for processing
       let updatedIntersectionData = [...intersectionData];
       
       // Log intersection connectivity for debugging
-      console.log('Start intersection connections:', startIntersection.connections.length);
-      console.log('End intersection connections:', endIntersection.connections.length);
       
       // Debug connection types for start intersection
-      console.log('Start intersection connection types:');
       const startConnectionTypes = {};
       startIntersection.connections.forEach(conn => {
         const targetIntersection = updatedIntersectionData.find(i => i.id === conn.targetId);
@@ -1678,10 +1513,8 @@ const Map = () => {
           startConnectionTypes[targetIntersection.type] = (startConnectionTypes[targetIntersection.type] || 0) + 1;
         }
       });
-      console.log('  ', startConnectionTypes);
       
       // Debug connection types for end intersection  
-      console.log('End intersection connection types:');
       const endConnectionTypes = {};
       endIntersection.connections.forEach(conn => {
         const targetIntersection = updatedIntersectionData.find(i => i.id === conn.targetId);
@@ -1689,10 +1522,8 @@ const Map = () => {
           endConnectionTypes[targetIntersection.type] = (endConnectionTypes[targetIntersection.type] || 0) + 1;
         }
       });
-      console.log('  ', endConnectionTypes);
       
       if (isCrossWingNavigation) {
-        console.log('🔍 CROSS-WING NAVIGATION DETECTED');
         // Check if we have cross-wing connections in the network
         let crossWingConnectionsFound = 0;
         intersectionData.forEach(intersection => {
@@ -1703,27 +1534,17 @@ const Map = () => {
             }
           });
         });
-        console.log('Total cross-wing connections in network:', crossWingConnectionsFound / 2);
         
         if (crossWingConnectionsFound === 0) {
-          console.log('❌ NO CROSS-WING CONNECTIONS FOUND IN NETWORK!');
-          console.log('This explains why you see straight lines for cross-wing navigation');
           setDebugInfo('❌ No cross-wing connections - click "Fix Cross-Wing" button');
           
           // Auto-suggest using the fix
-          console.log('💡 SOLUTION: Click the "Fix Cross-Wing" button to automatically create connections between A-wing and B-wing');
         } else {
-          console.log('✅ Cross-wing connections exist in network');
         }
       }
       
       // Enhanced debugging for cross-wing pathfinding
       if (isCrossWingNavigation) {
-        console.log('🔍 DETAILED CROSS-WING PATHFINDING DEBUG:');
-        console.log('Start intersection wing:', startIntersection.wing);
-        console.log('End intersection wing:', endIntersection.wing);
-        console.log('Start intersection connections:', startIntersection.connections.map(c => c.targetId).slice(0, 5));
-        console.log('End intersection connections:', endIntersection.connections.map(c => c.targetId).slice(0, 5));
         
         // Check if there's any cross-wing connection path available
         let canReachOtherWing = false;
@@ -1740,7 +1561,6 @@ const Map = () => {
           
           if (currentIntersection.wing !== startIntersection.wing) {
             canReachOtherWing = true;
-            console.log('✅ Can reach other wing via:', currentIntersection.id);
             break;
           }
           
@@ -1756,8 +1576,6 @@ const Map = () => {
         }
         
         if (!canReachOtherWing) {
-          console.log('❌ CANNOT REACH OTHER WING FROM START INTERSECTION!');
-          console.log('This means the cross-wing connections are not properly integrated into the network');
         }
       }
       
@@ -1769,34 +1587,24 @@ const Map = () => {
       const actualEndIntersection = updatedIntersectionData.find(i => i.id === endIntersection.id);
       
       if (actualStartIntersection && actualStartIntersection.connections.length === 0) {
-        console.log(`❌ START intersection ${actualStartIntersection.id} has no connections! Creating emergency connection...`);
         connectIsolatedIntersection(actualStartIntersection, updatedIntersectionData);
         connectionsCreated = true;
       }
       
       if (actualEndIntersection && actualEndIntersection.connections.length === 0) {
-        console.log(`❌ END intersection ${actualEndIntersection.id} has no connections! Creating emergency connection...`);
         connectIsolatedIntersection(actualEndIntersection, updatedIntersectionData);
         connectionsCreated = true;
       }
       
       // If we created emergency connections, update the state
       if (connectionsCreated) {
-        console.log('🔄 Updating intersection data state with emergency connections...');
         setIntersectionData([...updatedIntersectionData]);
       }
       
       // Debug: Verify emergency connections before A*
       if (connectionsCreated) {
-        console.log('🔍 VERIFYING EMERGENCY CONNECTIONS:');
-        console.log('Start intersection connections after emergency fix:', actualStartIntersection?.connections.length || 0);
-        console.log('End intersection connections after emergency fix:', actualEndIntersection?.connections.length || 0);
         
         if (actualEndIntersection && actualEndIntersection.connections.length > 0) {
-          console.log('🔧 Emergency connections created for end intersection:');
-          actualEndIntersection.connections.forEach((conn, idx) => {
-            console.log(`  Connection ${idx}: → ${conn.targetId} (${conn.pathType || 'original'})`);
-          });
         }
       }
       
@@ -1806,21 +1614,13 @@ const Map = () => {
       let pathfindingEndIntersection = actualEndIntersection || endIntersection;
       
       if (connectionsCreated) {
-        console.log('🔄 Using updated intersection references for A*');
-        console.log('Fresh start intersection connections:', pathfindingStartIntersection.connections.length);
-        console.log('Fresh end intersection connections:', pathfindingEndIntersection.connections.length);
         
         // Debug: Print all emergency connections that were created
-        console.log('🚨 EMERGENCY CONNECTIONS DEBUG:');
         updatedIntersectionData.forEach(intersection => {
           const emergencyConnections = intersection.connections.filter(conn => 
             conn.pathType && conn.pathType.includes('emergency')
           );
           if (emergencyConnections.length > 0) {
-            console.log(`  ${intersection.id} has ${emergencyConnections.length} emergency connections:`);
-            emergencyConnections.forEach(conn => {
-              console.log(`    → ${conn.targetId} (distance: ${conn.distance.toFixed(1)}m)`);
-            });
           }
         });
       }
@@ -1828,40 +1628,23 @@ const Map = () => {
       const intersectionPath = findShortestIntersectionPath(pathfindingStartIntersection, pathfindingEndIntersection, updatedIntersectionData);
       
       if (!intersectionPath || intersectionPath.length === 0) {
-        console.log('❌ No path found through intersection network');
         if (isCrossWingNavigation) {
-          console.log('❌ A* PATHFINDING FAILED FOR CROSS-WING NAVIGATION');
-          console.log('This suggests the A* algorithm cannot find a connected path through the intersection network');
         }
         
         // Additional debugging when pathfinding fails after emergency connections
         if (connectionsCreated) {
-          console.log('🚨 A* FAILED DESPITE EMERGENCY CONNECTIONS!');
-          console.log('Start intersection details:', {
-            id: pathfindingStartIntersection.id,
-            connections: pathfindingStartIntersection.connections.length,
-            emergencyConnections: pathfindingStartIntersection.connections.filter(c => c.pathType?.includes('emergency')).length
-          });
-          console.log('End intersection details:', {
-            id: pathfindingEndIntersection.id, 
-            connections: pathfindingEndIntersection.connections.length,
-            emergencyConnections: pathfindingEndIntersection.connections.filter(c => c.pathType?.includes('emergency')).length
-          });
         }
         
         // Try to fix network fragmentation by creating bridge connections
         if (!connectionsCreated) {
-          console.log('🔧 Attempting to fix network fragmentation...');
           const fragmentationFixed = fixNetworkFragmentation(pathfindingStartIntersection, pathfindingEndIntersection, updatedIntersectionData);
           
           if (fragmentationFixed) {
-            console.log('✅ Network fragmentation fixed, retrying pathfinding...');
             setIntersectionData([...updatedIntersectionData]);
             
             // Retry pathfinding with the bridge connections
             const retryPath = findShortestIntersectionPath(pathfindingStartIntersection, pathfindingEndIntersection, updatedIntersectionData);
             if (retryPath && retryPath.length > 0) {
-              console.log('✅ Pathfinding successful after fragmentation fix!');
               const fullRoute = [startCoords, ...retryPath.map(p => p.coordinates), endCoords];
               displayRoute(fullRoute);
               return;
@@ -1875,10 +1658,7 @@ const Map = () => {
       }
       
       if (isCrossWingNavigation) {
-        console.log('✅ CROSS-WING PATH FOUND:', intersectionPath.length, 'intersections');
-        console.log('Path:', intersectionPath.map(i => `${i.id} (${i.wing})`));
       } else {
-        console.log('✅ Path found through intersection network:', intersectionPath.length, 'intersections');
       }
       
       // Build final route coordinates with corridor following
@@ -1906,11 +1686,9 @@ const Map = () => {
       // Remove duplicate consecutive coordinates and smooth the path
       const cleanedRoute = smoothNavigationPath(routeCoordinates);
       
-      console.log('Route created through intersection network:', cleanedRoute);
       displayRoute(cleanedRoute);
 
     } catch (error) {
-      console.error('Intersection route calculation error:', error);
       setDebugInfo(`Route calculation failed: ${error.message}`);
       
       // Fallback to simple route
@@ -1918,18 +1696,14 @@ const Map = () => {
         const fallbackRoute = [startRoom.coordinates, endRoom.coordinates];
         displayRoute(fallbackRoute);
       } catch (fallbackError) {
-        console.error('Even fallback route failed:', fallbackError);
       }
     }
   };
 
   // Display route on map
   const displayRoute = (routeCoordinates) => {
-    console.log('=== DISPLAYING ROUTE ===');
-    console.log('Route coordinates:', routeCoordinates);
     
     if (!routeCoordinates || routeCoordinates.length < 2) {
-      console.error('Invalid route coordinates:', routeCoordinates);
       setDebugInfo('Invalid route data');
       return;
     }
@@ -1940,34 +1714,28 @@ const Map = () => {
       const routeSourceId = 'navigation-route';
       
       if (mapRef.current.getLayer(routeLayerId)) {
-        console.log('Removing existing route layer');
         mapRef.current.removeLayer(routeLayerId);
       }
       if (mapRef.current.getSource(routeSourceId)) {
-        console.log('Removing existing route source');
         mapRef.current.removeSource(routeSourceId);
       }
 
       // Validate coordinates format
       const validCoordinates = routeCoordinates.filter(coord => {
         if (!coord || !Array.isArray(coord) || coord.length !== 2) {
-          console.warn('Invalid coordinate:', coord);
           return false;
         }
         if (isNaN(coord[0]) || isNaN(coord[1])) {
-          console.warn('NaN coordinate:', coord);
           return false;
         }
         return true;
       });
 
       if (validCoordinates.length < 2) {
-        console.error('Not enough valid coordinates:', validCoordinates);
         setDebugInfo('Invalid coordinate data');
         return;
       }
 
-      console.log('Valid coordinates for route:', validCoordinates);
 
       // Create GeoJSON for the route
       const routeGeoJSON = {
@@ -1981,7 +1749,6 @@ const Map = () => {
         }
       };
 
-      console.log('Route GeoJSON:', routeGeoJSON);
 
       // Add route source
       mapRef.current.addSource(routeSourceId, {
@@ -1989,7 +1756,6 @@ const Map = () => {
         data: routeGeoJSON
       });
 
-      console.log('Added route source');
 
       // Add route layer with prominent styling
       mapRef.current.addLayer({
@@ -2007,7 +1773,6 @@ const Map = () => {
         }
       });
 
-      console.log('Added route layer');
 
       // Calculate total distance
       let totalDistance = 0;
@@ -2021,7 +1786,6 @@ const Map = () => {
         distance: totalDistance
       });
       
-      console.log(`Total route distance: ${totalDistance.toFixed(2)}m`);
 
       // Fit map to show the route with padding
       const bounds = new mapboxgl.LngLatBounds();
@@ -2034,26 +1798,21 @@ const Map = () => {
         duration: 1000
       });
 
-      console.log('=== ROUTE DISPLAY COMPLETE ===');
 
     } catch (error) {
-      console.error('Error displaying route:', error);
       setDebugInfo(`Route display failed: ${error.message}`);
     }
   };
 
   // NEW: Fix network fragmentation by creating bridge connections
   const fixNetworkFragmentation = (startIntersection, endIntersection, intersections) => {
-    console.log(`🔧 Attempting to bridge network fragments between ${startIntersection.id} and ${endIntersection.id}`);
     
     // Find all intersections reachable from start (using BFS)
     const startComponent = findConnectedComponent(startIntersection, intersections);
     const endComponent = findConnectedComponent(endIntersection, intersections);
     
-    console.log(`Start component size: ${startComponent.size}, End component size: ${endComponent.size}`);
     
     if (startComponent.has(endIntersection.id)) {
-      console.log('❌ Both intersections are already in the same component - this should not happen');
       return false;
     }
     
@@ -2102,10 +1861,8 @@ const Map = () => {
         pathType: 'fragmentation-bridge'
       });
       
-      console.log(`✅ Created bridge connection: ${bestStartNode.id} ↔ ${bestEndNode.id} (${minDistance.toFixed(1)}m)`);
       return true;
     } else {
-      console.log(`❌ No suitable bridge found (closest: ${minDistance?.toFixed(1)}m, max: 150m)`);
       return false;
     }
   };
@@ -2135,7 +1892,6 @@ const Map = () => {
 
   // NEW: Connect isolated intersections to nearest corridor points
   const connectIsolatedIntersection = (isolatedIntersection, intersections) => {
-    console.log(`🔧 Connecting isolated intersection: ${isolatedIntersection.id}`);
     
     // Find nearest corridor intersections (not room entrances)
     const corridorTypes = ['corridor_junction', 'corridor_turn', 'staircase_entrance', 'elevator_entrance'];
@@ -2146,7 +1902,6 @@ const Map = () => {
     );
     
     if (corridorIntersections.length === 0) {
-      console.log('❌ No corridor intersections found in same wing');
       return;
     }
     
@@ -2185,15 +1940,12 @@ const Map = () => {
         pathType: 'emergency-corridor-connection'
       });
       
-      console.log(`✅ Connected ${isolatedIntersection.id} to ${closestCorridor.id} (${minDistance.toFixed(1)}m)`);
     } else {
-      console.log(`❌ No suitable corridor intersection found within 200m (closest: ${minDistance?.toFixed(1)}m)`);
     }
   };
 
   // NEW: Find available transports for cross-floor navigation
   const findAvailableTransports = (startFloor, endFloor) => {
-    console.log('Total intersection data points:', intersectionData.length);
     
     // Find all stairs and elevators that connect these floors
     const availableOptions = [];
@@ -2204,10 +1956,6 @@ const Map = () => {
       point.location_id && (point.type === 'staircase_entrance' || point.type === 'elevator_entrance')
     );
     
-    console.log('Transport points found:', transportPoints.length);
-    transportPoints.forEach(point => {
-      console.log(`  - ${point.id}: ${point.type} on floor ${point.floor} at location ${point.location_id}`);
-    });
     
     transportPoints.forEach(point => {
       if (!transportGroups[point.location_id]) {
@@ -2235,10 +1983,8 @@ const Map = () => {
             
             const transportWing = endPoint.wing || endPoint.id?.charAt(1); // Get transport's wing
             
-            console.log(`Floor 3 wing check - Destination: ${destinationWing}, Transport: ${transportWing}`);
             
             if (destinationWing && transportWing && destinationWing.toUpperCase() !== transportWing.toUpperCase()) {
-              console.log(`❌ Skipping ${locationId} - wrong wing for destination`);
               isValidForDestination = false;
             }
           }
@@ -2297,8 +2043,6 @@ const Map = () => {
       });
     }
     
-    console.log(`Found ${stairOptions.length} stair options and ${elevatorOptions.length} elevator options`);
-    console.log('Simplified transport choices:', simplifiedOptions);
     
     if (simplifiedOptions.length === 0) {
       setDebugInfo(`No direct transport found between floors ${startFloor} and ${endFloor}`);
@@ -2319,12 +2063,9 @@ const Map = () => {
   
   // NEW: Handle transport selection and calculate route
   const selectTransport = (selectedTransport) => {
-    console.log('Selected transport type:', selectedTransport.type);
-    console.log('Using best option:', selectedTransport.bestOption);
     setShowTransportModal(false);
     
     if (!pendingNavigation) {
-      console.error('No pending navigation found');
       return;
     }
     
@@ -2338,9 +2079,6 @@ const Map = () => {
   
   // NEW: Calculate cross-floor route using selected transport
   const calculateCrossFloorRoute = (navigation, transport) => {
-    console.log('=== CALCULATING CROSS-FLOOR ROUTE ===');
-    console.log('Navigation:', navigation);
-    console.log('Transport:', transport);
     
     try {
       const { startRoom, endRoom, startFloor, endFloor } = navigation;
@@ -2350,7 +2088,6 @@ const Map = () => {
       const startFloorIntersections = intersectionData.filter(p => p.floor === startFloor);
       const segmentToTransport = calculateRouteSegment(startRoom.coordinates, startPoint.coordinates, startFloorIntersections);
       
-      console.log(`Displaying route to ${transport.type} on floor ${startFloor}`);
       
       // Display the route to transport entrance
       displayRoute(segmentToTransport);
@@ -2362,16 +2099,8 @@ const Map = () => {
       // Store the continuation route for when user switches floors
       const endFloorIntersections = intersectionData.filter(p => p.floor === endFloor);
       
-      console.log(`🎯 Preparing continuation route for floor ${endFloor}`);
-      console.log(`End floor intersections available: ${endFloorIntersections.length}`);
-      console.log('Transport end point:', endPoint.coordinates);
-      console.log('End room coordinates:', endRoom.coordinates);
       
       if (endFloorIntersections.length > 0) {
-        console.log('Sample end floor intersections:');
-        endFloorIntersections.slice(0, 3).forEach(intersection => {
-          console.log(`  - ${intersection.id}: ${intersection.type} with ${intersection.connections.length} connections`);
-        });
       }
       
       const segmentFromTransport = calculateRouteSegment(endPoint.coordinates, endRoom.coordinates, endFloorIntersections);
@@ -2384,27 +2113,18 @@ const Map = () => {
         transportType: transport.type
       };
       
-      console.log('📦 Stored pending cross-floor route with', segmentFromTransport.length, 'waypoints');
       
-      console.log('Cross-floor route setup complete. User should switch to floor', endFloor, 'to continue.');
       
     } catch (error) {
-      console.error('Error calculating cross-floor route:', error);
       setDebugInfo('Error calculating cross-floor route');
     }
   };
   
   // NEW: Calculate route segment between two points using intersections or hallways
   const calculateRouteSegment = (startCoords, endCoords, floorIntersections) => {
-    console.log('=== CALCULATING ROUTE SEGMENT ===');
-    console.log('Start coordinates:', startCoords);
-    console.log('End coordinates:', endCoords);
-    console.log('Floor intersections available:', floorIntersections.length);
     
     // Determine floor from intersection data
     const floor = floorIntersections.length > 0 ? floorIntersections[0].floor : 2;
-    console.log('Route segment floor detected:', floor);
-    console.log('Floor intersections sample:', floorIntersections.slice(0, 3).map(i => `${i.id} (floor: ${i.floor})`));
     
     // Use intersection-based routing for all floors
     return calculateIntersectionBasedRoute(startCoords, endCoords, floorIntersections);
@@ -2412,27 +2132,18 @@ const Map = () => {
   
   // NEW: Hallway-based routing for floors 1 and 3
   const calculateHallwayBasedRoute = (startCoords, endCoords, floor) => {
-    console.log(`=== HALLWAY-BASED ROUTING FOR FLOOR ${floor} ===`);
-    console.log('Available hallwayData keys:', Object.keys(hallwayData));
-    console.log('Total hallwayData entries:', Object.keys(hallwayData).length);
     
     // Get hallway data for this floor
     const floorHallways = {};
     Object.entries(hallwayData).forEach(([hallwayKey, segments]) => {
-      console.log(`Checking hallway: ${hallwayKey}, segments: ${segments.length}`);
       const hallwayFloor = hallwayKey.split('-')[0];
-      console.log(`  Extracted floor: ${hallwayFloor}, target floor: ${floor}`);
       if (parseInt(hallwayFloor) === floor) {
         floorHallways[hallwayKey] = segments;
-        console.log(`  ✅ Added ${hallwayKey} to floor ${floor} hallways`);
       }
     });
     
-    console.log(`Available hallways for floor ${floor}:`, Object.keys(floorHallways).length);
-    console.log('Floor hallways:', Object.keys(floorHallways));
     
     if (Object.keys(floorHallways).length === 0) {
-      console.log('❌ No hallways found for this floor, returning straight line');
       return [startCoords, endCoords];
     }
     
@@ -2442,46 +2153,32 @@ const Map = () => {
     // Find route through hallway network
     const hallwayRoute = findHallwayRoute(startCoords, endCoords, hallwayGraph, floor);
     
-    console.log('✅ Hallway route calculated with', hallwayRoute.length, 'waypoints');
     return hallwayRoute;
   };
   
   // NEW: Traditional intersection-based routing for floor 2
   const calculateIntersectionBasedRoute = (startCoords, endCoords, floorIntersections) => {
-    console.log(`=== INTERSECTION-BASED ROUTE CALCULATION ===`);
-    console.log(`Start: [${startCoords}], End: [${endCoords}]`);
-    console.log(`Available intersections: ${floorIntersections.length}`);
     
     if (floorIntersections.length > 0) {
-      console.log('Sample floor intersections:');
-      floorIntersections.slice(0, 5).forEach(intersection => {
-        console.log(`  - ${intersection.id}: ${intersection.type} on floor ${intersection.floor} with ${intersection.connections.length} connections`);
-      });
     }
     
     if (floorIntersections.length === 0) {
-      console.log('❌ No floor intersections available, returning straight line');
       return [startCoords, endCoords];
     }
     
     const startIntersection = findClosestIntersection(startCoords, floorIntersections);
     const endIntersection = findClosestIntersection(endCoords, floorIntersections);
     
-    console.log('Closest start intersection:', startIntersection?.id);
-    console.log('Closest end intersection:', endIntersection?.id);
     
     if (!startIntersection || !endIntersection) {
-      console.log('❌ Could not find closest intersections, returning straight line');
       return [startCoords, endCoords];
     }
     
     // Use existing pathfinding logic
     const intersectionPath = findShortestIntersectionPath(startIntersection, endIntersection, floorIntersections);
     
-    console.log('Intersection path found:', intersectionPath?.length || 0, 'points');
     
     if (!intersectionPath || intersectionPath.length === 0) {
-      console.log('❌ No intersection path found, returning straight line');
       return [startCoords, endCoords];
     }
     
@@ -2497,23 +2194,18 @@ const Map = () => {
   
   // NEW: Build hallway graph from hallway segments
   const buildHallwayGraph = (floorHallways, floor) => {
-    console.log(`🏗️ Building hallway graph for floor ${floor}`);
-    console.log('Input floor hallways:', Object.keys(floorHallways));
     
     const hallwayNodes = [];
     const hallwayEdges = [];
     
     // Extract all coordinate points from hallway segments
     Object.entries(floorHallways).forEach(([hallwayKey, segments]) => {
-      console.log(`Processing hallway: ${hallwayKey} with ${segments.length} segments`);
       segments.forEach((segment, segmentIndex) => {
         if (!segment.geometry || !segment.geometry.coordinates) {
-          console.log(`❌ Invalid segment geometry in ${hallwayKey}[${segmentIndex}]`);
           return;
         }
         
         const coordinates = segment.geometry.coordinates;
-        console.log(`  Segment ${segmentIndex}: ${coordinates.length} coordinates`);
         
         // Add each coordinate as a potential node
         coordinates.forEach((coord, coordIndex) => {
@@ -2554,7 +2246,6 @@ const Map = () => {
     const connectionThreshold = 5.0; // Increased to 5 meters for better connectivity
     let junctionConnections = 0;
     
-    console.log(`🔗 Checking for junction connections with ${connectionThreshold}m threshold...`);
     
     for (let i = 0; i < hallwayNodes.length; i++) {
       for (let j = i + 1; j < hallwayNodes.length; j++) {
@@ -2585,27 +2276,22 @@ const Map = () => {
           junctionConnections += 2;
           
           if (junctionConnections <= 10) { // Log first few connections
-            console.log(`  Connected ${node1.id} ↔ ${node2.id} (${distance.toFixed(2)}m)`);
           }
         }
       }
     }
     
-    console.log(`🔗 Created ${junctionConnections} junction connections between segments`);
     
-    console.log(`Hallway graph built: ${hallwayNodes.length} nodes, ${hallwayEdges.length} edges`);
     
     return { nodes: hallwayNodes, edges: hallwayEdges };
   };
   
   // NEW: Find route through hallway network
   const findHallwayRoute = (startCoords, endCoords, hallwayGraph, floor) => {
-    console.log(`🗺️ Finding hallway route on floor ${floor}`);
     
     const { nodes, edges } = hallwayGraph;
     
     if (nodes.length === 0) {
-      console.log('❌ No hallway nodes available');
       return [startCoords, endCoords];
     }
     
@@ -2630,11 +2316,8 @@ const Map = () => {
       }
     });
     
-    console.log(`Closest start node: ${closestStartNode?.id} (${minStartDistance.toFixed(1)}m)`);
-    console.log(`Closest end node: ${closestEndNode?.id} (${minEndDistance.toFixed(1)}m)`);
     
     if (!closestStartNode || !closestEndNode) {
-      console.log('❌ Could not find closest hallway nodes');
       return [startCoords, endCoords];
     }
     
@@ -2643,12 +2326,9 @@ const Map = () => {
     }
     
     // Use Dijkstra's algorithm to find shortest path through hallway network
-    console.log(`🔍 Attempting pathfinding from ${closestStartNode.id} to ${closestEndNode.id}`);
     const hallwayPath = findShortestHallwayPath(closestStartNode, closestEndNode, nodes, edges);
     
     if (!hallwayPath || hallwayPath.length === 0) {
-      console.log('❌ No hallway path found - falling back to direct route');
-      console.log(`Fallback route: ${startCoords} → ${endCoords}`);
       return [startCoords, endCoords];
     }
     
@@ -2659,14 +2339,11 @@ const Map = () => {
     });
     routeCoordinates.push(endCoords);
     
-    console.log(`✅ Hallway path found: ${hallwayPath.length} nodes`);
     return routeCoordinates;
   };
   
   // NEW: Dijkstra's algorithm for hallway pathfinding
   const findShortestHallwayPath = (startNode, endNode, nodes, edges) => {
-    console.log(`🔍 Dijkstra pathfinding: ${startNode.id} → ${endNode.id}`);
-    console.log(`Total nodes: ${nodes.length}, Total edges: ${edges.length}`);
     
     const distances = {};
     const previous = {};
@@ -2692,8 +2369,6 @@ const Map = () => {
     });
     
     // Debug adjacency for start and end nodes
-    console.log(`Start node ${startNode.id} has ${adjacency[startNode.id]?.length || 0} connections`);
-    console.log(`End node ${endNode.id} has ${adjacency[endNode.id]?.length || 0} connections`);
     
     while (unvisited.size > 0) {
       // Find unvisited node with minimum distance
@@ -2708,13 +2383,11 @@ const Map = () => {
       }
       
       if (currentNodeId === null || minDistance === Infinity) {
-        console.log(`❌ Dijkstra stopped: currentNodeId=${currentNodeId}, minDistance=${minDistance}`);
         break; // No more reachable nodes
       }
       
       // Early exit if we reached the target
       if (currentNodeId === endNode.id) {
-        console.log(`✅ Dijkstra reached target node: ${endNode.id}`);
         break;
       }
       
@@ -2746,25 +2419,19 @@ const Map = () => {
     }
     
     if (path.length === 0 || path[0].id !== startNode.id) {
-      console.log('❌ No valid hallway path found');
-      console.log(`Final distance to end node: ${distances[endNode.id]}`);
-      console.log(`Unvisited nodes remaining: ${unvisited.size}`);
       
       // Check if end node was ever reached
       if (distances[endNode.id] === Infinity) {
-        console.log('❌ End node was never reached - network is disconnected');
       }
       
       return null;
     }
     
-    console.log(`✅ Hallway path: ${path.length} nodes, total distance: ${distances[endNode.id].toFixed(1)}m`);
     return path;
   };
 
   // Clear navigation
   const clearNavigation = () => {
-    console.log('=== CLEARING NAVIGATION ===');
     
     try {
       // Clear route layers
@@ -2773,14 +2440,12 @@ const Map = () => {
       
       routeLayerIds.forEach(layerId => {
         if (mapRef.current.getLayer(layerId)) {
-          console.log(`Removing layer: ${layerId}`);
           mapRef.current.removeLayer(layerId);
         }
       });
       
       routeSourceIds.forEach(sourceId => {
         if (mapRef.current.getSource(sourceId)) {
-          console.log(`Removing source: ${sourceId}`);
           mapRef.current.removeSource(sourceId);
         }
       });
@@ -2810,17 +2475,14 @@ const Map = () => {
       setAvailableTransports([]);
       setDebugInfo('Navigation cleared');
       
-      console.log('=== NAVIGATION CLEARED SUCCESSFULLY ===');
       
     } catch (error) {
-      console.error('Error clearing navigation:', error);
       setDebugInfo(`Clear failed: ${error.message}`);
     }
   };
 
   // NEW: Visualization function for intersection network
   const visualizeIntersectionNetwork = () => {
-    console.log('=== VISUALIZING INTERSECTION NETWORK ===');
     
     if (!intersectionData || intersectionData.length === 0) {
       setDebugInfo('No intersection data to visualize');
@@ -2939,36 +2601,22 @@ const Map = () => {
     });
     
     setDebugInfo(`Showing ${intersectionData.length} intersections with ${connectionFeatures.length / 2} connections`);
-    console.log('=== INTERSECTION NETWORK VISUALIZATION COMPLETE ===');
-    console.log('Color coding: Red=junctions, Blue=stairs, Purple=elevators, Orange=turns, Green=rooms');
   };
 
   // NEW: Clean cross-wing connectivity checker
   const checkCrossWingConnectivity = () => {
     console.clear(); // Clear console for easier reading
-    console.log('🔍 === CROSS-WING CONNECTIVITY CHECK ===');
     
     if (intersectionData.length === 0) {
-      console.log('❌ No intersection data loaded');
       setDebugInfo('❌ No intersection data');
       return;
     }
     
     // First, let's examine the data structure differences
-    console.log('🔬 INTERSECTION DATA STRUCTURE ANALYSIS:');
     
     // Sample a few intersections to check their properties
     const sampleIntersections = intersectionData.slice(0, 10);
     sampleIntersections.forEach((intersection, index) => {
-      console.log(`Sample ${index + 1}:`, {
-        id: intersection.id,
-        type: intersection.type,
-        wing: intersection.wing,
-        floor: intersection.floor,
-        description: intersection.description,
-        properties: intersection.properties,
-        allKeys: Object.keys(intersection)
-      });
     });
     
     // Look for intersections that might be B-wing but not labeled correctly
@@ -2978,12 +2626,7 @@ const Map = () => {
                (i.properties && JSON.stringify(i.properties).toLowerCase().includes('b')))
     );
     
-    console.log(`🔍 Possible B-Wing intersections (by ID/description): ${possibleBWing.length}`);
     if (possibleBWing.length > 0) {
-      console.log('First few possible B-wing intersections:');
-      possibleBWing.slice(0, 5).forEach(i => {
-        console.log(`  - ${i.id}: wing="${i.wing}", desc="${i.description}"`);
-      });
     }
     
     // Count intersections by wing
@@ -2997,10 +2640,6 @@ const Map = () => {
       !i.wing || (!i.wing.toLowerCase().includes('a') && !i.wing.toLowerCase().includes('b'))
     );
     
-    console.log(`📊 Wing Distribution (by wing property):`);
-    console.log(`   A-Wing: ${aWingIntersections.length} intersections`);
-    console.log(`   B-Wing: ${bWingIntersections.length} intersections`);
-    console.log(`   Unknown: ${unknownWingIntersections.length} intersections`);
     
     // Check cross-wing connections
     let crossWingConnections = 0;
@@ -3020,33 +2659,20 @@ const Map = () => {
       });
     });
     
-    console.log(`🔗 Total cross-wing connections: ${crossWingConnections / 2}`);
-    console.log(`🔧 Forced connections: ${forcedConnections / 2}`);
     
     const actualCrossWingConnections = crossWingConnections / 2; // Bidirectional, so divide by 2
     
     if (actualCrossWingConnections === 0) {
-      console.log('❌ NO CROSS-WING CONNECTIONS FOUND!');
-      console.log('💡 This is why you see straight lines for A↔B wing navigation');
-      console.log('🛠️  SOLUTION: Click "Fix Cross-Wing" button');
       setDebugInfo(`❌ No cross-wing connections found`);
     } else {
-      console.log('✅ Cross-wing connections exist:');
       // Show first few connections as examples
-      crossWingPairs.slice(0, 10).forEach(pair => console.log(`   ${pair}`));
-      if (crossWingPairs.length > 10) {
-        console.log(`   ... and ${crossWingPairs.length - 10} more`);
-      }
       setDebugInfo(`✅ ${actualCrossWingConnections} cross-wing connections found (${forcedConnections / 2} forced)`);
     }
     
-    console.log('🔍 ==============================');
   };
 
   // NEW: Debug intersection network function
   const debugIntersectionNetwork = () => {
-    console.log('=== INTERSECTION NETWORK DEBUG INFO ===');
-    console.log('Total intersections:', intersectionData.length);
     
     const typeCount = {};
     const connectionCount = {};
@@ -3060,14 +2686,10 @@ const Map = () => {
       connectionCount[connCount] = (connectionCount[connCount] || 0) + 1;
     });
     
-    console.log('Intersection types:', typeCount);
-    console.log('Connection distribution:', connectionCount);
     
     // Log intersections with no connections (potential issues)
     const isolated = intersectionData.filter(i => i.connections.length === 0);
     if (isolated.length > 0) {
-      console.log('Isolated intersections (no connections):');
-      isolated.forEach(i => console.log(`- ${i.id} (${i.type})`));
     }
     
     setDebugInfo(`Debug: ${intersectionData.length} intersections, ${isolated.length} isolated`);
@@ -3075,7 +2697,6 @@ const Map = () => {
 
   // NEW: Clear forced cross-wing connections
   const clearForcedConnections = () => {
-    console.log('🧹 Clearing all forced cross-wing connections...');
     let cleared = 0;
     
     const cleanedData = intersectionData.map(intersection => {
@@ -3096,13 +2717,11 @@ const Map = () => {
     
     // Update state with cleaned data
     setIntersectionData(cleanedData);
-    console.log(`🧹 Cleared ${cleared} forced connections`);
     return cleared;
   };
 
   // NEW: Force create cross-wing connections if missing
   const forceCreateCrossWingConnections = () => {
-    console.log('=== FORCING CROSS-WING CONNECTIONS ===');
     
     if (intersectionData.length === 0) {
       setDebugInfo('No intersection data to work with');
@@ -3111,7 +2730,6 @@ const Map = () => {
     
     // Work with fresh data after clearing
     const clearedCount = clearForcedConnections();
-    console.log(`🧹 Cleared ${clearedCount} old forced connections`);
     
     // Get fresh intersection data reference after clearing
     const freshIntersectionData = intersectionData;
@@ -3124,8 +2742,6 @@ const Map = () => {
       i.wing && i.wing.toLowerCase().includes('b')
     );
     
-    console.log('A-wing intersections:', aWingIntersections.length);
-    console.log('B-wing intersections:', bWingIntersections.length);
     
     if (aWingIntersections.length === 0 || bWingIntersections.length === 0) {
       setDebugInfo('Could not identify wing intersections');
@@ -3139,23 +2755,17 @@ const Map = () => {
     // More permissive intersection types - include room entrances near corridors
     const connectableTypes = ['corridor_junction', 'corridor_turn', 'staircase_entrance', 'elevator_entrance', 'room_entrance'];
     
-    console.log('🔧 Creating balanced cross-wing connections...');
-    console.log(`🎯 Max distance: ${maxDistance}m`);
-    console.log(`🏢 Connectable types: ${connectableTypes.join(', ')}`);
     
     // Filter to only connectable intersection types, but be more inclusive
     const connectableAWing = aWingIntersections.filter(i => connectableTypes.includes(i.type));
     const connectableBWing = bWingIntersections.filter(i => connectableTypes.includes(i.type));
     
-    console.log(`🎯 Connectable A-wing: ${connectableAWing.length}/${aWingIntersections.length}`);
-    console.log(`🎯 Connectable B-wing: ${connectableBWing.length}/${bWingIntersections.length}`);
     
     // If no connectable types found, use all intersection types as fallback
     let finalAWing = connectableAWing.length > 0 ? connectableAWing : aWingIntersections;
     let finalBWing = connectableBWing.length > 0 ? connectableBWing : bWingIntersections;
     
     if (connectableAWing.length === 0 || connectableBWing.length === 0) {
-      console.log('⚠️ Using all intersection types as fallback');
       finalAWing = aWingIntersections;
       finalBWing = bWingIntersections;
     }
@@ -3201,7 +2811,6 @@ const Map = () => {
               });
               
               actualConnectionsCreated++;
-              console.log(`🔗 Cross-wing: ${aIntersection.id} ↔ ${bIntersection.id} (${distance.toFixed(1)}m)`);
             }
           }
         });
@@ -3210,14 +2819,12 @@ const Map = () => {
       // Force state update
       setIntersectionData([...currentData]);
       setDebugInfo(`Created ${actualConnectionsCreated} cross-wing connections`);
-      console.log(`=== ACTUALLY CREATED ${actualConnectionsCreated} CONNECTIONS ===`);
       
     }, 200); // Wait for clear to complete
   };
 
   // NEW: Test navigation system with sample routes
   const testNavigationSystem = () => {
-    console.log('=== TESTING NAVIGATION SYSTEM ===');
     
     if (intersectionData.length < 2) {
       setDebugInfo('Need at least 2 intersections for testing');
@@ -3242,7 +2849,6 @@ const Map = () => {
       testEnd = intersectionData[Math.min(1, intersectionData.length - 1)];
     }
     
-    console.log(`Testing route from ${testStart.id} to ${testEnd.id}`);
     
     // Simulate room data for testing
     const testStartRoom = {
@@ -3275,12 +2881,10 @@ const Map = () => {
       setDebugInfo(`Test route: ${testStart.id} → ${testEnd.id}`);
     }, 500);
     
-    console.log('=== TEST NAVIGATION COMPLETE ===');
   };
 
   // Initialize map
   useEffect(() => {
-    console.log('=== INITIALIZING MAP ===');
 
     mapboxgl.accessToken = 'pk.eyJ1Ijoia3VzaGFkaW5pIiwiYSI6ImNtYjBxdnlzczAwNmUyanE0ejhqdnNibGMifQ.39lNqpWtEZ_flmjVch2V5g';
 
@@ -3294,7 +2898,6 @@ const Map = () => {
     });
 
     mapRef.current.on('load', () => {
-      console.log('Map loaded successfully!');
       setDebugInfo('Map loaded successfully!');
 
       mapRef.current.flyTo({
@@ -3315,7 +2918,6 @@ const Map = () => {
 
     mapRef.current.on('error', (e) => {
       setDebugInfo('Map error occurred');
-      console.error('Mapbox error:', e);
     });
 
     return () => {
@@ -3328,7 +2930,6 @@ const Map = () => {
   // Set up room interactions when both map and data are ready
   useEffect(() => {
     if (isMapReady && isDataReady) {
-      console.log('Both map and data ready, setting up room interactions...');
       initializeLayers();
       setupRoomInteractions();
       showFloorOnly(currentFloor);
@@ -3336,11 +2937,9 @@ const Map = () => {
   }, [isMapReady, isDataReady]);
 
   const initializeLayers = () => {
-    console.log('=== INITIALIZING LAYERS ===');
     setDebugInfo('Setting up layers...');
     
     if (!mapRef.current || !mapRef.current.isStyleLoaded()) {
-      console.log('Map not ready yet');
       return;
     }
     
@@ -3354,16 +2953,13 @@ const Map = () => {
     ];
     
     // Log all layers for debugging
-    console.log('All map style layers:', mapRef.current.getStyle().layers.map(layer => layer.id));
 
     allRoomLayers.forEach(layerId => {
       try {
         mapRef.current.setPaintProperty(layerId, 'text-opacity', 1);
         mapRef.current.setPaintProperty(layerId, 'text-halo-color', '#ffffff');
         mapRef.current.setPaintProperty(layerId, 'text-halo-width', 1);
-        console.log(`Configured: ${layerId}`);
       } catch (e) {
-        console.log(`Failed to configure: ${layerId}`, e.message);
       }
     });
     
@@ -3371,16 +2967,13 @@ const Map = () => {
       try {
         mapRef.current.setLayoutProperty(layerId, 'visibility', 'none');
       } catch (e) {
-        console.log(`Could not hide layer: ${layerId}`);
       }
     });
     
     setDebugInfo('Layers initialized');
-    console.log('=============================');
   };
 
   const setupRoomInteractions = () => {
-    console.log('=== SETTING UP ROOM INTERACTIONS ===');
     
     const fillLayers = [
       'a-wing-level-1-fill', 'a-wing-level-2-fill', 'a-wing-level-3-fill',
@@ -3432,21 +3025,16 @@ const Map = () => {
           mapRef.current.getCanvas().style.cursor = '';
         });
         
-        console.log('Interactions set up for:', layerId);
       } catch (error) {
-        console.error('Error setting up interactions for layer:', layerId, error);
       }
     });
     
-    console.log('========================================');
   };
 
   const showFloorOnly = (floor) => {
-    console.log('=== SWITCHING TO FLOOR', floor, '===');
     setDebugInfo(`Switching to floor ${floor}...`);
     
     if (!mapRef.current || !mapRef.current.isStyleLoaded()) {
-      console.log('Map not ready for floor switching, retrying...');
       setTimeout(() => showFloorOnly(floor), 500);
       return;
     }
@@ -3464,9 +3052,7 @@ const Map = () => {
     allFloorLayers.forEach(layerId => {
       try {
         mapRef.current.setLayoutProperty(layerId, 'visibility', 'none');
-        console.log(`Hidden: ${layerId}`);
       } catch (e) {
-        console.log(`Could not hide layer: ${layerId}`, e.message);
       }
     });
     
@@ -3487,24 +3073,19 @@ const Map = () => {
           const layer = mapRef.current.getLayer(layerId);
           if (layer) {
             mapRef.current.setLayoutProperty(layerId, 'visibility', 'visible');
-            console.log(`Showing: ${layerId}`);
             visibleCount++;
           } else {
-            console.log(`Layer does not exist: ${layerId}`);
           }
         } catch (e) {
-          console.log(`Failed to show: ${layerId}`, e.message);
         }
       });
       
       setDebugInfo(`Floor ${floor} - ${visibleCount}/6 layers visible (A & B Wings)`);
-      console.log(`Floor ${floor}: ${visibleCount} layers made visible`);
       
       mapRef.current.triggerRepaint();
       
     }, 100);
     
-    console.log('=================================');
   };
 
   const switchFloor = (floor) => {
@@ -3522,11 +3103,7 @@ const Map = () => {
     
     // Check if there's a pending cross-floor route for this floor
     if (window.pendingCrossFloorRoute && window.pendingCrossFloorRoute.targetFloor === floor) {
-      console.log('=== SHOWING CONTINUATION ROUTE ON FLOOR', floor, '===');
       const routeData = window.pendingCrossFloorRoute;
-      
-      console.log('Route data:', routeData);
-      console.log('Destination route coordinates:', routeData.destinationRoute.length);
       
       // Display the continuation route from transport to destination
       displayRoute(routeData.destinationRoute);
@@ -3554,13 +3131,10 @@ const Map = () => {
       'b-wing-level-3-label'
     ];
     
-    console.log('🔧 Force hiding Level 3 labels...');
     level3LabelLayers.forEach(layerId => {
       try {
         mapRef.current.setLayoutProperty(layerId, 'visibility', 'none');
-        console.log(`Force hidden: ${layerId}`);
       } catch (e) {
-        console.log(`Could not force hide: ${layerId}`, e.message);
       }
     });
     
