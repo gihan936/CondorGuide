@@ -64,7 +64,6 @@ router.post("/", upload.single("image"), async (req, res) => {
                                                                                                                                                                                             });
                                                                                                                                                                                               }
                                                                                                                                                                                               });
-})
 
 // Get all issues
 router.get("/all", async (req, res) => {
