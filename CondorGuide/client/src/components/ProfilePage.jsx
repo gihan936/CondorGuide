@@ -178,12 +178,12 @@ export default function ProfilePage() {
 
   return (
     <Container className="my-4">
-      <h2>User Profile</h2>
       {success && <Alert variant="success">Profile updated successfully!</Alert>}
       <Row className="justify-content-center">
         <Col lg={8}>
           {/* Profile Info Card */}
           <Card className={`p-4 shadow mb-4 ${themeClasses}`}>
+            <h3 className="mb-3">User Profile</h3>
             <Form>
               <Row>
                 <Col md={6}>
@@ -280,13 +280,14 @@ export default function ProfilePage() {
             <h3 className="mb-3">Security Settings</h3>
 
             <p>
-              You can change your password here. After a successful change, you
-              will receive a confirmation email.
+              You can change your password here.
+               {/* After a successful change, you
+              will receive a confirmation email. */}
             </p>
 
-            <p>
+            {/* <p>
               Forgot your password? <a href="/forgot-password">Reset it here</a>.
-            </p>
+            </p> */}
 
             {secMessage && <Alert variant="success">{secMessage}</Alert>}
             {secError && <Alert variant="danger">{secError}</Alert>}
