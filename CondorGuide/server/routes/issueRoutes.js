@@ -20,17 +20,51 @@ const getUserInfo = (req) => {
 };
 
 // Report a new issue
-router.post('/', async (req, res) => {
-  const { emergencyType, category = null } = req.body;
-  const alert = new SecurityAlert({
-    userId: req.user.userId,
-    username: req.user.email.split('@')[0],
-    emergencyType,
-    category,
-  });
-  await alert.save();
-  res.status(201).json(alert);
-});
+router.post("/", upload.single("image"), async (req, res) => {
+    try {
+        const { title, description, category, subcategory, priority, location } =
+              req.body;
+                  const userInfo = getUserInfo(req) || {};
+
+                      let imagePath = null;
+                          if (req.file) {
+                                // Store just the relative path from uploads folder
+                                      imagePath = `uploads/${req.file.filename}`;
+                                            console.log("File uploaded:", req.file);
+                                                  console.log("Image path stored:", imagePath);
+                                                      }
+
+                                                          const newIssue = new IssueReport({
+                                                                title,
+                                                                      description,
+                                                                            category,
+                                                                                  subcategory,
+                                                                                        priority,
+                                                                                              location,
+                                                                                                    image: imagePath,
+                                                                                                          reportedBy: userInfo.userId,
+                                                                                                                userEmail: userInfo.email,
+                                                                                                                      userRole: userInfo.role,
+                                                                                                                          });
+
+                                                                                                                              const savedIssue = await newIssue.save();
+                                                                                                                                  console.log("Issue saved with image path:", savedIssue.image);
+
+                                                                                                                                      res.status(201).json({
+                                                                                                                                            success: true,
+                                                                                                                                                  data: savedIssue,
+                                                                                                                                                        message: "Issue reported successfully",
+                                                                                                                                                            });
+                                                                                                                                                              } catch (error) {
+                                                                                                                                                                  console.error("Error reporting issue:", error);
+                                                                                                                                                                      res.status(500).json({
+                                                                                                                                                                            success: false,
+                                                                                                                                                                                  message: "Failed to report issue",
+                                                                                                                                                                                        error: error.message,
+                                                                                                                                                                                            });
+                                                                                                                                                                                              }
+                                                                                                                                                                                              });
+})
 
 // Get all issues
 router.get("/all", async (req, res) => {
