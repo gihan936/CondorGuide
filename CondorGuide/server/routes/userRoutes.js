@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
@@ -98,7 +99,7 @@ router.get('/info', async (req, res) => {
   try {
     const { email } = req.query;
     if (!email) {
-      return res.status(400).json({ message: 'Email query param is required.' });
+      return res.status(400).json({ message: 'Email is required.' });
     }
 
     const user = await User.findOne({ email }).select('-password');
@@ -113,6 +114,28 @@ router.get('/info', async (req, res) => {
   }
 });
 
+router.post('/change-password', async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    // Compare current password
+    if (currentPassword !== user.password) {
+      return res.status(401).json({ message: 'Current password is incorrect.' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password changed successfully.' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ message: 'Failed to change password.', error: err.message });
+  }
+});
 
 // Update Profile
 router.put('/update-profile', async (req, res) => {

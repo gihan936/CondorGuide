@@ -131,7 +131,7 @@ export default function ProfilePage() {
       const response = await fetch("/api/users/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({ email: user.email, currentPassword, newPassword }),
       });
 
       if (!response.ok) {
@@ -140,7 +140,8 @@ export default function ProfilePage() {
       }
 
       setSecMessage(
-        "Password changed successfully. Please check your email for confirmation."
+        "Password changed successfully."
+        // + " Please check your email for confirmation."
       );
       setCurrentPassword("");
       setNewPassword("");
