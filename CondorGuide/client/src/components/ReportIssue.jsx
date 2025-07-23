@@ -44,6 +44,9 @@ const ReportIssue = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [locations, setLocations] = useState([]);
 
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognitionInstance, setRecognitionInstance] = useState(null);
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: location }, replace: true });
@@ -54,14 +57,14 @@ const ReportIssue = () => {
   }, [isAuthenticated]);
 
   const fetchLocations = async () => {
-  try {
-    const baseURL = import.meta.env.VITE_API_BASE_URL;
-    const response = await axios.get(`${baseURL}/api/classrooms/locations`);
-    setLocations(response.data.data);
-  } catch (error) {
-    console.error("Error fetching locations:", error);
-  }
-};
+    try {
+      const baseURL = import.meta.env.VITE_API_BASE_URL;
+      const response = await axios.get(`${baseURL}/api/classrooms/locations`);
+      setLocations(response.data.data);
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+    }
+  };
 
   const fetchIssues = async () => {
     try {
@@ -73,12 +76,8 @@ const ReportIssue = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      const userIssues = response.data.data;
-      // .filter(
-      //   (issue) => issue.createdBy?._id === currentUser?._id
-      // );
 
-      setIssues(userIssues);
+      setIssues(response.data.data);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching issues:", error);
@@ -129,17 +128,57 @@ const ReportIssue = () => {
     }));
   };
 
+  const toggleRecording = () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      alert("Sorry, your browser does not support voice input.");
+      return;
+    }
+
+    if (!recognitionInstance) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      const recog = new SpeechRecognition();
+      recog.lang = "en-US";
+      recog.interimResults = false;
+      recog.maxAlternatives = 1;
+
+      recog.onstart = () => setIsRecording(true);
+      recog.onerror = (e) => {
+        console.error(e);
+        setIsRecording(false);
+      };
+      recog.onend = () => setIsRecording(false);
+
+      recog.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setFormData((prev) => ({
+          ...prev,
+          description: prev.description
+            ? `${prev.description} ${transcript}`
+            : transcript,
+        }));
+      };
+
+      setRecognitionInstance(recog);
+      recog.start();
+    } else {
+      if (isRecording) {
+        recognitionInstance.stop();
+      } else {
+        recognitionInstance.start();
+      }
+    }
+  };
+
   const validateForm = () => {
     const errs = {};
     if (!formData.title.trim()) errs.title = "Title is required.";
-    if (!formData.description.trim())
-      errs.description = "Description is required.";
+    if (!formData.description.trim()) errs.description = "Description is required.";
     if (!formData.category) errs.category = "Please select a category.";
-    if (!formData.subcategory)
-      errs.subcategory = "Please select a subcategory.";
+    if (!formData.subcategory) errs.subcategory = "Please select a subcategory.";
     if (!formData.priority) errs.priority = "Please select a priority level.";
-    if (!formData.location.trim())
-      errs.location = "Location name is required.";
+    if (!formData.location.trim()) errs.location = "Location name is required.";
     return errs;
   };
 
@@ -187,7 +226,7 @@ const ReportIssue = () => {
           image: null,
           location: "",
         });
-        fetchIssues(); 
+        fetchIssues();
         setKey("dashboard");
       }
     } catch (error) {
@@ -216,8 +255,7 @@ const ReportIssue = () => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
 
-    const baseURL =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
     if (imagePath.startsWith("http")) {
       return imagePath;
@@ -233,9 +271,7 @@ const ReportIssue = () => {
       cleanPath = `uploads/${imagePath.replace(/^\/+/, "")}`;
     }
 
-    const fullUrl = `${baseURL}/${cleanPath}`;
-    console.log("Image URL constructed:", fullUrl);
-    return fullUrl;
+    return `${baseURL}/${cleanPath}`;
   };
 
   const renderDashboard = () => (
@@ -299,8 +335,6 @@ const ReportIssue = () => {
                     <div className="text-muted">No image provided</div>
                   )}
                 </Col>
-
-                {/* RIGHT: Text Content */}
                 <Col md={8}>
                   <Card.Title>
                     {issue.title} <Badge bg="secondary">{issue.status}</Badge>
@@ -311,8 +345,7 @@ const ReportIssue = () => {
                   <Card.Text>
                     <strong>Priority:</strong> {issue.priority} <br />
                     <strong>Location:</strong> {issue.location} <br />
-                    <strong>Date:</strong>{" "}
-                    {new Date(issue.createdAt).toLocaleString()}
+                    <strong>Date:</strong> {new Date(issue.createdAt).toLocaleString()}
                   </Card.Text>
                 </Col>
               </Row>
@@ -344,9 +377,7 @@ const ReportIssue = () => {
                 <h2 className="mb-4 text-center" style={{ color: "#e1c212" }}>
                   Report an Issue
                 </h2>
-                {submitted && (
-                  <Alert variant="success">Issue reported successfully!</Alert>
-                )}
+                {submitted && <Alert variant="success">Issue reported successfully!</Alert>}
                 {submitError && <Alert variant="danger">{submitError}</Alert>}
                 <Form onSubmit={handleSubmit} encType="multipart/form-data">
                   {/* TITLE */}
@@ -368,18 +399,30 @@ const ReportIssue = () => {
                   {/* DESCRIPTION */}
                   <Form.Group className="mb-3">
                     <Form.Label>Description</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={4}
-                      placeholder="Describe the issue"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      isInvalid={!!formErrors.description}
-                    />
+                    <div className="d-flex gap-2">
+                      <Form.Control
+                        as="textarea"
+                        rows={4}
+                        placeholder="Describe the issue"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        isInvalid={!!formErrors.description}
+                      />
+                      <Button
+                        variant={isRecording ? "danger" : "secondary"}
+                        onClick={toggleRecording}
+                        aria-label="Start voice input"
+                      >
+                        🎤
+                      </Button>
+                    </div>
                     <Form.Control.Feedback type="invalid">
                       {formErrors.description}
                     </Form.Control.Feedback>
+                    {isRecording && (
+                      <small className="text-muted">Listening… speak now</small>
+                    )}
                   </Form.Group>
 
                   {/* CATEGORY & SUBCATEGORY */}
