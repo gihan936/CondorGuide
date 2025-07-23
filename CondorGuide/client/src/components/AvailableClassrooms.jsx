@@ -48,20 +48,35 @@ const AvailableClassrooms = () => {
             <Row className="gy-3">
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label>Select Date</Form.Label>
-                  <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                  <Form.Label htmlFor="dateInput">Select Date</Form.Label>
+                  <Form.Control
+                    id="dateInput"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label>From</Form.Label>
-                  <Form.Control type="time" value={from} onChange={(e) => setFrom(e.target.value)} />
+                  <Form.Label htmlFor="fromTime">From</Form.Label>
+                  <Form.Control
+                    id="fromTime"
+                    type="time"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                  />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label>To</Form.Label>
-                  <Form.Control type="time" value={to} onChange={(e) => setTo(e.target.value)} />
+                  <Form.Label htmlFor="toTime">To</Form.Label>
+                  <Form.Control
+                    id="toTime"
+                    type="time"
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -71,7 +86,11 @@ const AvailableClassrooms = () => {
         <Row className="gy-3 mb-4 text-center">
           {wings.map((wing, idx) => (
             <Col xs={6} md={4} key={idx}>
-              <div className="wing-card" onClick={() => handleWingClick(wing)}>
+              <div
+                className="wing-card"
+                onClick={() => handleWingClick(wing)}
+                aria-label={`Check available rooms in ${wing} Wing`}
+              >
                 <span>{wing} Wing</span>
               </div>
             </Col>

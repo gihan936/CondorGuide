@@ -77,7 +77,7 @@ const Home = () => {
           >
             <h1
               className="display-4 banner-text"
-              style={{ color: "#d4af37" }} // ✅ improved contrast
+              style={{ color: "#B68E0C" }}
             >
               Welcome to Condor Guide
             </h1>
@@ -114,7 +114,7 @@ const Home = () => {
                     <Card.Img
                       variant="top"
                       src={feature.image}
-                      alt=" " // ✅ decorative image
+                      alt=" "
                       className="feature-card-img"
                     />
                     <Card.Body>
@@ -150,7 +150,6 @@ const Home = () => {
         </Motion.div>
       </Container>
 
-      {/* ✅ Example social links for footer */}
       <footer className="text-center my-4">
         <a
           href="https://facebook.com"
