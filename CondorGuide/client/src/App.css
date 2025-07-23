@@ -467,7 +467,7 @@ body.light .classroom-section-heading {
 
 form label {
   font-weight: 600;
-  color: #e1c212 !important;
+  color: rgb(182, 142, 12) !important;
 }
 
 .card input, .card select, .card textarea {
