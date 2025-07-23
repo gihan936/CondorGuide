@@ -75,7 +75,12 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
           >
-            <h1 className="display-4 banner-text">Welcome to Condor Guide</h1>
+            <h1
+              className="display-4 banner-text"
+              style={{ color: "#B68E0C" }}
+            >
+              Welcome to Condor Guide
+            </h1>
             <p className="lead">
               Your smart companion to navigate, report, and secure your college
               experience.
@@ -109,6 +114,7 @@ const Home = () => {
                     <Card.Img
                       variant="top"
                       src={feature.image}
+                      alt=" "
                       className="feature-card-img"
                     />
                     <Card.Body>
@@ -143,6 +149,49 @@ const Home = () => {
           </p>
         </Motion.div>
       </Container>
+
+      <footer className="text-center my-4">
+        <a
+          href="https://facebook.com"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Visit our Facebook page"
+          title="Facebook"
+          className="mx-2"
+        >
+          <i className="fab fa-facebook"></i>
+        </a>
+        <a
+          href="https://twitter.com"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Visit our Twitter profile"
+          title="Twitter"
+          className="mx-2"
+        >
+          <i className="fab fa-twitter"></i>
+        </a>
+        <a
+          href="https://instagram.com"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Visit our Instagram profile"
+          title="Instagram"
+          className="mx-2"
+        >
+          <i className="fab fa-instagram"></i>
+        </a>
+        <a
+          href="https://linkedin.com"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Visit our LinkedIn profile"
+          title="LinkedIn"
+          className="mx-2"
+        >
+          <i className="fab fa-linkedin"></i>
+        </a>
+      </footer>
     </main>
   );
 };

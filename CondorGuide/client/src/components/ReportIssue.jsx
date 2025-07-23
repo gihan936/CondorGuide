@@ -144,10 +144,7 @@ const ReportIssue = () => {
       recog.maxAlternatives = 1;
 
       recog.onstart = () => setIsRecording(true);
-      recog.onerror = (e) => {
-        console.error(e);
-        setIsRecording(false);
-      };
+      recog.onerror = () => setIsRecording(false);
       recog.onend = () => setIsRecording(false);
 
       recog.onresult = (event) => {
@@ -178,7 +175,7 @@ const ReportIssue = () => {
     if (!formData.category) errs.category = "Please select a category.";
     if (!formData.subcategory) errs.subcategory = "Please select a subcategory.";
     if (!formData.priority) errs.priority = "Please select a priority level.";
-    if (!formData.location.trim()) errs.location = "Location name is required.";
+    if (!formData.location.trim()) errs.location = "Location is required.";
     return errs;
   };
 
@@ -230,12 +227,7 @@ const ReportIssue = () => {
         setKey("dashboard");
       }
     } catch (error) {
-      console.error("Error:", error);
-      setSubmitError(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to submit issue. Please try again."
-      );
+      setSubmitError("Failed to submit issue. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -374,48 +366,48 @@ const ReportIssue = () => {
           <Row className="justify-content-center">
             <Col lg={8}>
               <Card className={`p-4 shadow ${themeClasses}`}>
-                <h2 className="mb-4 text-center" style={{ color: "#e1c212" }}>
+                <h2
+                  className="mb-4 text-center fw-bold"
+                  style={{ color: "#B68E0C" }}
+                >
                   Report an Issue
                 </h2>
                 {submitted && <Alert variant="success">Issue reported successfully!</Alert>}
                 {submitError && <Alert variant="danger">{submitError}</Alert>}
+
                 <Form onSubmit={handleSubmit} encType="multipart/form-data">
-                  {/* TITLE */}
                   <Form.Group className="mb-3">
-                    <Form.Label>Issue Title</Form.Label>
+                    <Form.Label htmlFor="issueTitle">Issue Title</Form.Label>
                     <Form.Control
+                      id="issueTitle"
                       type="text"
-                      placeholder="Enter issue title"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
                       isInvalid={!!formErrors.title}
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {formErrors.title}
-                    </Form.Control.Feedback>
                   </Form.Group>
 
-                  {/* DESCRIPTION */}
                   <Form.Group className="mb-3">
-                    <Form.Label>Description</Form.Label>
+                    <Form.Label htmlFor="description">Description</Form.Label>
                     <div className="d-flex gap-2">
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
+                    <Form.Control
+                      as="textarea"
+                      id="description"
+                      rows={4}
                         placeholder="Describe the issue"
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        isInvalid={!!formErrors.description}
-                      />
-                      <Button
-                        variant={isRecording ? "danger" : "secondary"}
-                        onClick={toggleRecording}
-                        aria-label="Start voice input"
-                      >
-                        🎤
-                      </Button>
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      isInvalid={!!formErrors.description}
+                    />
+                    <Button
+                      variant={isRecording ? "danger" : "secondary"}
+                      onClick={toggleRecording}
+                      aria-label="Toggle voice input"
+                    >
+                      🎤
+                    </Button>
                     </div>
                     <Form.Control.Feedback type="invalid">
                       {formErrors.description}
@@ -428,44 +420,46 @@ const ReportIssue = () => {
                   {/* CATEGORY & SUBCATEGORY */}
                   <Row className="mb-3">
                     <Col md={6}>
-                      <Form.Label>Main Category</Form.Label>
-                      <Form.Select
-                        name="category"
-                        value={formData.category}
+                      <Form.Label htmlFor="category">Main Category</Form.Label>
+                    <Form.Select
+                      id="category"
+                      name="category"
+                      value={formData.category}
                         onChange={(e) => {
                           handleInputChange(e);
                           setFormData((prev) => ({ ...prev, subcategory: "" }));
                         }}
                         isInvalid={!!formErrors.category}
-                      >
+                    >
                         <option value="">Select Main Category</option>
-                        {Object.keys(categoryOptions).map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </Form.Select>
+                      {Object.keys(categoryOptions).map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </Form.Select>
                       <Form.Control.Feedback type="invalid">
                         {formErrors.category}
                       </Form.Control.Feedback>
                     </Col>
 
                     <Col md={6}>
-                      <Form.Label>Subcategory</Form.Label>
-                      <Form.Select
-                        name="subcategory"
-                        value={formData.subcategory}
-                        onChange={handleInputChange}
+                      <Form.Label htmlFor="subcategory">Subcategory</Form.Label>
+                    <Form.Select
+                      id="subcategory"
+                      name="subcategory"
+                      value={formData.subcategory}
+                      onChange={handleInputChange}
                         disabled={!formData.category}
                         isInvalid={!!formErrors.subcategory}
-                      >
+                    >
                         <option value="">Select Subcategory</option>
                         {categoryOptions[formData.category]?.map((sub, idx) => (
                           <option key={idx} value={sub}>
-                            {sub}
-                          </option>
-                        ))}
-                      </Form.Select>
+                          {sub}
+                        </option>
+                      ))}
+                    </Form.Select>
                       <Form.Control.Feedback type="invalid">
                         {formErrors.subcategory}
                       </Form.Control.Feedback>
@@ -475,51 +469,53 @@ const ReportIssue = () => {
                   {/* PRIORITY & LOCATION */}
                   <Row className="mb-3">
                     <Col md={6}>
-                      <Form.Label>Priority</Form.Label>
-                      <Form.Select
-                        name="priority"
-                        value={formData.priority}
-                        onChange={handleInputChange}
+                      <Form.Label htmlFor="priority">Priority</Form.Label>
+                    <Form.Select
+                      id="priority"
+                      name="priority"
+                      value={formData.priority}
+                      onChange={handleInputChange}
                         isInvalid={!!formErrors.priority}
-                      >
+                    >
                         <option value="">Select Priority</option>
-                        {priorities.map((p) => (
-                          <option key={p} value={p}>
-                            {p}
-                          </option>
-                        ))}
-                      </Form.Select>
+                      {priorities.map((p) => (
+                        <option key={p} value={p}>
+                          {p}
+                        </option>
+                      ))}
+                    </Form.Select>
                       <Form.Control.Feedback type="invalid">
                         {formErrors.priority}
                       </Form.Control.Feedback>
                     </Col>
 
                     <Col md={6}>
-                      <Form.Label>Location Name</Form.Label>
-                      <Form.Select
-                        name="location"
-                        value={formData.location}
-                        onChange={handleInputChange}
+                      <Form.Label htmlFor="location">Location Name</Form.Label>
+                    <Form.Select
+                      id="location"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleInputChange}
                         isInvalid={!!formErrors.location}
-                      >
+                    >
                         <option value="">Select Location</option>
-                        {locations.map((loc,i) => (
-                          <option key={i} value={loc.location_name}>
-                            {loc.location_name}
-                          </option>
-                        ))}
-                      </Form.Select>
+                        {locations.map((loc, i) => (
+                        <option key={i} value={loc.location_name}>
+                          {loc.location_name}
+                        </option>
+                      ))}
+                    </Form.Select>
                       <Form.Control.Feedback type="invalid">
                         {formErrors.location}
                       </Form.Control.Feedback>
                     </Col>
                   </Row>
 
-                  {/* IMAGE */}
                   <Form.Group className="mb-4">
-                    <Form.Label>Upload Image</Form.Label>
+                    <Form.Label htmlFor="image">Upload Image</Form.Label>
                     <Form.Control
                       type="file"
+                      id="image"
                       name="image"
                       accept="image/*"
                       onChange={handleInputChange}

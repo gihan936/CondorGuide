@@ -32,7 +32,7 @@ const Header = () => {
             width="70"
             className="me-2"
           />
-          <span className="fw-bold fs-4" style={{ color: '#e1c212' }}>
+          <span className="fw-bold fs-4" style={{ color: '#B68E0C' }}>
             Condor Guide
           </span>
         </Navbar.Brand>
