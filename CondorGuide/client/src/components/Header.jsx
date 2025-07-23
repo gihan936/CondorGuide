@@ -81,6 +81,13 @@ const Header = () => {
               </>
             )}
 
+            {/* SECURITY ONLY */}
+            {user?.role === 'security' && (
+              <>
+                <Nav.Link href="/security-alerts" className="nav-link-custom">Security Alert Management</Nav.Link>
+              </>
+            )}
+
             {/* Avatar Dropdown */}
             <Dropdown align="end">
               <Dropdown.Toggle

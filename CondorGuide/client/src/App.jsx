@@ -90,7 +90,7 @@ const AppWrapper = () => {
           <Route
             path="/security-alerts"
             element={
-              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+              <ProtectedRoute allowedRoles={["user", "security", "admin", "superadmin"]}>
                 <SecurityAlert />
               </ProtectedRoute>
             }
