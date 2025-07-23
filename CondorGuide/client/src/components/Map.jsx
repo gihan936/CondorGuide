@@ -218,11 +218,12 @@ const Map = () => {
       setDebugInfo('Fetching room, hallway, and intersection data...');
       
       const roomDatasetIds = [
-        'cmbhf0ndq2kld1on5g332amn7',
-        'cmbfb8tar52id1ump75xqao9r', 
-        'cmbhf2g8t36tf1pna7q2ed3bu',
-        'cmcl7aad615ag1nnty7radgxw',  // B wing level 2
-        'cmdds0tde051n1no3dr0qexzj'  // NEW: level-2-locations - unified room polygons
+        'cmbhf0ndq2kld1on5g332amn7',  // A-wing-level-1
+        'cmclc9qq10bph1mpdk67acyag',  // B-wing-level-1
+        'cmbfb8tar52id1ump75xqao9r',  // A-Wing-level-2
+        'cmbhf2g8t36tf1pna7q2ed3bu',  // A-wing-level-3
+        'cmcl7aad615ag1nnty7radgxw',  // B-wing-level-2
+        'cmdds0tde051n1no3dr0qexzj'   // level-2-locations - unified room polygons
       ];
       
       // Multi-floor dataset configuration
@@ -265,19 +266,34 @@ const Map = () => {
                   keys.forEach(key => {
                     // Detect floor from room name/number (e.g., "2A101" -> floor 2, "3B201" -> floor 3)
                     let detectedFloor = 2; // default
-                    if (feature.properties.room_name || feature.properties.name || feature.properties.room_number) {
-                      const roomIdentifier = feature.properties.room_name || feature.properties.name || feature.properties.room_number;
+                    const roomIdentifier = feature.properties.room_name || feature.properties.name || feature.properties.room_number || feature.properties.location_name || feature.properties.location_number;
+                    if (roomIdentifier) {
                       const floorMatch = roomIdentifier.match(/^(\d+)[ABC]/);
                       if (floorMatch) {
                         detectedFloor = parseInt(floorMatch[1]);
                       }
                     }
                     
+                    // Determine dataset name based on ID
+                    let datasetName = 'unknown';
+                    switch(datasetId) {
+                      case 'cmbhf0ndq2kld1on5g332amn7': datasetName = 'A-wing-level-1'; break;
+                      case 'cmclc9qq10bph1mpdk67acyag': datasetName = 'B-wing-level-1'; break;
+                      case 'cmbfb8tar52id1ump75xqao9r': datasetName = 'A-Wing-level-2'; break;
+                      case 'cmbhf2g8t36tf1pna7q2ed3bu': datasetName = 'A-wing-level-3'; break;
+                      case 'cmcl7aad615ag1nnty7radgxw': datasetName = 'B-wing-level-2'; break;
+                      case 'cmdds0tde051n1no3dr0qexzj': datasetName = 'level-2-locations'; break;
+                      case 'cmdg1erdc0pqw1mteg8j4tepp': datasetName = 'level-1-locations'; break;
+                      default: datasetName = datasetId;
+                    }
+                    
                     allRoomData[key] = {
                       ...feature.properties,
                       center_coordinates: centerCoords,
                       geometry: feature.geometry,
-                      floor: feature.properties.floor || detectedFloor
+                      floor: feature.properties.floor || detectedFloor,
+                      dataset_id: datasetId,
+                      dataset_name: datasetName
                     };
                   });
                 }
@@ -405,13 +421,28 @@ const Map = () => {
             segment.properties && segment.properties.floor == floor
           );
           
-          // Filter room polygons to only include rooms on the current floor
+          // Filter room polygons to only include rooms on the current floor using dataset info
           const floorRoomPolygons = roomPolygons.filter(polygon => {
-            // Get room data to check floor
+            // Get room data to check floor and dataset
             const roomEntry = Object.values(allRoomData).find(room => 
               room.geometry === polygon
             );
-            return roomEntry && roomEntry.floor == floor;
+            
+            if (!roomEntry) return false;
+            
+            // Use both floor detection and dataset filtering for precise floor isolation
+            const roomFloor = roomEntry.floor;
+            const datasetId = roomEntry.dataset_id;
+            
+            // Define which datasets belong to which floors
+            const floorDatasets = {
+              1: ['cmbhf0ndq2kld1on5g332amn7', 'cmclc9qq10bph1mpdk67acyag', 'cmdg1erdc0pqw1mteg8j4tepp'], // A-wing-1, B-wing-1, unified-1
+              2: ['cmbfb8tar52id1ump75xqao9r', 'cmcl7aad615ag1nnty7radgxw', 'cmdds0tde051n1no3dr0qexzj'], // A-wing-2, B-wing-2, unified-2
+              3: ['cmbhf2g8t36tf1pna7q2ed3bu', 'cmcldrhyu04rx1olrhjjbm33r'] // A-wing-3, B-wing-3
+            };
+            
+            const expectedDatasets = floorDatasets[floor] || [];
+            return roomFloor == floor && expectedDatasets.includes(datasetId);
           });
           
           
@@ -1798,10 +1829,170 @@ const Map = () => {
         duration: 1000
       });
 
+      // Add animated route drawing effect
+      setTimeout(() => {
+        animateRouteDrawing(routeSourceId, validCoordinates);
+      }, 1000); // Wait for map to finish fitting
+
+      // Add animated marker after route drawing
+      setTimeout(() => {
+        animateMarkerAlongRoute(validCoordinates);
+      }, 2000); // Start marker animation after route drawing
+
 
     } catch (error) {
       setDebugInfo(`Route display failed: ${error.message}`);
     }
+  };
+
+  // Animate route drawing effect
+  const animateRouteDrawing = (sourceId, coordinates) => {
+    if (!mapRef.current || !coordinates || coordinates.length < 2) return;
+
+    let currentPointIndex = 0;
+    const animationSpeed = 100; // milliseconds between points
+
+    const drawNextSegment = () => {
+      if (currentPointIndex >= coordinates.length - 1) return;
+
+      currentPointIndex++;
+      const partialCoordinates = coordinates.slice(0, currentPointIndex + 1);
+
+      const routeGeoJSON = {
+        type: 'Feature',
+        properties: { name: 'Navigation Route' },
+        geometry: {
+          type: 'LineString',
+          coordinates: partialCoordinates
+        }
+      };
+
+      try {
+        if (mapRef.current.getSource(sourceId)) {
+          mapRef.current.getSource(sourceId).setData(routeGeoJSON);
+        }
+      } catch (error) {
+        console.warn('Route animation error:', error);
+        return;
+      }
+
+      if (currentPointIndex < coordinates.length - 1) {
+        setTimeout(drawNextSegment, animationSpeed);
+      }
+    };
+
+    // Start with just the first point
+    const initialGeoJSON = {
+      type: 'Feature',
+      properties: { name: 'Navigation Route' },
+      geometry: {
+        type: 'LineString',
+        coordinates: [coordinates[0], coordinates[0]]
+      }
+    };
+
+    try {
+      if (mapRef.current.getSource(sourceId)) {
+        mapRef.current.getSource(sourceId).setData(initialGeoJSON);
+        setTimeout(drawNextSegment, animationSpeed);
+      }
+    } catch (error) {
+      console.warn('Route animation initialization error:', error);
+    }
+  };
+
+  // Enhanced marker animation along route
+  const animateMarkerAlongRoute = (routeCoordinates) => {
+    if (!routeCoordinates || routeCoordinates.length < 2 || !mapRef.current) return;
+
+    // Remove any existing animated marker
+    const existingMarkers = document.querySelectorAll('.animated-navigation-marker');
+    existingMarkers.forEach(marker => marker.remove());
+
+    // Create enhanced marker element
+    const markerElement = document.createElement('div');
+    markerElement.className = 'animated-navigation-marker';
+    markerElement.innerHTML = `
+      <div style="
+        width: 20px;
+        height: 20px;
+        background: #4CAF50;
+        border: 3px solid #FFFFFF;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        animation: pulse 2s infinite;
+        position: relative;
+      ">
+        <div style="
+          position: absolute;
+          top: -8px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-bottom: 12px solid #4CAF50;
+        "></div>
+      </div>
+    `;
+
+    // Add CSS animation for pulsing effect if not already added
+    if (!document.querySelector('#route-animation-styles')) {
+      const style = document.createElement('style');
+      style.id = 'route-animation-styles';
+      style.textContent = `
+        @keyframes pulse {
+          0% { transform: scale(1); box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4); }
+          50% { transform: scale(1.2); box-shadow: 0 2px 12px rgba(76, 175, 80, 0.6); }
+          100% { transform: scale(1); box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const marker = new mapboxgl.Marker(markerElement)
+      .setLngLat(routeCoordinates[0])
+      .addTo(mapRef.current);
+
+    let startTime = null;
+    const duration = Math.max(8000, routeCoordinates.length * 300); // Dynamic duration based on route length
+
+    const frame = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const ratio = Math.min(progress / duration, 1);
+
+      if (ratio < 1) {
+        const totalSegments = routeCoordinates.length - 1;
+        const currentSegment = Math.floor(ratio * totalSegments);
+        const segmentProgress = (ratio * totalSegments) - currentSegment;
+
+        if (currentSegment < totalSegments) {
+          const point1 = routeCoordinates[currentSegment];
+          const point2 = routeCoordinates[currentSegment + 1];
+
+          const lng = point1[0] + (point2[0] - point1[0]) * segmentProgress;
+          const lat = point1[1] + (point2[1] - point1[1]) * segmentProgress;
+
+          marker.setLngLat([lng, lat]);
+        }
+        
+        animationFrameRef.current = requestAnimationFrame(frame);
+      } else {
+        // Animation completed - keep marker at destination for a moment then remove
+        setTimeout(() => {
+          marker.remove();
+        }, 2000);
+      }
+    };
+
+    // Cancel any existing animation
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(frame);
   };
 
   // NEW: Fix network fragmentation by creating bridge connections
