@@ -68,3 +68,43 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+
+/* Font Size Classes for Accessibility */
+body.font-small {
+  font-size: 14px;
+}
+
+body.font-small h1 { font-size: 1.8rem; }
+body.font-small h2 { font-size: 1.6rem; }
+body.font-small h3 { font-size: 1.4rem; }
+body.font-small h4 { font-size: 1.2rem; }
+body.font-small h5 { font-size: 1.1rem; }
+body.font-small h6 { font-size: 1rem; }
+body.font-small .nav-link { font-size: 14px; }
+body.font-small .btn { font-size: 14px; }
+
+body.font-medium {
+  font-size: 16px;
+}
+
+body.font-medium h1 { font-size: 2.5rem; }
+body.font-medium h2 { font-size: 2rem; }
+body.font-medium h3 { font-size: 1.75rem; }
+body.font-medium h4 { font-size: 1.5rem; }
+body.font-medium h5 { font-size: 1.25rem; }
+body.font-medium h6 { font-size: 1rem; }
+body.font-medium .nav-link { font-size: 16px; }
+body.font-medium .btn { font-size: 16px; }
+
+body.font-large {
+  font-size: 18px;
+}
+
+body.font-large h1 { font-size: 3rem; }
+body.font-large h2 { font-size: 2.5rem; }
+body.font-large h3 { font-size: 2rem; }
+body.font-large h4 { font-size: 1.75rem; }
+body.font-large h5 { font-size: 1.5rem; }
+body.font-large h6 { font-size: 1.25rem; }
+body.font-large .nav-link { font-size: 18px; }
+body.font-large .btn { font-size: 18px; }

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Navbar, Nav, Dropdown, Image, Container } from 'react-bootstrap';
+import { Navbar, Nav, Dropdown, Image, Container, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import logoLight from '../assets/logo.png';
@@ -7,7 +7,7 @@ import logoDark from '../assets/white_logo.png';
 import avatar from '../assets/avatar.png';
 
 const Header = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme, fontSize, changeFontSize } = useContext(ThemeContext);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
 
@@ -87,6 +87,41 @@ const Header = () => {
                 <Nav.Link href="/security-alerts" className="nav-link-custom">Security Alert Management</Nav.Link>
               </>
             )}
+
+            {/* Font Size Dropdown */}
+            <Dropdown align="end">
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                id="dropdown-font-size"
+                size="sm"
+                title="Adjust font size for accessibility"
+              >
+                <span style={{ fontSize: '14px' }}>A</span>
+                <span style={{ fontSize: '16px' }}>A</span>
+                <span style={{ fontSize: '18px' }}>A</span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className={`dropdown-menu-${theme}`}>
+                <Dropdown.Header>Font Size</Dropdown.Header>
+                <Dropdown.Item 
+                  onClick={() => changeFontSize('small')}
+                  active={fontSize === 'small'}
+                >
+                  Small
+                </Dropdown.Item>
+                <Dropdown.Item 
+                  onClick={() => changeFontSize('medium')}
+                  active={fontSize === 'medium'}
+                >
+                  Medium
+                </Dropdown.Item>
+                <Dropdown.Item 
+                  onClick={() => changeFontSize('large')}
+                  active={fontSize === 'large'}
+                >
+                  Large
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
 
             {/* Avatar Dropdown */}
             <Dropdown align="end">
