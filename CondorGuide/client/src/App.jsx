@@ -48,7 +48,7 @@ const AppWrapper = () => {
           <Route
             path="/issue-management"
             element={
-              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+              <ProtectedRoute allowedRoles={["admin", "superadmin", "maintenance"]}>
                 <IssueManagement />
               </ProtectedRoute>
             }
