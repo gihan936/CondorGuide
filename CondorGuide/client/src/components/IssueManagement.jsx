@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Table, Button, Form, Modal, Badge } from "react-bootstrap";
-
+import { useAuth } from "../context/AuthContext";
 const STATUSES = ["Open", "Pending", "In Progress", "Resolved"];
 const PRIORITIES = ["Low", "Medium", "High", "Urgent"];
 
 const IssueManagement = () => {
+    const { currentUser } = useAuth(); 
   const [issues, setIssues] = useState([]);
   const [filteredIssues, setFilteredIssues] = useState([]);
 
@@ -147,7 +148,7 @@ const IssueManagement = () => {
             <th>Priority</th>
             <th>Status</th>
             <th>Reported On</th>
-            <th>Actions</th>
+            {currentUser.role === "maintenance" && <th>Actions</th>  }
           </tr>
         </thead>
         <tbody>
@@ -167,11 +168,13 @@ const IssueManagement = () => {
                 </td>
                 <td>{issue.status}</td>
                 <td>{new Date(issue.createdAt).toLocaleDateString()}</td>
-                <td>
-                  <Button size="sm" variant="primary" onClick={() => openModal(issue)}>
-                    Manage
-                  </Button>
-                </td>
+                {currentUser.role === "maintenance" && (
+                  <td>
+                    <Button size="sm" variant="primary" onClick={() => openModal(issue)}>
+                      Manage
+                    </Button>
+                  </td>
+                )}
               </tr>
             ))
           )}
