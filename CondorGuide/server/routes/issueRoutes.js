@@ -1,9 +1,10 @@
 import express from "express";
 import IssueReport from "../models/IssueReport.js";
-import upload from "../config/multerConfig.js";
+import upload from "../config/multerGridFS.js";
 import jwt from "jsonwebtoken";
-import { protect } from '../middleware/auth.js';
-
+import mongoose from "mongoose";
+import { protect } from "../middleware/auth.js";
+import { getGridFSBucket } from "../config/gridfs.js";
 
 const router = express.Router();
 
@@ -20,68 +21,53 @@ const getUserInfo = (req) => {
 };
 
 // Report a new issue
-router.post("/", upload.single("image"), async (req, res) => {
-    try {
-        const { title, description, category, subcategory, priority, location } =
-              req.body;
-                  const userInfo = getUserInfo(req) || {};
+router.post("/", (req, res, next) => {
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      console.error("Upload middleware error:", err);
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const { title, description, category, subcategory, priority, location } =
+      req.body;
+    const userInfo = getUserInfo(req) || {};
 
-                      let imagePath = null;
-                          if (req.file) {
-                                // Store just the relative path from uploads folder
-                                      imagePath = `uploads/${req.file.filename}`;
-                                            console.log("File uploaded:", req.file);
-                                                  console.log("Image path stored:", imagePath);
-                                                      }
+    const newIssue = new IssueReport({
+      title,
+      description,
+      category,
+      subcategory,
+      priority,
+      location,
+      reportedBy: userInfo.userId || null,
+      image: req.file ? `${req.protocol}://${req.get("host")}/api/issues/image/${req.file.id}` : null,
+    });
 
-                                                          const newIssue = new IssueReport({
-                                                                title,
-                                                                      description,
-                                                                            category,
-                                                                                  subcategory,
-                                                                                        priority,
-                                                                                              location,
-                                                                                                    image: imagePath,
-                                                                                                          reportedBy: userInfo.userId,
-                                                                                                                userEmail: userInfo.email,
-                                                                                                                      userRole: userInfo.role,
-                                                                                                                          });
+    await newIssue.save();
 
-                                                                                                                              const savedIssue = await newIssue.save();
-                                                                                                                                  console.log("Issue saved with image path:", savedIssue.image);
-
-                                                                                                                                      res.status(201).json({
-                                                                                                                                            success: true,
-                                                                                                                                                  data: savedIssue,
-                                                                                                                                                        message: "Issue reported successfully",
-                                                                                                                                                            });
-                                                                                                                                                              } catch (error) {
-                                                                                                                                                                  console.error("Error reporting issue:", error);
-                                                                                                                                                                      res.status(500).json({
-                                                                                                                                                                            success: false,
-                                                                                                                                                                                  message: "Failed to report issue",
-                                                                                                                                                                                        error: error.message,
-                                                                                                                                                                                            });
-                                                                                                                                                                                              }
-                                                                                                                                                                                              });
+    res.status(201).json({ success: true, data: newIssue });
+  } catch (error) {
+    console.error("Error reporting issue:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to report issue",
+      error: error.message,
+    });
+  }
+});
 
 // Get all issues
 router.get("/all", async (req, res) => {
   try {
     const issues = await IssueReport.find().populate("reportedBy", "email role");
 
-    // Log image paths for debugging
-    issues.forEach(issue => {
-      if (issue.image) {
-        console.log(`Issue ${issue._id} image path:`, issue.image);
-      }
-    });
-
     const host = req.protocol + "://" + req.get("host");
 
     const formattedIssues = issues.map((issue) => ({
       ...issue.toObject(),
-      image: issue.image ? `${host}/${issue.image}` : null,
     }));
 
     res.json({
@@ -98,7 +84,23 @@ router.get("/all", async (req, res) => {
   }
 });
 
-// Get issues for the current user
+// Get image by id
+router.get("/image/:id", (req, res) => {
+  const bucket = getGridFSBucket();
+
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).send("Invalid image ID");
+  }
+
+  const downloadStream = bucket.openDownloadStream(
+    new mongoose.Types.ObjectId(req.params.id)
+  );
+
+  downloadStream.on("error", () => res.status(404).send("Image not found"));
+  downloadStream.pipe(res);
+});
+
+// Get issues for current user
 router.get("/user", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -125,7 +127,8 @@ router.get("/user", async (req, res) => {
   }
 });
 
-router.put('/update', async (req, res) => {
+// Update an issue (admin)
+router.put("/update", async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -137,20 +140,18 @@ router.put('/update', async (req, res) => {
 
     const issue = await IssueReport.findById(issueId);
     if (!issue) {
-      return res.status(404).json({ success: false, message: 'Issue not found' });
+      return res.status(404).json({ success: false, message: "Issue not found" });
     }
 
-    // Apply updates
     if (status) issue.status = status;
     if (priority) issue.priority = priority;
     if (mainCategory) issue.mainCategory = mainCategory;
 
-    // Add admin comment if provided
     if (comment) {
       issue.comments.push({
         admin: decoded.userId,
         comment: comment,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
 
@@ -167,25 +168,27 @@ router.put('/update', async (req, res) => {
   }
 });
 
-router.patch('/:id/resolve', protect, async (req, res) => {
+// Resolve an issue (user)
+router.patch("/:id/resolve", protect, async (req, res) => {
   try {
-    const alert = await SecurityAlert.findById(req.params.id);
+    const issue = await IssueReport.findById(req.params.id);
 
-    if (!alert) return res.status(404).json({ message: 'Alert not found' });
+    if (!issue) {
+      return res.status(404).json({ success: false, message: "Issue not found" });
+    }
 
-    // Ensure the user resolving it is the one who created it
-    if (alert.userId !== req.user.userId)
-      return res.status(403).json({ message: 'Not authorized to resolve this alert' });
+    if (issue.reportedBy.toString() !== req.user.userId) {
+      return res.status(403).json({ success: false, message: "Not authorized to resolve this issue" });
+    }
 
-    alert.resolved = true;
-    await alert.save();
+    issue.status = "Resolved";
+    await issue.save();
 
-    res.json({ success: true, alert });
+    res.json({ success: true, data: issue });
   } catch (err) {
-    console.error('Resolve error:', err);
-    res.status(500).json({ message: 'Failed to resolve alert' });
+    console.error("Resolve error:", err);
+    res.status(500).json({ success: false, message: "Failed to resolve issue" });
   }
 });
-
 
 export default router;
