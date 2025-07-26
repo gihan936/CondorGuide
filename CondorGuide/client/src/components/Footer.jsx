@@ -37,18 +37,53 @@ const Footer = () => {
           <Col md={4}>
             <h5 className="footer-heading">Stay Connected</h5>
             <div className="social-icons d-flex gap-3 mb-3">
-              <a href="https://facebook.com" target="_blank" rel="noreferrer"><FaFacebookF /></a>
-              <a href="https://twitter.com" target="_blank" rel="noreferrer"><FaTwitter /></a>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer"><FaInstagram /></a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer"><FaLinkedinIn /></a>
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+                title="Facebook"
+              >
+                <FaFacebookF />
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Twitter"
+                title="Twitter"
+              >
+                <FaTwitter />
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                title="Instagram"
+              >
+                <FaInstagram />
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn"
+                title="LinkedIn"
+              >
+                <FaLinkedinIn />
+              </a>
             </div>
             <a
               href="https://www.conestogac.on.ca/"
               target="_blank"
               rel="noreferrer"
               className="college-link"
+              aria-label="Visit Conestoga College website"
+              title="Visit Conestoga College"
             >
-              <FaGlobe className="me-2" />Visit Conestoga College
+              <FaGlobe className="me-2" />
+              Visit Conestoga College
             </a>
           </Col>
         </Row>
