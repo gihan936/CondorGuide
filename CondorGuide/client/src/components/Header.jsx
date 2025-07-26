@@ -5,9 +5,8 @@ import {
   Dropdown,
   Image,
   Container,
-  Button,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 import logoLight from "../assets/logo.png";
 import logoDark from "../assets/white_logo.png";
@@ -17,6 +16,7 @@ const Header = () => {
   const { theme, toggleTheme, fontSize, changeFontSize } =
     useContext(ThemeContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user"));
 
   const handleLogout = () => {
@@ -24,19 +24,16 @@ const Header = () => {
     navigate("/");
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
     <Navbar
       expand="lg"
       bg={theme}
       variant={theme}
-      className={`py-3 shadow-sm ${
-        theme === "light" ? "bg-white" : "bg-black"
-      }`}
+      className={`py-3 shadow-sm ${theme === "light" ? "bg-white" : "bg-black"}`}
     >
-      <Container
-        fluid
-        className="px-4 d-flex justify-content-between align-items-center"
-      >
+      <Container fluid className="px-4 d-flex justify-content-between align-items-center">
         <Navbar.Brand href="/" className="d-flex align-items-center">
           <Image
             src={theme === "dark" ? logoDark : logoLight}
@@ -53,105 +50,141 @@ const Header = () => {
         <Navbar.Toggle aria-controls="main-navbar" />
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
-            {/* COMMON NAVS */}
-            <Nav.Link href="/" className="nav-link-custom">
+            <Nav.Link
+              href="/"
+              className={`nav-link-custom focus-ring ${isActive("/") ? "active fw-bold text-decoration-underline" : ""}`}
+            >
               Home
             </Nav.Link>
 
-            {/* Map visible to non-admins */}
             {user?.role !== "admin" && user?.role !== "superadmin" && (
-              <Nav.Link href="/map" className="nav-link-custom">
+              <Nav.Link
+                href="/map"
+                className={`nav-link-custom focus-ring ${isActive("/map") ? "active fw-bold text-decoration-underline" : ""}`}
+              >
                 College Map
               </Nav.Link>
             )}
 
-            {/* USER ONLY */}
             {user?.role === "user" && (
               <>
-                <Nav.Link href="/classrooms" className="nav-link-custom">
+                <Nav.Link
+                  href="/classrooms"
+                  className={`nav-link-custom focus-ring ${isActive("/classrooms") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Available Classrooms
                 </Nav.Link>
-                <Nav.Link href="/issues" className="nav-link-custom">
+                <Nav.Link
+                  href="/issues"
+                  className={`nav-link-custom focus-ring ${isActive("/issues") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Report Issues
                 </Nav.Link>
-                <Nav.Link href="/security-alerts" className="nav-link-custom">
+                <Nav.Link
+                  href="/security-alerts"
+                  className={`nav-link-custom focus-ring ${isActive("/security-alerts") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Security Alarm
                 </Nav.Link>
-                <Nav.Link href="/donate" className="nav-link-custom">
+                <Nav.Link
+                  href="/donate"
+                  className={`nav-link-custom focus-ring ${isActive("/donate") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Donate
                 </Nav.Link>
               </>
             )}
 
-            {/* ADMIN ONLY */}
             {user?.role === "admin" && (
               <>
-                <Nav.Link href="/issue-management" className="nav-link-custom">
+                <Nav.Link
+                  href="/issue-management"
+                  className={`nav-link-custom focus-ring ${isActive("/issue-management") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Issue Management
                 </Nav.Link>
                 <Nav.Link
                   href="/classroom-management"
-                  className="nav-link-custom"
+                  className={`nav-link-custom focus-ring ${isActive("/classroom-management") ? "active fw-bold text-decoration-underline" : ""}`}
                 >
                   Classroom Management
                 </Nav.Link>
-                <Nav.Link href="/security-alerts" className="nav-link-custom">
+                <Nav.Link
+                  href="/security-alerts"
+                  className={`nav-link-custom focus-ring ${isActive("/security-alerts") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Security Alert Management
                 </Nav.Link>
-                <Nav.Link href="/user-management" className="nav-link-custom">
+                <Nav.Link
+                  href="/user-management"
+                  className={`nav-link-custom focus-ring ${isActive("/user-management") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   User Management
                 </Nav.Link>
               </>
             )}
 
-            {/* SUPERADMIN ONLY */}
             {user?.role === "superadmin" && (
               <>
-                <Nav.Link href="/admin-management" className="nav-link-custom">
+                <Nav.Link
+                  href="/admin-management"
+                  className={`nav-link-custom focus-ring ${isActive("/admin-management") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Admin Management
                 </Nav.Link>
-                <Nav.Link href="/issue-management" className="nav-link-custom">
+                <Nav.Link
+                  href="/issue-management"
+                  className={`nav-link-custom focus-ring ${isActive("/issue-management") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Issue Management
                 </Nav.Link>
                 <Nav.Link
                   href="/classroom-management"
-                  className="nav-link-custom"
+                  className={`nav-link-custom focus-ring ${isActive("/classroom-management") ? "active fw-bold text-decoration-underline" : ""}`}
                 >
                   Classroom Management
                 </Nav.Link>
-                <Nav.Link href="/security-alerts" className="nav-link-custom">
+                <Nav.Link
+                  href="/security-alerts"
+                  className={`nav-link-custom focus-ring ${isActive("/security-alerts") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   Security Alert Management
                 </Nav.Link>
-                <Nav.Link href="/user-management" className="nav-link-custom">
+                <Nav.Link
+                  href="/user-management"
+                  className={`nav-link-custom focus-ring ${isActive("/user-management") ? "active fw-bold text-decoration-underline" : ""}`}
+                >
                   User Management
                 </Nav.Link>
               </>
             )}
 
-            {/* SECURITY ONLY */}
             {user?.role === "security" && (
-              <>
-                <Nav.Link href="/security-alerts" className="nav-link-custom">
-                  Security Alert Management
-                </Nav.Link>
-              </>
-            )}
-            {/* MAINTENANCE ONLY */}
-            {user?.role === "maintenance" && (
-              <>
-                <Nav.Link href="/issue-management" className="nav-link-custom">
-                  Issue Management
-                </Nav.Link>
-              </>
+              <Nav.Link
+                href="/security-alerts"
+                className={`nav-link-custom focus-ring ${isActive("/security-alerts") ? "active fw-bold text-decoration-underline" : ""}`}
+              >
+                Security Alert Management
+              </Nav.Link>
             )}
 
-            {/* Font Size Dropdown */}
+            {user?.role === "maintenance" && (
+              <Nav.Link
+                href="/issue-management"
+                className={`nav-link-custom focus-ring ${isActive("/issue-management") ? "active fw-bold text-decoration-underline" : ""}`}
+              >
+                Issue Management
+              </Nav.Link>
+            )}
+
             <Dropdown align="end">
               <Dropdown.Toggle
                 variant="outline-secondary"
                 id="dropdown-font-size"
                 size="sm"
                 title="Adjust font size for accessibility"
+                tabIndex={0}
+                className="focus-ring"
               >
                 <span style={{ fontSize: "14px" }}>A</span>
                 <span style={{ fontSize: "16px" }}>A</span>
@@ -162,30 +195,33 @@ const Header = () => {
                 <Dropdown.Item
                   onClick={() => changeFontSize("small")}
                   active={fontSize === "small"}
+                  className="focus-ring"
                 >
                   Small
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => changeFontSize("medium")}
                   active={fontSize === "medium"}
+                  className="focus-ring"
                 >
                   Medium
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => changeFontSize("large")}
                   active={fontSize === "large"}
+                  className="focus-ring"
                 >
                   Large
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
 
-            {/* Avatar Dropdown */}
             <Dropdown align="end">
               <Dropdown.Toggle
                 variant="link"
                 id="dropdown-avatar"
-                className="p-0 border-0"
+                className="p-0 border-0 focus-ring"
+                tabIndex={0}
               >
                 <Image
                   src={avatar}
@@ -198,20 +234,22 @@ const Header = () => {
                 {user && (
                   <>
                     <Dropdown.Header>{user.email}</Dropdown.Header>
-                    <Dropdown.Item href="/profile">Profile</Dropdown.Item>
-                    <Dropdown.Item href="/profile/security">
+                    <Dropdown.Item href="/profile" className="focus-ring">Profile</Dropdown.Item>
+                    <Dropdown.Item href="/profile/security" className="focus-ring">
                       Security
                     </Dropdown.Item>
                   </>
                 )}
-                <Dropdown.Item onClick={toggleTheme}>
+                <Dropdown.Item onClick={toggleTheme} className="focus-ring">
                   Toggle {theme === "light" ? "Dark" : "Light"} Mode
                 </Dropdown.Item>
                 <Dropdown.Divider />
                 {!user ? (
-                  <Dropdown.Item href="/login">Login</Dropdown.Item>
+                  <Dropdown.Item href="/login" className="focus-ring">Login</Dropdown.Item>
                 ) : (
-                  <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+                  <Dropdown.Item onClick={handleLogout} className="focus-ring">
+                    Logout
+                  </Dropdown.Item>
                 )}
               </Dropdown.Menu>
             </Dropdown>

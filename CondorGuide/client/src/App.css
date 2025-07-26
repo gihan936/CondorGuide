@@ -488,3 +488,10 @@ form label {
   border: 2px solid #fff;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
+
+
+.focus-ring:focus-visible {
+  outline: 3px solid #e1c212 !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
