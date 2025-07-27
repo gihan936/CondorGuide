@@ -243,29 +243,6 @@ const ReportIssue = () => {
     );
   });
 
-  // Helper function to get correct image URL
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return null;
-
-    const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-
-    if (imagePath.startsWith("http")) {
-      return imagePath;
-    }
-
-    // Handle different path formats
-    let cleanPath = imagePath;
-    if (imagePath.startsWith("uploads/")) {
-      cleanPath = imagePath;
-    } else if (imagePath.startsWith("/uploads/")) {
-      cleanPath = imagePath.slice(1);
-    } else if (!imagePath.includes("uploads/")) {
-      cleanPath = `uploads/${imagePath.replace(/^\/+/, "")}`;
-    }
-
-    return `${baseURL}/${cleanPath}`;
-  };
-
   const renderDashboard = () => (
     <div>
       <Row className="mb-3">
@@ -310,7 +287,7 @@ const ReportIssue = () => {
                 <Col md={4} className="d-flex align-items-left justify-content-center">
                   {issue.image ? (
                     <img
-                      src={getImageUrl(issue.image)}
+                      src={issue.image}
                       alt="Issue"
                       style={{
                         width: "100%",
@@ -319,7 +296,7 @@ const ReportIssue = () => {
                         objectFit: "cover",
                       }}
                       onError={(e) => {
-                        console.error("Image failed to load:", getImageUrl(issue.image));
+                        console.error("Image failed to load:", issue.image);
                         e.target.style.display = "none";
                       }}
                     />

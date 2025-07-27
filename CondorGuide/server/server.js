@@ -26,25 +26,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-// Add a test route to check if files exist
-app.get('/api/test-image/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, 'uploads', filename);
-  
-  // Check if file exists
-  import('fs').then(fs => {
-    fs.access(filePath, fs.constants.F_OK, (err) => {
-      if (err) {
-        res.status(404).json({ exists: false, path: filePath });
-      } else {
-        res.json({ exists: true, path: filePath });
-      }
-    });
-  });
-});
-
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/classrooms', classroomRoutes);
@@ -63,5 +44,4 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Static files served from: ${path.join(__dirname, 'uploads')}`);
 });
