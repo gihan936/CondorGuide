@@ -24,12 +24,13 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import SecurityAlert from "./components/SecurityAlert";
 import Donation from "./components/Donation";
 import AboutUs from "./components/AboutUsPage";
+import ForgotPasswordPage from "./components/ForgotPasswordPage";
 
 const AppWrapper = () => {
   const { theme } = useContext(ThemeContext);
   const location = useLocation();
 
-  const hideHeaderFooter = ["/login", "/signup"].includes(location.pathname);
+  const hideHeaderFooter = ["/login", "/signup", "/forgot-password"].includes(location.pathname);
 
   return (
     <div className={theme === "dark" ? "bg-dark text-light min-vh-100 d-flex flex-column" : "bg-light text-dark min-vh-100 d-flex flex-column"}>
@@ -104,6 +105,7 @@ const AppWrapper = () => {
             }
           />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route

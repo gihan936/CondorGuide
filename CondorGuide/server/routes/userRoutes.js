@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import sendEmail from '../config/emailConfig.js';
 
 const router = express.Router();
 
@@ -123,7 +124,6 @@ router.post('/change-password', async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
-    // Compare current password
     if (currentPassword !== user.password) {
       return res.status(401).json({ message: 'Current password is incorrect.' });
     }
@@ -132,6 +132,11 @@ router.post('/change-password', async (req, res) => {
     await user.save();
 
     res.json({ message: 'Password changed successfully.' });
+    await sendEmail(
+      user.email,
+      "Reset Your Password",
+      `<p>Your Password for CondorGuide has been reset at ${new Date().toLocaleString()}</p>`
+    );
   } catch (err) {
     console.error('Change password error:', err);
     res.status(500).json({ message: 'Failed to change password.', error: err.message });
@@ -209,7 +214,11 @@ router.post('/forgot-password', async (req, res) => {
     user.resetCodeExpires = Date.now() + 15 * 60 * 1000; // 15 minutes expiry
 
     await user.save();
-    console.log(`Reset code for ${email}: ${resetCode}`);
+    await sendEmail(
+      user.email,
+      "Reset Your Password",
+      `<p>Your password reset code is: ${resetCode}.</p><p> This code will expire in 15 minutes.</p><p>If you did not request a password reset, please ignore this email.</p>`
+    );
     res.status(200).json({ message: 'Reset code sent to your email.' });
   } catch (err) {
     console.error('Forgot password error:', err);
@@ -236,9 +245,14 @@ router.post('/reset-password', async (req, res) => {
     user.password = newPassword;
     user.resetCode = undefined;
     user.resetCodeExpires = undefined;
-    
+
     await user.save();
     res.status(200).json({ message: 'Password has been reset successfully.' });
+    await sendEmail(
+      user.email,
+      "Reset Your Password",
+      `<p>Your Password for CondorGuide has been reset at ${new Date().toLocaleString()}</p>`
+    );
   } catch (err) {
     console.error('Reset password error:', err);
     res.status(500).json({ message: 'Server error.', error: err.message });
