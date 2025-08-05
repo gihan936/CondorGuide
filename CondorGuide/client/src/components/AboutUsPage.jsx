@@ -29,7 +29,7 @@ const team = [
   },
 ];
 
-const techStack = ["React", "Bootstrap", "Node.js", "Express", "MongoDB", "Figma", "Firebase", "SQL"];
+const techStack = ["React", "Bootstrap", "Node.js", "Express", "MongoDB", "Figma", "SMTP", "GridFS"];
 
 const coreValues = [
   { icon: FaUsers, title: "User-First", description: "Your experience drives our development." },
