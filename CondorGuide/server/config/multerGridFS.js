@@ -19,7 +19,7 @@ const storage = new GridFsStorage({
     console.log("Is mimetype in allowed list?", allowedTypes.includes(file.mimetype));
 
     if (!allowedTypes.includes(file.mimetype)) {
-      console.log("❌ Mimetype not allowed. Rejecting upload.");
+      console.log("Mimetype not allowed. Rejecting upload.");
       return Promise.reject(new Error("Invalid file type"));
     }
 

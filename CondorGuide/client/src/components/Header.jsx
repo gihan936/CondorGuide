@@ -235,9 +235,6 @@ const Header = () => {
                   <>
                     <Dropdown.Header>{user.email}</Dropdown.Header>
                     <Dropdown.Item href="/profile" className="focus-ring">Profile</Dropdown.Item>
-                    <Dropdown.Item href="/profile/security" className="focus-ring">
-                      Security
-                    </Dropdown.Item>
                   </>
                 )}
                 <Dropdown.Item onClick={toggleTheme} className="focus-ring">

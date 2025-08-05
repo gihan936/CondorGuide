@@ -277,7 +277,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Security Section */}
-          <Card className="p-4 shadow">
+          <Card className={`p-4 shadow mb-4 ${themeClasses}`}>
             <h3 className="mb-3">Security Settings</h3>
 
             <p>

@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -188,6 +189,59 @@ router.put('/update-profile', async (req, res) => {
   } catch (err) {
     console.error('Profile update error:', err);
     res.status(500).json({ message: 'Profile update failed.', error: err.message });
+  }
+});
+
+// POST /forgot-password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with that email.' });
+    }
+
+    const resetCode = crypto.randomInt(100000, 999999).toString();
+    user.resetCode = resetCode;
+    user.resetCodeExpires = Date.now() + 15 * 60 * 1000; // 15 minutes expiry
+
+    await user.save();
+    console.log(`Reset code for ${email}: ${resetCode}`);
+    res.status(200).json({ message: 'Reset code sent to your email.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ message: 'Server error.', error: err.message });
+  }
+});
+
+// POST /reset-password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, resetCode, newPassword } = req.body;
+
+    if (!email || !resetCode || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+    const user = await User.findOne({ email });
+    if (!user || user.resetCode !== resetCode) {
+      return res.status(400).json({ message: 'Invalid reset code or email.' });
+    }
+    if (Date.now() > user.resetCodeExpires) {
+      return res.status(400).json({ message: 'Reset code has expired.' });
+    }
+
+    user.password = newPassword;
+    user.resetCode = undefined;
+    user.resetCodeExpires = undefined;
+    
+    await user.save();
+    res.status(200).json({ message: 'Password has been reset successfully.' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ message: 'Server error.', error: err.message });
   }
 });
 

@@ -33,7 +33,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'security', 'maintenance', 'admin', 'superadmin'],
     default: 'user'
-  }
+  },
+  resetCode: { type: String },
+  resetCodeExpires: { type: Date }
+
 });
 
 const User = mongoose.model('User', userSchema);
