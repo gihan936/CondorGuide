@@ -132,11 +132,6 @@ router.post('/change-password', async (req, res) => {
     await user.save();
 
     res.json({ message: 'Password changed successfully.' });
-    await sendEmail(
-      user.email,
-      "Reset Your Password",
-      `<p>Your Password for CondorGuide has been reset at ${new Date().toLocaleString()}</p>`
-    );
   } catch (err) {
     console.error('Change password error:', err);
     res.status(500).json({ message: 'Failed to change password.', error: err.message });
@@ -194,68 +189,6 @@ router.put('/update-profile', async (req, res) => {
   } catch (err) {
     console.error('Profile update error:', err);
     res.status(500).json({ message: 'Profile update failed.', error: err.message });
-  }
-});
-
-// POST /forgot-password
-router.post('/forgot-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required.' });
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'No account found with that email.' });
-    }
-
-    const resetCode = crypto.randomInt(100000, 999999).toString();
-    user.resetCode = resetCode;
-    user.resetCodeExpires = Date.now() + 15 * 60 * 1000; // 15 minutes expiry
-
-    await user.save();
-    await sendEmail(
-      user.email,
-      "Reset Your Password",
-      `<p>Your password reset code is: ${resetCode}.</p><p> This code will expire in 15 minutes.</p><p>If you did not request a password reset, please ignore this email.</p>`
-    );
-    res.status(200).json({ message: 'Reset code sent to your email.' });
-  } catch (err) {
-    console.error('Forgot password error:', err);
-    res.status(500).json({ message: 'Server error.', error: err.message });
-  }
-});
-
-// POST /reset-password
-router.post('/reset-password', async (req, res) => {
-  try {
-    const { email, resetCode, newPassword } = req.body;
-
-    if (!email || !resetCode || !newPassword) {
-      return res.status(400).json({ message: 'All fields are required.' });
-    }
-    const user = await User.findOne({ email });
-    if (!user || user.resetCode !== resetCode) {
-      return res.status(400).json({ message: 'Invalid reset code or email.' });
-    }
-    if (Date.now() > user.resetCodeExpires) {
-      return res.status(400).json({ message: 'Reset code has expired.' });
-    }
-
-    user.password = newPassword;
-    user.resetCode = undefined;
-    user.resetCodeExpires = undefined;
-
-    await user.save();
-    res.status(200).json({ message: 'Password has been reset successfully.' });
-    await sendEmail(
-      user.email,
-      "Reset Your Password",
-      `<p>Your Password for CondorGuide has been reset at ${new Date().toLocaleString()}</p>`
-    );
-  } catch (err) {
-    console.error('Reset password error:', err);
-    res.status(500).json({ message: 'Server error.', error: err.message });
   }
 });
 

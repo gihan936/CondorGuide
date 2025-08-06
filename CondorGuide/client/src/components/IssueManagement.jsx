@@ -71,12 +71,6 @@ const IssueManagement = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const updatePayload = {
-        status: editFields.status,
-        priority: editFields.priority,
-        category: editFields.category,
-        ...(commentText ? { comment: commentText } : {}),
-      };
 
       const res = await fetch("http://localhost:5000/api/issues/update", {
         method: "PUT",

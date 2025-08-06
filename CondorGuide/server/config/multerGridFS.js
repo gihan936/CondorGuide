@@ -23,7 +23,7 @@ const storage = new GridFsStorage({
       return Promise.reject(new Error("Invalid file type"));
     }
 
-    console.log("✅ Mimetype allowed, proceeding to store.");
+    console.log("Mimetype allowed, proceeding to store.");
     return Promise.resolve({
       bucketName: "issueImages", // MUST match GridFSBucket name
       filename: `${Date.now()}-${file.originalname}`,

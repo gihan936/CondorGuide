@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { ThemeContext } from "../context/ThemeContext";
 
 const categories = ["Medical", "Fire", "Harassment", "Theft"];
 
 const SecurityAlert = () => {
   const { currentUser } = useAuth();
+  useContext(ThemeContext);
   const token = localStorage.getItem("token");
   const [tab, setTab] = useState("critical");
   const [category, setCategory] = useState(categories[0]);
@@ -69,8 +71,6 @@ const SecurityAlert = () => {
     }
   };
 
-  const rowStyle = (alert) => (alert.isPicked ? "bg-success text-white" : "");
-
   const getElapsedTime = (createdAt) => {
     const diff = Math.floor((now - new Date(createdAt)) / 1000);
     const mins = Math.floor(diff / 60);
@@ -91,174 +91,287 @@ const SecurityAlert = () => {
   );
 
   return (
-    <div className="container py-4">
-      <h2 className="mb-4">Security Alerts</h2>
+    <>
 
-      {currentUser.role === "user" && (
-        <>
-          <ul className="nav nav-tabs mb-3">
-            <li className="nav-item">
-              <button
-                className={`nav-link ${tab === "critical" ? "active" : ""}`}
-                onClick={() => setTab("critical")}
-              >
-                Critical
-              </button>
-            </li>
-            <li className="nav-item">
-              <button
-                className={`nav-link ${tab === "non-critical" ? "active" : ""}`}
-                onClick={() => setTab("non-critical")}
-              >
-                Non‑Critical
-              </button>
-            </li>
-          </ul>
 
-          {error && <div className="alert alert-danger">{error}</div>}
+      <div className="security-alert-container">
+        <div className="container">
+          <h2 className="security-alert-title">Security Alert Center</h2>
 
-          <div className="card mb-4 p-4 shadow-sm">
-            {tab === "non-critical" && (
-              <div className="mb-3">
-                <label className="form-label">Category</label>
-                <select
-                  className="form-select"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+          {currentUser.role === "user" && (
+            <>
+              <ul className="nav security-nav-tabs">
+                <li className="nav-item security-nav-item">
+                  <button
+                    className={`nav-link security-nav-link ${
+                      tab === "critical" ? "active" : ""
+                    }`}
+                    onClick={() => setTab("critical")}
+                  >
+                    Critical Emergency
+                  </button>
+                </li>
+                <li className="nav-item security-nav-item">
+                  <button
+                    className={`nav-link security-nav-link ${
+                      tab === "non-critical" ? "active" : ""
+                    }`}
+                    onClick={() => setTab("non-critical")}
+                  >
+                    Non‑Critical Report
+                  </button>
+                </li>
+              </ul>
+
+              {error && (
+                <div className="alert security-error-alert">
+                  <strong>Alert:</strong> {error}
+                </div>
+              )}
+
+              <div className="card security-alert-card">
+                <div className="card-body security-card-body">
+                  {tab === "non-critical" && (
+                    <div className="mb-3">
+                      <label className="form-label fw-bold mb-2">
+                        Select Category:
+                      </label>
+                      <select
+                        className="form-select security-category-select"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                      >
+                        {categories.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <button
+                    className={`security-main-button ${
+                      hasActiveAlert
+                        ? "security-disabled-button"
+                        : tab === "critical"
+                        ? "security-critical-button"
+                        : "security-non-critical-button"
+                    }`}
+                    disabled={hasActiveAlert}
+                    onClick={sendAlert}
+                  >
+                    {hasActiveAlert
+                      ? "Alert Sent – Awaiting Help"
+                      : tab === "critical"
+                      ? "I Need Immediate Help!"
+                      : `Report ${category}`}
+                  </button>
+
+                  {alerts
+                    .filter((a) => !a.resolved)
+                    .map((alert) =>
+                      alert.pickedBy && alert.userId === currentUser._id ? (
+                        <div
+                          key={alert._id}
+                          className="alert security-assistance-alert d-flex justify-content-between align-items-center"
+                        >
+                          <div className="text-center">
+                            <strong>{alert.pickedByName}</strong> is on the way
+                            to assist you. Help is coming!
+                          </div>
+                          <button
+                            className="btn security-resolve-button"
+                            onClick={() => resolveAlert(alert._id)}
+                          >
+                            Mark as Resolved
+                          </button>
+                        </div>
+                      ) : null
+                    )}
+                </div>
               </div>
-            )}
-            <button
-              className={`btn w-100 fs-4 ${
-                hasActiveAlert
-                  ? "btn-secondary"
-                  : tab === "critical"
-                  ? "btn-danger"
-                  : "btn-warning"
-              }`}
-              style={{ height: "180px" }}
-              disabled={hasActiveAlert}
-              onClick={sendAlert}
-            >
-              {hasActiveAlert
-                ? "Alert Sent – Awaiting Help"
-                : tab === "critical"
-                ? "I Need Immediate Help!"
-                : `Report ${category}`}
-            </button>
+            </>
+          )}
 
-            {alerts
-              .filter((a) => !a.resolved)
-              .map((alert) =>
-                alert.pickedBy && alert.userId === currentUser._id ? (
+          {["security", "admin", "superadmin"].includes(currentUser.role) && (
+            <>
+              <div className="row mb-3">
+                <div className="col-md-4">
+                  <div className="security-stats-card">
+                    <h4 className="mb-2" style={{ color: "var(--gold)" }}>
+                      Total Alerts
+                    </h4>
+                    <h2 className="mb-0">{alerts.length}</h2>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div className="security-stats-card">
+                    <h4 className="mb-2" style={{ color: "#dc3545" }}>
+                      Unclaimed
+                    </h4>
+                    <h2 className="mb-0">
+                      {alerts.filter((a) => !a.isPicked && !a.resolved).length}
+                    </h2>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div className="security-stats-card">
+                    <h4 className="mb-2" style={{ color: "#28a745" }}>
+                      In Progress
+                    </h4>
+                    <h2 className="mb-0">
+                      {alerts.filter((a) => a.isPicked && !a.resolved).length}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="table-responsive">
+                <table className="table security-alerts-table">
+                  <thead className="security-table-header">
+                    <tr>
+                      <th>User</th>
+                      <th>Type</th>
+                      <th>Elapsed Time</th>
+                      <th>Status</th>
+                      {currentUser.role === "security" && <th>Action</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="security-table-body">
+                    {paginatedAlerts.map((alert) => (
+                      <tr
+                        key={alert._id}
+                        className={alert.isPicked ? "security-picked-row" : ""}
+                      >
+                        <td>
+                          <strong>{alert.username}</strong>
+                        </td>
+                        <td>
+                          <span className="fw-bold">
+                            {alert.emergencyType === "critical" ? "CRITICAL" : 
+                              `${alert.emergencyType} (${alert.category})`}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={
+                              !alert.isPicked ? "security-elapsed-time" : ""
+                            }
+                          >
+                            {!alert.isPicked
+                              ? `${getElapsedTime(alert.createdAt)}`
+                              : "Picked"}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge security-status-badge ${
+                              alert.isPicked
+                                ? "security-picked-badge"
+                                : "security-unclaimed-badge"
+                            }`}
+                          >
+                            {alert.isPicked
+                              ? `Picked by ${alert.pickedByName}`
+                              : "Unclaimed"}
+                          </span>
+                        </td>
+
+                        {currentUser.role === "security" && (
+                          <td>
+                            {!alert.isPicked && (
+                              <button
+                                className="btn security-pickup-button"
+                                onClick={() => pickAlert(alert._id)}
+                              >
+                                Pick Up
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="security-mobile-view">
+                {paginatedAlerts.map((alert) => (
                   <div
                     key={alert._id}
-                    className="alert alert-info mt-3 d-flex justify-content-between align-items-center"
+                    className={`security-mobile-alert-card ${alert.isPicked ? "picked" : ""}`}
                   >
-                    <div>
-                      <strong>{alert.pickedByName}</strong> is on the way to
-                      assist you.
+                    <div className="security-mobile-alert-header">
+                      <div className="security-mobile-alert-user">
+                        {alert.username}
+                      </div>
+                      <div className={`security-mobile-alert-time ${
+                        !alert.isPicked ? "security-elapsed-time" : ""
+                      }`}>
+                        {!alert.isPicked
+                          ? `${getElapsedTime(alert.createdAt)}`
+                          : "Picked"}
+                      </div>
                     </div>
-                    <button
-                      className="btn btn-sm btn-outline-light ms-3"
-                      onClick={() => resolveAlert(alert._id)}
-                    >
-                      Mark as Resolved
-                    </button>
-                  </div>
-                ) : null
-              )}
-          </div>
-        </>
-      )}
-
-      {["security", "admin", "superadmin"].includes(currentUser.role) && (
-        <>
-          <table className="table table-bordered table-striped table-hover align-middle shadow-sm">
-            <thead className="table-dark">
-              <tr>
-                <th>User</th>
-                <th>Type</th>
-                <th>Elapsed Time</th>
-                <th>Status</th>
-                {currentUser.role === "security" && <th>Action</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedAlerts.map((alert) => (
-                <tr key={alert._id} className={rowStyle(alert)}>
-                  <td>{alert.username}</td>
-                  <td>
-                    {alert.emergencyType === "non-critical"
-                      ? `${alert.emergencyType} (${alert.category})`
-                      : alert.emergencyType}
-                  </td>
-                  <td>
-                    {!alert.isPicked
-                      ? getElapsedTime(alert.createdAt)
-                      : "Picked"}
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        alert.isPicked ? "bg-success" : "bg-danger"
-                      }`}
-                    >
-                      {alert.isPicked
-                        ? `Picked by ${alert.pickedByName}`
-                        : "Unclaimed"}
-                    </span>
-                  </td>
-                  {currentUser.role === "security" && (
-                    <td>
-                      {!alert.isPicked && (
+                    
+                    <div className="security-mobile-alert-type">
+                      {alert.emergencyType === "critical" ? "CRITICAL EMERGENCY" : 
+                        `${alert.emergencyType} (${alert.category})`}
+                    </div>
+                    
+                    <div className="security-mobile-alert-actions">
+                      <span
+                        className={`badge security-status-badge ${
+                          alert.isPicked
+                            ? "security-picked-badge"
+                            : "security-unclaimed-badge"
+                        }`}
+                      >
+                        {alert.isPicked
+                          ? `Picked by ${alert.pickedByName}`
+                          : "Unclaimed"}
+                      </span>
+                      
+                      {currentUser.role === "security" && !alert.isPicked && (
                         <button
-                          className="btn btn-sm"
-                          style={{
-                            backgroundColor: "black",
-                            color: "var(--bs-primary)",
-                            borderColor: "black",
-                          }}
+                          className="btn security-pickup-button"
                           onClick={() => pickAlert(alert._id)}
                         >
                           Pick Up
                         </button>
                       )}
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-          <nav className="mt-3">
-            <ul className="pagination justify-content-center">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <li
-                  key={i}
-                  className={`page-item ${
-                    currentPage === i + 1 ? "active" : ""
-                  }`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </>
-      )}
-    </div>
+              <nav>
+                <ul className="pagination security-pagination">
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <li
+                      key={i}
+                      className={`page-item ${
+                        currentPage === i + 1 ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => setCurrentPage(i + 1)}
+                      >
+                        {i + 1}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </>
+          )}
+        </div>
+      </div>
+    </>
   );
 };
 

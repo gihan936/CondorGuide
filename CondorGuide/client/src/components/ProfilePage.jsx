@@ -141,7 +141,7 @@ export default function ProfilePage() {
 
       setSecMessage(
         "Password changed successfully."
-        + " Please check your email for confirmation."
+ + " Please check your email for confirmation."
       );
       setCurrentPassword("");
       setNewPassword("");
@@ -276,17 +276,16 @@ export default function ProfilePage() {
             </Form>
           </Card>
 
-          {/* Security Section */}
-          <Card className={`p-4 shadow mb-4 ${themeClasses}`}>
+          <Card className="p-4 shadow">
             <h3 className="mb-3">Security Settings</h3>
 
             <p>
               You can change your password here.
-               After a successful change, you
-              will receive a confirmation email.
+After a successful change, you
+              will receive a confirmation email. 
             </p>
 
-            <p>
+ <p>
               Forgot your password? <a href="/forgot-password">Reset it here</a>.
             </p>
 
