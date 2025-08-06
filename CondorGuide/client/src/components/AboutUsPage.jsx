@@ -7,8 +7,8 @@ import { useSpring, animated } from '@react-spring/web'; // Import useSpring and
 
 const team = [
   {
-    name: "Gihan",
-    role: "Frontend Developer",
+    name: "Gihan Edirisinghe Kodikara",
+    role: "Full Stack Developer",
     image: "",
     linkedin: "#",
     github: "#",
