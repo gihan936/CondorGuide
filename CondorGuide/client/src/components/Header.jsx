@@ -26,8 +26,12 @@ const Header = () => {
         <Navbar.Collapse id="main-navbar">
           <Nav className="ms-auto d-flex align-items-center gap-3">
             <Nav.Link href="/" className={`nav-link-custom ${isActive("/") && "active"}`}>Home</Nav.Link>
+            <Nav.Link href="/about" className={`nav-link-custom ${isActive("/about") && "active"}`}>About Us</Nav.Link>
             {user?.role !== "admin" && user?.role !== "superadmin" && (
-              <Nav.Link href="/map" className={`nav-link-custom ${isActive("/map") && "active"}`}>College Map</Nav.Link>
+              <>
+                <Nav.Link href="/map" className={`nav-link-custom ${isActive("/map") && "active"}`}>College Map</Nav.Link>
+                
+              </>
             )}
             {user?.role === "user" && (
               <>
@@ -86,7 +90,6 @@ const Header = () => {
                 {user && <>
                   <Dropdown.Header>{user.email}</Dropdown.Header>
                   <Dropdown.Item href="/profile" className="focus-ring">Profile</Dropdown.Item>
-                  <Dropdown.Item href="/profile/security" className="focus-ring">Security</Dropdown.Item>
                 </>}
                 <Dropdown.Item onClick={toggleTheme} className="focus-ring">Toggle {theme === "light" ? "Dark" : "Light"} Mode</Dropdown.Item>
                 <Dropdown.Divider />

@@ -3,15 +3,16 @@ import { Container, Row, Col, Card, Image } from "react-bootstrap";
 import { ThemeContext } from "../context/ThemeContext";
 import { FaGithub, FaLinkedin, FaEnvelope, FaTwitter } from "react-icons/fa";
 import { FaRocket, FaEye, FaUsers, FaLightbulb, FaCheckCircle, FaLaptopCode } from "react-icons/fa";
-import { useSpring, animated } from '@react-spring/web'; // Import useSpring and animated
+import { useSpring, animated as Animated } from '@react-spring/web';
+import GihanImg from "../assets/gihan.jpg";
 
 const team = [
   {
     name: "Gihan Edirisinghe Kodikara",
-    role: "Full Stack Developer",
-    image: "",
-    linkedin: "#",
-    github: "#",
+    role: "Full Stack Developer | Software Engineer",
+    image: GihanImg,
+    linkedin: "https://www.linkedin.com/in/gihan-niranga/",
+    github: "https://github.com/gihan936",
   },
   {
     name: "Shanntha Kumar",
@@ -45,7 +46,7 @@ const AnimatedTitle = ({ children, style }) => {
     config: { duration: 500 },
     delay: 200
   });
-  return <animated.h2 style={{ ...props, ...style }}>{children}</animated.h2>;
+  return <Animated.h2 style={{ ...props, ...style }}>{children}</Animated.h2>;
 };
 
 const AboutUs = () => {
@@ -68,9 +69,9 @@ const AboutUs = () => {
         <Row className="mb-5 py-5 text-center rounded-4 shadow" style={{ background: theme === "light" ? "#fff3cd" : "#3a3a3a" }}>
           <Col>
             <h1 className="display-4 fw-bold mb-3" style={{ color: "#B68E0C", textShadow: "1px 1px 8px rgba(182,142,12,0.6)" }}>About Condor Guide</h1>
-            <animated.p className={`lead ${getTextClass()}`} style={useSpring({ from: { opacity: 0, transform: "translateY(20px)" }, to: { opacity: 1, transform: "translateY(0)" }, delay: 500 })}>
+            <Animated.p className={`lead ${getTextClass()}`} style={useSpring({ from: { opacity: 0, transform: "translateY(20px)" }, to: { opacity: 1, transform: "translateY(0)" }, delay: 500 })}>
               Building smarter campuses through technology and accessibility.
-            </animated.p>
+            </Animated.p>
           </Col>
         </Row>
 
@@ -78,7 +79,7 @@ const AboutUs = () => {
           {[{ title: "Our Mission", icon: <FaRocket size={30} className="text-dark" />, text: "Our mission is to simplify campus life by providing intuitive tools for navigation, classroom availability, reporting, and more—all in one unified platform." },
             { title: "Our Vision", icon: <FaEye size={30} className="text-dark" />, text: "We envision a connected and accessible digital ecosystem for educational institutions worldwide, streamlining communication, safety, and space utilization." }].map((item, idx) => (
               <Col md={6} key={idx}>
-                <animated.div style={fade}>
+                <Animated.div style={fade}>
                   <div className={`rounded-4 p-4 shadow-lg h-100 ${theme === "light" ? "bg-white" : "bg-secondary"}`}>
                     <div className="d-flex align-items-center mb-3">
                       <div className="bg-warning rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style={{ width: "70px", height: "70px" }}>
@@ -88,16 +89,16 @@ const AboutUs = () => {
                     </div>
                     <p className={getTextClass()}>{item.text}</p>
                   </div>
-                </animated.div>
+                </Animated.div>
               </Col>
             ))}
         </Row>
 
         <Row className="mb-5">
           <Col lg={{ span: 10, offset: 1 }}>
-            <animated.div className={`rounded-4 p-5 shadow position-relative overflow-hidden ${theme === "light" ? "bg-light" : "bg-secondary"}`} style={{ background: theme === "light" ? "linear-gradient(135deg, #fff 0%, #fffbe6 100%)" : "linear-gradient(135deg, #3c3c3c 0%, #2f2f2f 100%)" }}>
+            <Animated.div className={`rounded-4 p-5 shadow position-relative overflow-hidden ${theme === "light" ? "bg-light" : "bg-secondary"}`} style={{ background: theme === "light" ? "linear-gradient(135deg, #fff 0%, #fffbe6 100%)" : "linear-gradient(135deg, #3c3c3c 0%, #2f2f2f 100%)" }}>
               <AnimatedTitle style={{ textAlign: "center", color: "#B68E0C", marginBottom: "2rem" }}>Our Story</AnimatedTitle>
-              <animated.div className="timeline-wrapper" style={fade}>
+              <Animated.div className="timeline-wrapper" style={fade}>
                 <ul className={`timeline ${getTextClass()}`}>
                   <li>
                     <div className="timeline-marker"></div>
@@ -128,71 +129,37 @@ const AboutUs = () => {
                     </div>
                   </li>
                 </ul>
-              </animated.div>
-            </animated.div>
+              </Animated.div>
+            </Animated.div>
           </Col>
         </Row>
 
         <Row className="mb-5 text-center">
           <AnimatedTitle style={{ marginBottom: "1rem", color: "#B68E0C" }}>Core Values</AnimatedTitle>
           <Row xs={1} md={2} lg={4} className="g-4">
-            {coreValues.map((value, idx) => {
-              const cardProps = useSpring({ from: { opacity: 0, transform: 'translateY(50px)' }, to: { opacity: 1, transform: 'translateY(0)' }, delay: 200 * idx });
-              return (
-                <Col key={idx}>
-                  <animated.div style={cardProps}>
-                    <Card className={`${getCardClass()} hover-card`}>
-                      <Card.Body>
-                        <value.icon className="mb-3" style={{ fontSize: "2.5rem", color: "#B68E0C" }} />
-                        <Card.Title className="fw-bold">{value.title}</Card.Title>
-                        <Card.Text className={getTextClass()}>{value.description}</Card.Text>
-                      </Card.Body>
-                    </Card>
-                  </animated.div>
-                </Col>
-              );
-            })}
+            {coreValues.map((value, idx) => (
+              <CoreValueCard
+                key={idx}
+                value={value}
+                idx={idx}
+                getCardClass={getCardClass}
+                getTextClass={getTextClass}
+              />
+            ))}
           </Row>
         </Row>
 
         <Row className="mb-5 text-center">
           <AnimatedTitle style={{ marginBottom: "1rem", color: "#B68E0C" }}>Meet the Team</AnimatedTitle>
           <Row xs={1} md={2} lg={3} className="g-4 justify-content-center">
-            {team.map((member, idx) => {
-              const cardProps = useSpring({
-                from: { opacity: 0, transform: 'scale(0.8)' },
-                to: { opacity: 1, transform: 'scale(1)' },
-                delay: 200 * idx, // Staggered animation
-              });
-              return (
-                <Col key={idx} className={idx === 1 ? 'mt-md-5' : ''}> {/* Staggered layout logic */}
-                  <animated.div style={cardProps}>
-                    <Card className={`${getCardClass()} hover-card`}>
-                      <Card.Body className="d-flex flex-column align-items-center">
-                        <Image
-                          src={member.image}
-                          roundedCircle
-                          height={150}
-                          width={150}
-                          className="mb-3 border border-3 border-warning"
-                          alt={member.name}
-                        />
-                        <h5 className="fw-bold mt-2">{member.name}</h5>
-                        <p className="text-muted">{member.role}</p>
-                        <div className="mt-auto social-icons-container">
-                          <a href={member.github} className="me-3 text-reset" aria-label="GitHub">
-                            <FaGithub size={24} style={{ color: "#B68E0C" }} />
-                          </a>
-                          <a href={member.linkedin} className="text-reset" aria-label="LinkedIn">
-                            <FaLinkedin size={24} style={{ color: "#B68E0C" }} />
-                          </a>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </animated.div>
-                </Col>
-              );
-            })}
+            {team.map((member, idx) => (
+              <TeamMemberCard
+                key={idx}
+                member={member}
+                idx={idx}
+                getCardClass={getCardClass}
+              />
+            ))}
           </Row>
         </Row>
 
@@ -217,21 +184,21 @@ const AboutUs = () => {
         <Row className="mb-5 text-center">
           <Col>
             <AnimatedTitle style={{ marginBottom: "1rem", color: "#B68E0C" }}>Get in Touch</AnimatedTitle>
-            <animated.p className={getTextClass()} style={fade}>
+            <Animated.p className={getTextClass()} style={fade}>
               Have questions, suggestions, or feedback? We'd love to hear from you.
-            </animated.p>
-            <animated.div className="d-flex justify-content-center align-items-center mt-3" style={fade}>
+            </Animated.p>
+            <Animated.div className="d-flex justify-content-center align-items-center mt-3" style={fade}>
               <FaEnvelope className="me-3" size={24} style={{ color: "#B68E0C" }} />
               <a href="mailto:support@condorguide.ca" className="text-decoration-none" style={{ color: theme === "light" ? "#B68E0C" : "#FFC107" }}>
                 <span className={getTextClass()}>support@condorguide.ca</span>
               </a>
-            </animated.div>
+            </Animated.div>
           </Col>
         </Row>
 
         <Row className="text-center">
           <Col>
-            <animated.h5 className="fw-bold" style={{ ...fade, color: "#B68E0C" }}>Follow Us</animated.h5>
+            <Animated.h5 className="fw-bold" style={{ ...fade, color: "#B68E0C" }}>Follow Us</Animated.h5>
             <div className="d-flex justify-content-center gap-4 mt-2">
               <a href="#" aria-label="GitHub" className="text-reset fs-4 hover-icon" style={{ color: "#B68E0C" }}><FaGithub /></a>
               <a href="#" aria-label="LinkedIn" className="text-reset fs-4 hover-icon" style={{ color: "#B68E0C" }}><FaLinkedin /></a>
@@ -241,6 +208,65 @@ const AboutUs = () => {
         </Row>
       </Container>
     </div>
+  );
+};
+
+const TeamMemberCard = ({ member, idx, getCardClass }) => {
+  const cardProps = useSpring({
+    from: { opacity: 0, transform: 'scale(0.8)' },
+    to: { opacity: 1, transform: 'scale(1)' },
+    delay: 200 * idx,
+  });
+
+  return (
+    <Col className={idx === 1 ? 'mt-md-5' : ''}>
+      <Animated.div style={cardProps}>
+        <Card className={`${getCardClass()} hover-card`}>
+          <Card.Body className="d-flex flex-column align-items-center">
+            <Image
+              src={member.image}
+              roundedCircle
+              height={150}
+              width={150}
+              className="mb-3 border border-3 border-warning"
+              alt={member.name}
+            />
+            <h5 className="fw-bold mt-2">{member.name}</h5>
+            <p className="text-muted">{member.role}</p>
+            <div className="mt-auto social-icons-container">
+              <a href={member.github} className="me-3 text-reset" aria-label="GitHub">
+                <FaGithub size={24} style={{ color: "#B68E0C" }} />
+              </a>
+              <a href={member.linkedin} className="text-reset" aria-label="LinkedIn">
+                <FaLinkedin size={24} style={{ color: "#B68E0C" }} />
+              </a>
+            </div>
+          </Card.Body>
+        </Card>
+      </Animated.div>
+    </Col>
+  );
+};
+
+const CoreValueCard = ({ value, idx, getCardClass, getTextClass }) => {
+  const cardProps = useSpring({
+    from: { opacity: 0, transform: 'translateY(50px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 200 * idx,
+  });
+
+  return (
+    <Col>
+      <Animated.div style={cardProps}>
+        <Card className={`${getCardClass()} hover-card`}>
+          <Card.Body>
+            <value.icon className="mb-3" style={{ fontSize: "2.5rem", color: "#B68E0C" }} />
+            <Card.Title className="fw-bold">{value.title}</Card.Title>
+            <Card.Text className={getTextClass()}>{value.description}</Card.Text>
+          </Card.Body>
+        </Card>
+      </Animated.div>
+    </Col>
   );
 };
 
