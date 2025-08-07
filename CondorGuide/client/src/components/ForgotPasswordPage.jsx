@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
 import '../App.css';
 
 const ForgotPasswordPage = () => {
@@ -25,7 +24,7 @@ const ForgotPasswordPage = () => {
         setForgotMessage('Reset code sent to your email.');
         setShowResetForm(true);
       }
-    } catch (error) {
+    } catch {
       setForgotMessage('Error sending reset email.');
     }
   };
@@ -46,7 +45,7 @@ const ForgotPasswordPage = () => {
           navigate('/login');
         }, 2000);
       }
-    } catch (error) {
+    } catch {
       setResetMessage('Failed to reset password. Check code and try again.');
     }
   };
