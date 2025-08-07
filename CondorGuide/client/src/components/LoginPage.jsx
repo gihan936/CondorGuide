@@ -33,7 +33,7 @@ const LoginPage = () => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        const response = await axios.post('http://localhost:5000/api/users/login', {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/users/login`, {
           email,
           password,
         });

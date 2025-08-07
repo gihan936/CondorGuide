@@ -29,7 +29,7 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/users/info?email=${user.email}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/users/info?email=${user.email}`
       );
       setProfile(res.data);
       setInitialProfile(res.data);
@@ -78,7 +78,7 @@ export default function ProfilePage() {
 
     try {
       await axios.put(
-        "http://localhost:5000/api/users/update-profile",
+        `${import.meta.env.VITE_API_BASE_URL}/api/users/update-profile`,
         profile
       );
 

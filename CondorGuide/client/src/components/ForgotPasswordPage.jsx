@@ -17,7 +17,7 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     setForgotMessage('');
     try {
-      const response = await axios.post('http://localhost:5000/api/users/forgot-password', {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/users/forgot-password`, {
         email: forgotEmail,
       });
       if (response.status === 200) {
@@ -33,7 +33,7 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     setResetMessage('');
     try {
-      const response = await axios.post('http://localhost:5000/api/users/reset-password', {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/users/reset-password`, {
         email: forgotEmail,
         resetCode,
         newPassword,

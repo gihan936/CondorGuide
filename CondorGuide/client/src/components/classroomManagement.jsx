@@ -28,7 +28,7 @@ const ClassroomManagement = () => {
 
   const fetchClassrooms = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/classrooms/all');
+      const res = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/classrooms/all');
       const data = await res.json();
       setClassrooms(data);
     } catch (err) {
@@ -78,8 +78,8 @@ const ClassroomManagement = () => {
     };
 
     const url = editingClassroom
-      ? `http://localhost:5000/api/classrooms/${editingClassroom._id}`
-      : 'http://localhost:5000/api/classrooms';
+      ? `${import.meta.env.VITE_API_BASE_URL}/api/classrooms/${editingClassroom._id}`
+      : '${import.meta.env.VITE_API_BASE_URL}/api/classrooms';
 
     const method = editingClassroom ? 'PUT' : 'POST';
 
@@ -112,7 +112,7 @@ const ClassroomManagement = () => {
   const handleStatusChange = async () => {
     if (!selectedClassroom) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/classrooms/${selectedClassroom._id}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/classrooms/${selectedClassroom._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !selectedClassroom.isActive }),
@@ -129,7 +129,7 @@ const ClassroomManagement = () => {
   const handleDelete = async () => {
     if (!selectedClassroom) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/classrooms/${selectedClassroom._id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/classrooms/${selectedClassroom._id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Delete failed');

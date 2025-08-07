@@ -28,7 +28,7 @@ const ManageClassroomModal = ({
 
   const fetchSchedules = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/schedules/${classroom.location_id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/schedules/${classroom.location_id}`);
       if (!res.ok) throw new Error('Failed to fetch schedules');
       const data = await res.json();
       setSchedules(data);
@@ -55,7 +55,7 @@ const ManageClassroomModal = ({
         year: Number(newSchedule.year),
       };
 
-      const res = await fetch('http://localhost:5000/api/schedules', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/schedules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -80,7 +80,7 @@ const ManageClassroomModal = ({
 
   const handleDeleteSchedule = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/schedules/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/schedules/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete schedule');

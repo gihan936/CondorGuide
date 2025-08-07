@@ -46,7 +46,7 @@ const SignUpPage = () => {
     if (!validateForm()) return;
 
     try {
-      const res = await axios.post('http://localhost:5000/api/users/signUp', {
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/users/signUp`, {
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,

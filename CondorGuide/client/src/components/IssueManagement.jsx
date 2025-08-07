@@ -26,7 +26,7 @@ const IssueManagement = () => {
   useEffect(() => {
     async function fetchIssues() {
       try {
-        const res = await fetch("http://localhost:5000/api/issues/all"); // Updated fetch URL
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/issues/all`); // Updated fetch URL
         const data = await res.json();
         setIssues(data.data);
         setFilteredIssues(data.data);
@@ -72,7 +72,7 @@ const IssueManagement = () => {
       const token = localStorage.getItem("token");
 
 
-      const res = await fetch("http://localhost:5000/api/issues/update", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/issues/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", authorization: `Bearer ${token}` },
         body: JSON.stringify({

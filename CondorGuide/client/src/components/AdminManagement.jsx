@@ -5,14 +5,14 @@ export default function AdminManagement() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/users/users") // fetch all users
+    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/users/users`) // fetch all users
       .then(res => setUsers(res.data.filter(user => user.role !== 'superadmin')))
       .catch(err => console.error(err));
   }, []);
 
   const updateRole = async (email, newRole) => {
     try {
-      await axios.put("http://localhost:5000/api/users/update-role", { email, role: newRole });
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/users/update-role`, { email, role: newRole });
       setUsers(prev =>
         prev.map(user => user.email === email ? { ...user, role: newRole } : user)
       );
