@@ -28,7 +28,7 @@ const ClassroomManagement = () => {
 
   const fetchClassrooms = async () => {
     try {
-      const res = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/classrooms/all');
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/classrooms/all`);
       const data = await res.json();
       setClassrooms(data);
     } catch (err) {
@@ -79,7 +79,7 @@ const ClassroomManagement = () => {
 
     const url = editingClassroom
       ? `${import.meta.env.VITE_API_BASE_URL}/api/classrooms/${editingClassroom._id}`
-      : '${import.meta.env.VITE_API_BASE_URL}/api/classrooms';
+      : `${import.meta.env.VITE_API_BASE_URL}/api/classrooms`;
 
     const method = editingClassroom ? 'PUT' : 'POST';
 
