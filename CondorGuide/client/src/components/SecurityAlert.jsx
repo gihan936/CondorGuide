@@ -129,7 +129,7 @@ const SecurityAlert = () => {
     try {
       const res = await axios.get("/api/security-alerts/", { headers });
       console.log("[API] loadAlerts: Response received", res.data);
-      setAlerts(res.data);
+      setAlerts(Array.isArray(res.data) ? res.data : []);
       setError(null);
     } catch (err) {
       console.error("[API] loadAlerts: Error", err);
