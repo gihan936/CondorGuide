@@ -127,7 +127,7 @@ const SecurityAlert = () => {
   const loadAlerts = async () => {
     console.log("[API] loadAlerts: Sending GET /api/security-alerts");
     try {
-      const res = await axios.get("/api/security-alerts", { headers });
+      const res = await axios.get("/api/security-alerts/", { headers });
       console.log("[API] loadAlerts: Response received", res.data);
       setAlerts(res.data);
       setError(null);
