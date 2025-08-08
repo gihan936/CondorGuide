@@ -1,3 +1,96 @@
+// import React, { useState, useEffect, useContext } from "react";
+// import axios from "axios";
+// import { useAuth } from "../context/AuthContext";
+// import { ThemeContext } from "../context/ThemeContext";
+
+// const categories = ["Medical", "Fire", "Harassment", "Theft"];
+
+// const SecurityAlert = () => {
+//   const { currentUser } = useAuth();
+//   useContext(ThemeContext);
+//   const token = localStorage.getItem("token");
+//   const [tab, setTab] = useState("critical");
+//   const [category, setCategory] = useState(categories[0]);
+//   const [alerts, setAlerts] = useState([]);
+//   const [error, setError] = useState(null);
+//   const [now, setNow] = useState(new Date());
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const alertsPerPage = 10;
+
+//   const headers = { Authorization: `Bearer ${token}` };
+
+//   useEffect(() => {
+//     loadAlerts();
+//   }, []);
+
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       setNow(new Date());
+//     }, 1000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   const loadAlerts = async () => {
+//     try {
+//       const res = await axios.get("/api/security-alerts", { headers });
+//       setAlerts(res.data);
+//     } catch (err) {
+//       console.error("Load alerts error:", err);
+//     }
+//   };
+
+//   const sendAlert = async () => {
+//     try {
+//       const payload =
+//         tab === "critical"
+//           ? { emergencyType: "critical" }
+//           : { emergencyType: "non-critical", category };
+
+//       await axios.post("/api/security-alerts", payload, { headers });
+
+//       loadAlerts();
+//     } catch (err) {
+//       setError(err.response?.data?.message || "Error sending alert");
+//     }
+//   };
+
+//   const pickAlert = async (id) => {
+//     try {
+//       await axios.put(`/api/security-alerts/${id}/pick`, {}, { headers });
+//       loadAlerts();
+//     } catch (err) {
+//       console.error("Error picking alert:", err);
+//     }
+//   };
+
+//   const resolveAlert = async (id) => {
+//     try {
+//       await axios.patch(`/api/security-alerts/${id}/resolve`, {}, { headers });
+//       loadAlerts();
+//     } catch (err) {
+//       console.error("Resolve error:", err);
+//     }
+//   };
+
+//   const getElapsedTime = (createdAt) => {
+//     const diff = Math.floor((now - new Date(createdAt)) / 1000);
+//     const mins = Math.floor(diff / 60);
+//     const secs = diff % 60;
+//     return `${mins}m ${secs}s`;
+//   };
+
+//   const sortedAlerts = [...alerts].sort(
+//     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+//   );
+//   const totalPages = Math.ceil(sortedAlerts.length / alertsPerPage);
+//   const paginatedAlerts = sortedAlerts.slice(
+//     (currentPage - 1) * alertsPerPage,
+//     currentPage * alertsPerPage
+//   );
+//   const hasActiveAlert = alerts.some(
+//     (a) => !a.resolved && a.userId === currentUser._id
+//   );
+
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -20,6 +113,7 @@ const SecurityAlert = () => {
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
+    console.log("[Effect] Component mounted: Loading alerts");
     loadAlerts();
   }, []);
 
@@ -31,43 +125,59 @@ const SecurityAlert = () => {
   }, []);
 
   const loadAlerts = async () => {
+    console.log("[API] loadAlerts: Sending GET /api/security-alerts");
     try {
       const res = await axios.get("/api/security-alerts", { headers });
+      console.log("[API] loadAlerts: Response received", res.data);
       setAlerts(res.data);
+      setError(null);
     } catch (err) {
-      console.error("Load alerts error:", err);
+      console.error("[API] loadAlerts: Error", err);
+      setError("Failed to load alerts.");
     }
   };
 
   const sendAlert = async () => {
-    try {
-      const payload =
-        tab === "critical"
-          ? { emergencyType: "critical" }
-          : { emergencyType: "non-critical", category };
+    const payload =
+      tab === "critical"
+        ? { emergencyType: "critical" }
+        : { emergencyType: "non-critical", category };
+    console.log("[API] sendAlert: Sending POST /api/security-alerts with payload:", payload);
 
-      await axios.post("/api/security-alerts", payload, { headers });
-      loadAlerts();
+    try {
+      const res = await axios.post("/api/security-alerts", payload, { headers });
+      console.log("[API] sendAlert: Alert sent successfully", res.data);
+      setError(null);
+      await loadAlerts();
     } catch (err) {
+      console.error("[API] sendAlert: Error sending alert", err);
       setError(err.response?.data?.message || "Error sending alert");
     }
   };
 
   const pickAlert = async (id) => {
+    console.log(`[API] pickAlert: Sending PUT /api/security-alerts/${id}/pick`);
     try {
-      await axios.put(`/api/security-alerts/${id}/pick`, {}, { headers });
-      loadAlerts();
+      const res = await axios.put(`/api/security-alerts/${id}/pick`, {}, { headers });
+      console.log("[API] pickAlert: Alert picked successfully", res.data);
+      setError(null);
+      await loadAlerts();
     } catch (err) {
-      console.error("Error picking alert:", err);
+      console.error("[API] pickAlert: Error picking alert", err);
+      setError("Error picking alert.");
     }
   };
 
   const resolveAlert = async (id) => {
+    console.log(`[API] resolveAlert: Sending PATCH /api/security-alerts/${id}/resolve`);
     try {
-      await axios.patch(`/api/security-alerts/${id}/resolve`, {}, { headers });
-      loadAlerts();
+      const res = await axios.patch(`/api/security-alerts/${id}/resolve`, {}, { headers });
+      console.log("[API] resolveAlert: Alert resolved successfully", res.data);
+      setError(null);
+      await loadAlerts();
     } catch (err) {
-      console.error("Resolve error:", err);
+      console.error("[API] resolveAlert: Error resolving alert", err);
+      setError("Error resolving alert.");
     }
   };
 
@@ -86,9 +196,27 @@ const SecurityAlert = () => {
     (currentPage - 1) * alertsPerPage,
     currentPage * alertsPerPage
   );
+
   const hasActiveAlert = alerts.some(
     (a) => !a.resolved && a.userId === currentUser._id
   );
+
+  console.log("[State] hasActiveAlert:", hasActiveAlert);
+  console.log("[State] alerts:", alerts);
+
+  // Log key state changes for debugging
+  useEffect(() => {
+    console.log("[State] currentPage changed:", currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    console.log("[State] tab changed:", tab);
+  }, [tab]);
+
+  useEffect(() => {
+    console.log("[State] category changed:", category);
+  }, [category]);
+
 
   return (
     <>
