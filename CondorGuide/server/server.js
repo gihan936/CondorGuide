@@ -24,7 +24,7 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: 'https://condor-guide-czmq.vercel.app',
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204,
