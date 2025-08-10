@@ -116,6 +116,7 @@ router.get('/info', async (req, res) => {
   }
 });
 
+// Change Password
 router.post('/change-password', async (req, res) => {
   try {
     const { email, currentPassword, newPassword } = req.body;
@@ -221,7 +222,6 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-
 // Reset Password
 router.post('/reset-password', async (req, res) => {
   try {
@@ -254,4 +254,32 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).json({ message: 'Server error.', error: err.message });
   }
 });
+
+// Delete User
+router.delete('/delete', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (user.role === 'superadmin') {
+      return res.status(403).json({ message: 'Cannot delete superadmin account.' });
+    }
+
+    await User.deleteOne({ email });
+
+    res.status(200).json({ message: 'User deleted successfully.' });
+  } catch (err) {
+    console.error('Delete user error:', err);
+    res.status(500).json({ message: 'Failed to delete user.', error: err.message });
+  }
+});
+
 export default router;
