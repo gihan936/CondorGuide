@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ThemeContext } from "../context/ThemeContext";
 import { FaGithub, FaLinkedin, FaEnvelope, FaTwitter, FaRocket, FaEye, FaUsers, FaLightbulb, FaCheckCircle, FaLaptopCode } from "react-icons/fa";
 import GihanImg from "../assets/gihan.jpg";
+import KushadiniImg from "../assets/Kushadini.jpg";
 
 // Team data
 const team = [
@@ -22,11 +23,11 @@ const team = [
     github: "#",
   },
   {
-    name: "Kushadini",
-    role: "Back End Developer",
-    image: "",
-    linkedin: "#",
-    github: "#",
+    name: "Kushadini Mallawaarachchi",
+    role: "Full Stack Developer",
+    image: KushadiniImg,
+    linkedin: "https://www.linkedin.com/in/kushadini-amali-mallawaarachchi-6479461b0/",
+    github: "https://github.com/kushadini",
   },
 ];
 
