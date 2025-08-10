@@ -424,8 +424,12 @@ const ReportIssue = () => {
     <div className={`report-issue-container ${theme} font-${fontSize}`}>
       <Container className="report-issue-main">
         <div className="report-issue-header">
-          <h1 className="report-issue-page-title">Issue Management</h1>
-          <p className="report-issue-page-subtitle">Report and track facility issues efficiently</p>
+          <h1 className={`display-6 fw-bold ${theme === "dark" ? "text-white" : "text-black"}`}>
+           Report <span style={{ color: "#B68E0C" }}> Issues </span>
+          </h1>
+          <p className={`lead ${theme === "dark" ? "text-light" : "text-muted"}`}>
+            Report and track facility issues efficiently
+          </p>
         </div>
 
         <Tabs 

@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'faculty', 'staff'],
     default: 'student'
   },
+  status: {
+    type: String,
+    enum: ['enable', 'disable'],
+    default: 'enable'
+  },
   department: {
     type: String,
   },

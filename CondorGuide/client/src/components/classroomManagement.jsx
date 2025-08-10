@@ -24,6 +24,8 @@ const ClassroomManagement = () => {
     isActive: true,
     availability: [],
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const classroomsPerPage = 10;
 
   useEffect(() => {
     fetchClassrooms();
@@ -144,6 +146,13 @@ const ClassroomManagement = () => {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(classrooms.length / classroomsPerPage);
+  const paginatedClassrooms = classrooms.slice(
+    (currentPage - 1) * classroomsPerPage,
+    currentPage * classroomsPerPage
+  );
+
   return (
     <main className="py-4 py-md-5" style={{ minHeight: "100vh", backgroundColor: "transparent" }}>
       <Container className="p-3 p-md-4" style={{ backgroundColor: "transparent" }}>
@@ -200,14 +209,14 @@ const ClassroomManagement = () => {
               </tr>
             </thead>
             <tbody style={{ backgroundColor: "transparent" }}>
-              {classrooms.length === 0 ? (
+              {paginatedClassrooms.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-3 text-center" style={{ color: theme === "dark" ? "#fff" : "#333" }}>
                     No classrooms found.
                   </td>
                 </tr>
               ) : (
-                classrooms.map((cls) => (
+                paginatedClassrooms.map((cls) => (
                   <tr
                     key={cls._id}
                     style={{
@@ -282,6 +291,29 @@ const ClassroomManagement = () => {
             </tbody>
           </Table>
         </div>
+
+        <nav className="mt-4">
+          <ul className="pagination justify-content-center">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <li
+                key={i}
+                className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
+              >
+                <button
+                  className="page-link"
+                  style={{
+                    backgroundColor: currentPage === i + 1 ? "#B68E0C" : "transparent",
+                    color: currentPage === i + 1 ? "#fff" : theme === "dark" ? "#fff" : "#333",
+                    borderColor: theme === "dark" ? "#444" : "#ddd",
+                  }}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
         {/* Edit/Add Modal */}
         <Modal show={showModal} onHide={handleCloseModal} size="lg">

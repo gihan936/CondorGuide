@@ -1,106 +1,14 @@
-// import React, { useState, useEffect, useContext } from "react";
-// import axios from "axios";
-// import { useAuth } from "../context/AuthContext";
-// import { ThemeContext } from "../context/ThemeContext";
-
-// const categories = ["Medical", "Fire", "Harassment", "Theft"];
-
-// const SecurityAlert = () => {
-//   const { currentUser } = useAuth();
-//   useContext(ThemeContext);
-//   const token = localStorage.getItem("token");
-//   const [tab, setTab] = useState("critical");
-//   const [category, setCategory] = useState(categories[0]);
-//   const [alerts, setAlerts] = useState([]);
-//   const [error, setError] = useState(null);
-//   const [now, setNow] = useState(new Date());
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const alertsPerPage = 10;
-
-//   const headers = { Authorization: `Bearer ${token}` };
-
-//   useEffect(() => {
-//     loadAlerts();
-//   }, []);
-
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       setNow(new Date());
-//     }, 1000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   const loadAlerts = async () => {
-//     try {
-//       const res = await axios.get("/api/security-alerts", { headers });
-//       setAlerts(res.data);
-//     } catch (err) {
-//       console.error("Load alerts error:", err);
-//     }
-//   };
-
-//   const sendAlert = async () => {
-//     try {
-//       const payload =
-//         tab === "critical"
-//           ? { emergencyType: "critical" }
-//           : { emergencyType: "non-critical", category };
-
-//       await axios.post("/api/security-alerts", payload, { headers });
-
-//       loadAlerts();
-//     } catch (err) {
-//       setError(err.response?.data?.message || "Error sending alert");
-//     }
-//   };
-
-//   const pickAlert = async (id) => {
-//     try {
-//       await axios.put(`/api/security-alerts/${id}/pick`, {}, { headers });
-//       loadAlerts();
-//     } catch (err) {
-//       console.error("Error picking alert:", err);
-//     }
-//   };
-
-//   const resolveAlert = async (id) => {
-//     try {
-//       await axios.patch(`/api/security-alerts/${id}/resolve`, {}, { headers });
-//       loadAlerts();
-//     } catch (err) {
-//       console.error("Resolve error:", err);
-//     }
-//   };
-
-//   const getElapsedTime = (createdAt) => {
-//     const diff = Math.floor((now - new Date(createdAt)) / 1000);
-//     const mins = Math.floor(diff / 60);
-//     const secs = diff % 60;
-//     return `${mins}m ${secs}s`;
-//   };
-
-//   const sortedAlerts = [...alerts].sort(
-//     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-//   );
-//   const totalPages = Math.ceil(sortedAlerts.length / alertsPerPage);
-//   const paginatedAlerts = sortedAlerts.slice(
-//     (currentPage - 1) * alertsPerPage,
-//     currentPage * alertsPerPage
-//   );
-//   const hasActiveAlert = alerts.some(
-//     (a) => !a.resolved && a.userId === currentUser._id
-//   );
-
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
+import { Container, Row, Col, Card, Button, Form, Table, Badge } from "react-bootstrap";
 
 const categories = ["Medical", "Fire", "Harassment", "Theft"];
 
 const SecurityAlert = () => {
   const { currentUser } = useAuth();
-  useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
   const token = localStorage.getItem("token");
   const [tab, setTab] = useState("critical");
   const [category, setCategory] = useState(categories[0]);
@@ -217,84 +125,138 @@ const SecurityAlert = () => {
     console.log("[State] category changed:", category);
   }, [category]);
 
-
   return (
-    <>
+    <main className="py-4 py-md-5" style={{ minHeight: "100vh", backgroundColor: theme === "dark" ? "#1e1e1e" : "#f8f9fa" }}>
+      <Container className="p-3 p-md-4">
+        <div className="text-center mb-4 mb-md-5">
+          <h1 className={`display-6 fw-bold ${theme === "dark" ? "text-white" : "text-black"}`}>
+            Security <span style={{ color: "#B68E0C" }}>Alert Center</span>
+          </h1>
+          <p className={`lead ${theme === "dark" ? "text-light" : "text-muted"}`}>
+            Report and manage emergencies efficiently.
+          </p>
+        </div>
 
+        {currentUser.role === "user" && (
+          <Row className="justify-content-center mb-4">
+            <Col xs={12} md={8}>
+              <Card
+                className={`border-0 rounded-3 overflow-hidden ${theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"}`}
+                style={{
+                  background: theme === "dark"
+                    ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
+                    : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
+                  boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Card.Body className="p-4">
+                  <ul className="nav nav-tabs mb-4" style={{ borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}` }}>
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${tab === "critical" ? "active" : ""} ${theme === "dark" ? "text-white" : "text-black"}`}
+                        style={{
+                          borderColor: tab === "critical" ? "#B68E0C" : theme === "dark" ? "#444" : "#ddd",
+                          fontWeight: 500,
+                          backgroundColor: tab === "critical" ? (theme === "dark" ? "rgba(182, 142, 12, 0.1)" : "rgba(182, 142, 12, 0.1)") : "transparent",
+                        }}
+                        onClick={() => setTab("critical")}
+                      >
+                        Critical Emergency
+                      </button>
+                    </li>
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${tab === "non-critical" ? "active" : ""} ${theme === "dark" ? "text-white" : "text-black"}`}
+                        style={{
+                          borderColor: tab === "non-critical" ? "#B68E0C" : theme === "dark" ? "#444" : "#ddd",
+                          fontWeight: 500,
+                          backgroundColor: tab === "non-critical" ? (theme === "dark" ? "rgba(182, 142, 12, 0.1)" : "rgba(182, 142, 12, 0.1)") : "transparent",
+                        }}
+                        onClick={() => setTab("non-critical")}
+                      >
+                        Non-Critical Report
+                      </button>
+                    </li>
+                  </ul>
 
-      <div className="security-alert-container">
-        <div className="container">
-          <h2 className="security-alert-title">Security Alert Center</h2>
+                  {error && (
+                    <div
+                      className="alert alert-danger"
+                      role="alert"
+                      style={{
+                        border: `1px solid #dc3545`,
+                        backgroundColor: "transparent",
+                        color: theme === "dark" ? "#fff" : "#333",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <strong>Alert:</strong> {error}
+                    </div>
+                  )}
 
-          {currentUser.role === "user" && (
-            <>
-              <ul className="nav security-nav-tabs">
-                <li className="nav-item security-nav-item">
-                  <button
-                    className={`nav-link security-nav-link ${
-                      tab === "critical" ? "active" : ""
-                    }`}
-                    onClick={() => setTab("critical")}
-                  >
-                    Critical Emergency
-                  </button>
-                </li>
-                <li className="nav-item security-nav-item">
-                  <button
-                    className={`nav-link security-nav-link ${
-                      tab === "non-critical" ? "active" : ""
-                    }`}
-                    onClick={() => setTab("non-critical")}
-                  >
-                    Non‑Critical Report
-                  </button>
-                </li>
-              </ul>
-
-              {error && (
-                <div className="alert security-error-alert">
-                  <strong>Alert:</strong> {error}
-                </div>
-              )}
-
-              <div className="card security-alert-card">
-                <div className="card-body security-card-body">
                   {tab === "non-critical" && (
-                    <div className="mb-3">
-                      <label className="form-label fw-bold mb-2">
-                        Select Category:
-                      </label>
-                      <select
-                        className="form-select security-category-select"
+                    <Form.Group className="mb-4">
+                      <Form.Label className={`fw-bold ${theme === "dark" ? "text-white" : "text-black"}`}>Select Category:</Form.Label>
+                      <Form.Select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
+                        className={theme === "dark" ? "bg-dark text-light border-dark" : "bg-white text-dark border-light"}
+                        style={{
+                          backgroundColor: "transparent",
+                          border: `1px solid ${theme === "dark" ? "#fff" : "#333"}`,
+                          color: theme === "dark" ? "#fff" : "#333",
+                          fontWeight: 500,
+                        }}
                       >
                         {categories.map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>
                         ))}
-                      </select>
-                    </div>
+                      </Form.Select>
+                    </Form.Group>
                   )}
 
-                  <button
-                    className={`security-main-button ${
-                      hasActiveAlert
-                        ? "security-disabled-button"
-                        : tab === "critical"
-                        ? "security-critical-button"
-                        : "security-non-critical-button"
-                    }`}
+                  <Button
+                    variant="outline"
+                    className={`w-100 py-3 fw-bold custom-button ${hasActiveAlert ? "disabled" : ""}`}
+                    style={{
+                      backgroundColor: tab === "critical" ? "#dc3545" : "transparent",
+                      borderColor: hasActiveAlert ? "#6c757d" : tab === "critical" ? "#dc3545" : "#B68E0C",
+                      color: hasActiveAlert ? "#6c757d" : tab === "critical" ? "#fff" : "#B68E0C",
+                      fontSize: "1.2rem",
+                      boxShadow: tab === "critical" && !hasActiveAlert ? "0 0 15px rgba(220, 53, 69, 0.5)" : "none",
+                      borderRadius: "12px",
+                      padding: tab === "critical" ? "1rem" : "0.75rem",
+                      position: "relative",
+                      overflow: "hidden",
+                      textTransform: "uppercase",
+                    }}
                     disabled={hasActiveAlert}
                     onClick={sendAlert}
                   >
-                    {hasActiveAlert
-                      ? "Alert Sent – Awaiting Help"
-                      : tab === "critical"
-                      ? "I Need Immediate Help!"
-                      : `Report ${category}`}
-                  </button>
+                    {hasActiveAlert ? (
+                      "Alert Sent – Awaiting Help"
+                    ) : tab === "critical" ? (
+                      <>
+                        <span style={{ position: "relative", zIndex: 1 }}>I Need Immediate Help!</span>
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: "radial-gradient(circle, rgba(220, 53, 69, 0.2) 0%, transparent 70%)",
+                            animation: !hasActiveAlert ? "pulse 2s infinite" : "none",
+                            zIndex: 0,
+                          }}
+                        />
+                      </>
+                    ) : (
+                      `Report ${category}`
+                    )}
+                  </Button>
 
                   {alerts
                     .filter((a) => !a.resolved)
@@ -302,204 +264,254 @@ const SecurityAlert = () => {
                       alert.pickedBy && alert.userId === currentUser._id ? (
                         <div
                           key={alert._id}
-                          className="alert security-assistance-alert d-flex justify-content-between align-items-center"
+                          className="alert alert-success d-flex justify-content-between align-items-center mt-3"
+                          role="alert"
+                          style={{
+                            border: `1px solid #28a745`,
+                            backgroundColor: "transparent",
+                            color: theme === "dark" ? "#fff" : "#333",
+                            borderRadius: "8px",
+                          }}
                         >
                           <div className="text-center">
-                            <strong>{alert.pickedByName}</strong> is on the way
-                            to assist you. Help is coming!
+                            <strong>{alert.pickedByName}</strong> is on the way to assist you. Help is coming!
                           </div>
-                          <button
-                            className="btn security-resolve-button"
+                          <Button
+                            variant="outline"
+                            className="fw-semibold custom-button"
+                            style={{
+                              backgroundColor: "transparent",
+                              borderColor: "#28a745",
+                              color: "#28a745",
+                              fontWeight: 500,
+                              borderRadius: "8px",
+                            }}
                             onClick={() => resolveAlert(alert._id)}
                           >
                             Mark as Resolved
-                          </button>
+                          </Button>
                         </div>
                       ) : null
                     )}
-                </div>
-              </div>
-            </>
-          )}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        )}
 
-          {["security", "admin", "superadmin"].includes(currentUser.role) && (
-            <>
-              <div className="row mb-3">
-                <div className="col-md-4">
-                  <div className="security-stats-card">
-                    <h4 className="mb-2" style={{ color: "var(--gold)" }}>
-                      Total Alerts
-                    </h4>
-                    <h2 className="mb-0">{alerts.length}</h2>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="security-stats-card">
-                    <h4 className="mb-2" style={{ color: "#dc3545" }}>
-                      Unclaimed
-                    </h4>
-                    <h2 className="mb-0">
-                      {alerts.filter((a) => !a.isPicked && !a.resolved).length}
-                    </h2>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="security-stats-card">
-                    <h4 className="mb-2" style={{ color: "#28a745" }}>
-                      In Progress
-                    </h4>
-                    <h2 className="mb-0">
-                      {alerts.filter((a) => a.isPicked && !a.resolved).length}
-                    </h2>
-                  </div>
-                </div>
-              </div>
+        {["security", "admin", "superadmin"].includes(currentUser.role) && (
+          <>
+            <Row className="mb-4">
+              {[
+                { title: "Total Alerts", value: alerts.length, color: "#B68E0C" },
+                { title: "Unclaimed", value: alerts.filter((a) => !a.isPicked && !a.resolved).length, color: "#dc3545" },
+                { title: "In Progress", value: alerts.filter((a) => a.isPicked && !a.resolved).length, color: "#28a745" },
+              ].map((stat, idx) => (
+                <Col md={4} key={idx}>
+                  <Card
+                    className={`border-0 rounded-3 overflow-hidden ${theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"}`}
+                    style={{
+                      background: theme === "dark"
+                        ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
+                        : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
+                      boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+                    }}
+                  >
+                    <Card.Body className="p-4 text-center">
+                      <h4 className="mb-2" style={{ color: stat.color, fontWeight: 600 }}>{stat.title}</h4>
+                      <h2 className={`mb-0 ${theme === "dark" ? "text-white" : "text-black"}`}>{stat.value}</h2>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
 
-              {/* Desktop Table View */}
-              <div className="table-responsive">
-                <table className="table security-alerts-table">
-                  <thead className="security-table-header">
+            <div className="table-responsive" style={{ maxWidth: "100%", overflowX: "auto" }}>
+              <Table
+                className={`border-0 rounded-3 overflow-hidden ${theme === "dark" ? "table-dark" : "table-light"}`}
+                style={{ backgroundColor: "transparent", minWidth: "600px" }}
+              >
+                <thead style={{ background: theme === "dark" ? "#222" : "#f1f3f5", color: theme === "dark" ? "#fff" : "#333" }}>
+                  <tr>
+                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "200px" }}>
+                      User
+                    </th>
+                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "150px" }}>
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "150px" }}>
+                      Elapsed Time
+                    </th>
+                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "200px" }}>
+                      Status
+                    </th>
+                    {currentUser.role === "security" && (
+                      <th className="px-4 py-3 text-center" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "150px" }}>
+                        Action
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody style={{ backgroundColor: "transparent" }}>
+                  {paginatedAlerts.length === 0 ? (
                     <tr>
-                      <th>User</th>
-                      <th>Type</th>
-                      <th>Elapsed Time</th>
-                      <th>Status</th>
-                      {currentUser.role === "security" && <th>Action</th>}
+                      <td colSpan={currentUser.role === "security" ? 5 : 4} className="px-4 py-3 text-center" style={{ color: theme === "dark" ? "#fff" : "#333" }}>
+                        No alerts found.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="security-table-body">
-                    {paginatedAlerts.map((alert) => (
+                  ) : (
+                    paginatedAlerts.map((alert) => (
                       <tr
                         key={alert._id}
-                        className={alert.isPicked ? "security-picked-row" : ""}
+                        style={{
+                          borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`,
+                          backgroundColor: "transparent",
+                        }}
                       >
-                        <td>
-                          <strong>{alert.username}</strong>
-                        </td>
-                        <td>
-                          <span className="fw-bold">
-                            {alert.emergencyType === "critical" ? "CRITICAL" : 
-                              `${alert.emergencyType} (${alert.category})`}
+                        <td className="px-4 py-3 align-middle">
+                          <span className={theme === "dark" ? "text-white" : "text-black"} style={{ wordBreak: "break-all" }}>
+                            {alert.username}
                           </span>
                         </td>
-                        <td>
-                          <span
-                            className={
-                              !alert.isPicked ? "security-elapsed-time" : ""
-                            }
+                        <td className="px-4 py-3 align-middle">
+                          <span className={theme === "dark" ? "text-white" : "text-black"}>
+                            {alert.emergencyType === "critical" ? "CRITICAL" : `${alert.emergencyType} (${alert.category})`}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 align-middle">
+                          <span style={{ color: !alert.isPicked ? "#dc3545" : theme === "dark" ? "#fff" : "#333", wordBreak: "break-all" }}>
+                            {!alert.isPicked ? getElapsedTime(alert.createdAt) : "Picked"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 align-middle">
+                          <Badge
+                            className="rounded-pill px-3 py-2 fw-semibold"
+                            style={{
+                              backgroundColor: "transparent",
+                              border: `1px solid ${alert.isPicked ? "#28a745" : "#dc3545"}`,
+                              color: theme === "dark" ? "#fff" : "#333",
+                              fontSize: "0.9rem",
+                            }}
                           >
-                            {!alert.isPicked
-                              ? `${getElapsedTime(alert.createdAt)}`
-                              : "Picked"}
-                          </span>
+                            {alert.isPicked ? `Picked by ${alert.pickedByName}` : "Unclaimed"}
+                          </Badge>
                         </td>
-                        <td>
-                          <span
-                            className={`badge security-status-badge ${
-                              alert.isPicked
-                                ? "security-picked-badge"
-                                : "security-unclaimed-badge"
-                            }`}
-                          >
-                            {alert.isPicked
-                              ? `Picked by ${alert.pickedByName}`
-                              : "Unclaimed"}
-                          </span>
-                        </td>
-
                         {currentUser.role === "security" && (
-                          <td>
+                          <td className="px-4 py-3 align-middle text-center">
                             {!alert.isPicked && (
-                              <button
-                                className="btn security-pickup-button"
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="d-flex align-items-center mx-auto custom-button"
+                                style={{
+                                  backgroundColor: "transparent",
+                                  borderColor: "#B68E0C",
+                                  color: "#B68E0C",
+                                  fontWeight: 500,
+                                  borderRadius: "8px",
+                                }}
                                 onClick={() => pickAlert(alert._id)}
                               >
                                 Pick Up
-                              </button>
+                              </Button>
                             )}
                           </td>
                         )}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </div>
 
-              {/* Mobile Card View */}
-              <div className="security-mobile-view">
-                {paginatedAlerts.map((alert) => (
-                  <div
-                    key={alert._id}
-                    className={`security-mobile-alert-card ${alert.isPicked ? "picked" : ""}`}
-                  >
-                    <div className="security-mobile-alert-header">
-                      <div className="security-mobile-alert-user">
+            <div className="d-md-none">
+              {paginatedAlerts.map((alert) => (
+                <Card
+                  key={alert._id}
+                  className={`border-0 rounded-3 overflow-hidden mb-3 ${theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"}`}
+                  style={{
+                    background: theme === "dark"
+                      ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
+                      : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
+                    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <Card.Body className="p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <span className={theme === "dark" ? "text-white" : "text-black"} style={{ wordBreak: "break-all" }}>
                         {alert.username}
-                      </div>
-                      <div className={`security-mobile-alert-time ${
-                        !alert.isPicked ? "security-elapsed-time" : ""
-                      }`}>
-                        {!alert.isPicked
-                          ? `${getElapsedTime(alert.createdAt)}`
-                          : "Picked"}
-                      </div>
-                    </div>
-                    
-                    <div className="security-mobile-alert-type">
-                      {alert.emergencyType === "critical" ? "CRITICAL EMERGENCY" : 
-                        `${alert.emergencyType} (${alert.category})`}
-                    </div>
-                    
-                    <div className="security-mobile-alert-actions">
-                      <span
-                        className={`badge security-status-badge ${
-                          alert.isPicked
-                            ? "security-picked-badge"
-                            : "security-unclaimed-badge"
-                        }`}
-                      >
-                        {alert.isPicked
-                          ? `Picked by ${alert.pickedByName}`
-                          : "Unclaimed"}
                       </span>
-                      
+                      <span style={{ color: !alert.isPicked ? "#dc3545" : theme === "dark" ? "#fff" : "#333", wordBreak: "break-all" }}>
+                        {!alert.isPicked ? getElapsedTime(alert.createdAt) : "Picked"}
+                      </span>
+                    </div>
+                    <div className="mb-2">
+                      <span className={theme === "dark" ? "text-white" : "text-black"}>
+                        {alert.emergencyType === "critical" ? "CRITICAL EMERGENCY" : `${alert.emergencyType} (${alert.category})`}
+                      </span>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <Badge
+                        className="rounded-pill px-3 py-2 fw-semibold"
+                        style={{
+                          backgroundColor: "transparent",
+                          border: `1px solid ${alert.isPicked ? "#28a745" : "#dc3545"}`,
+                          color: theme === "dark" ? "#fff" : "#333",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        {alert.isPicked ? `Picked by ${alert.pickedByName}` : "Unclaimed"}
+                      </Badge>
                       {currentUser.role === "security" && !alert.isPicked && (
-                        <button
-                          className="btn security-pickup-button"
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="d-flex align-items-center custom-button"
+                          style={{
+                            backgroundColor: "transparent",
+                            borderColor: "#B68E0C",
+                            color: "#B68E0C",
+                            fontWeight: 500,
+                            borderRadius: "8px",
+                          }}
                           onClick={() => pickAlert(alert._id)}
                         >
                           Pick Up
-                        </button>
+                        </Button>
                       )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  </Card.Body>
+                </Card>
+              ))}
+            </div>
 
-              <nav>
-                <ul className="pagination security-pagination">
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <li
-                      key={i}
-                      className={`page-item ${
-                        currentPage === i + 1 ? "active" : ""
-                      }`}
+            <nav className="mt-4">
+              <ul className="pagination justify-content-center">
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <li
+                    key={i}
+                    className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
+                  >
+                    <button
+                      className="page-link"
+                      style={{
+                        backgroundColor: currentPage === i + 1 ? "#B68E0C" : "transparent",
+                        color: currentPage === i + 1 ? "#fff" : theme === "dark" ? "#fff" : "#333",
+                        borderColor: theme === "dark" ? "#444" : "#ddd",
+                        borderRadius: "8px",
+                      }}
+                      onClick={() => setCurrentPage(i + 1)}
                     >
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(i + 1)}
-                      >
-                        {i + 1}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            </>
-          )}
-        </div>
-      </div>
-    </>
+                      {i + 1}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </>
+        )}
+      </Container>
+    </main>
   );
 };
 

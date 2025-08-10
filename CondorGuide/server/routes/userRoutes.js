@@ -19,20 +19,35 @@ const generateToken = (user) => {
   );
 };
 
-// Register
+//register
 router.post('/signUp', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+    const { email, password, firstName, lastName } = req.body;
+
+    // Validate required fields
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({ message: 'All fields (email, password, firstName, lastName) are required' });
     }
 
+    // Check if user with email already exists
     const userExist = await User.findOne({ email });
     if (userExist) {
-      return res.status(409).json({ message: 'User already exists' });
+      return res.status(409).json({ message: 'User with this email already exists' });
     }
 
-    const newUser = new User({ email, password });
+    // Check if firstName or lastName already exists
+    const nameExist = await User.findOne({
+      $or: [
+        { firstName: { $regex: new RegExp(`^${firstName}$`, 'i') } },
+        { lastName: { $regex: new RegExp(`^${lastName}$`, 'i') } }
+      ]
+    });
+    if (nameExist) {
+      return res.status(409).json({ message: 'A user with this first name or lastName already exists' });
+    }
+
+    // Create new user
+    const newUser = new User({ email, password, firstName, lastName });
     await newUser.save();
 
     const token = generateToken(newUser);
@@ -42,7 +57,9 @@ router.post('/signUp', async (req, res) => {
       user: {
         _id: newUser._id,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName
       },
       token
     });
@@ -60,9 +77,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const user = await User.findOne({ email, password });
+    const user = await User.findOne({ email, password});
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+    if (user.status === 'disable') {
+      return res.status(401).json({ message: 'user disabled by admin' });
     }
 
     const token = generateToken(user);
@@ -92,7 +112,7 @@ router.put('/update-role', async (req, res) => {
 
 // List users
 router.get('/users', async (req, res) => {
-  const users = await User.find({}, 'email role');
+  const users = await User.find({}, 'email role status');
   res.json(users);
 });
 
@@ -255,7 +275,6 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// Delete User
 router.delete('/delete', async (req, res) => {
   try {
     const { email } = req.body;
@@ -270,15 +289,19 @@ router.delete('/delete', async (req, res) => {
     }
 
     if (user.role === 'superadmin') {
-      return res.status(403).json({ message: 'Cannot delete superadmin account.' });
+      return res.status(403).json({ message: 'Cannot change status of superadmin account.' });
     }
 
-    await User.deleteOne({ email });
+    // Toggle status between 'enable' and 'disable'
+    const newStatus = user.status === 'enable' ? 'disable' : 'enable';
+    user.status = newStatus;
 
-    res.status(200).json({ message: 'User deleted successfully.' });
+    await user.save();
+
+    res.status(200).json({ message: `User status changed to ${newStatus}.` });
   } catch (err) {
-    console.error('Delete user error:', err);
-    res.status(500).json({ message: 'Failed to delete user.', error: err.message });
+    console.error('Toggle user status error:', err);
+    res.status(500).json({ message: 'Failed to toggle user status.', error: err.message });
   }
 });
 

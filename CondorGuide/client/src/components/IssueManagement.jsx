@@ -11,6 +11,8 @@ const IssueManagement = () => {
   const { theme } = useContext(ThemeContext);
   const [issues, setIssues] = useState([]);
   const [filteredIssues, setFilteredIssues] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const issuesPerPage = 10;
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("");
@@ -112,6 +114,13 @@ const IssueManagement = () => {
         return theme === "dark" ? "#fff" : "#333";
     }
   };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredIssues.length / issuesPerPage);
+  const paginatedIssues = filteredIssues.slice(
+    (currentPage - 1) * issuesPerPage,
+    currentPage * issuesPerPage
+  );
 
   return (
     <main className="py-4 py-md-5" style={{ minHeight: "100vh", backgroundColor: "transparent" }}>
@@ -221,14 +230,14 @@ const IssueManagement = () => {
               </tr>
             </thead>
             <tbody style={{ backgroundColor: "transparent" }}>
-              {filteredIssues.length === 0 ? (
+              {paginatedIssues.length === 0 ? (
                 <tr>
                   <td colSpan={currentUser.role === "maintenance" ? 6 : 5} className="px-4 py-3 text-center" style={{ color: theme === "dark" ? "#fff" : "#333" }}>
                     No issues found.
                   </td>
                 </tr>
               ) : (
-                filteredIssues.map((issue) => (
+                paginatedIssues.map((issue) => (
                   <tr
                     key={issue._id}
                     style={{
@@ -299,6 +308,29 @@ const IssueManagement = () => {
             </tbody>
           </Table>
         </div>
+
+        <nav className="mt-4">
+          <ul className="pagination justify-content-center">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <li
+                key={i}
+                className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
+              >
+                <button
+                  className="page-link"
+                  style={{
+                    backgroundColor: currentPage === i + 1 ? "#B68E0C" : "transparent",
+                    color: currentPage === i + 1 ? "#fff" : theme === "dark" ? "#fff" : "#333",
+                    borderColor: theme === "dark" ? "#444" : "#ddd",
+                  }}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
         {/* Issue Details Modal */}
         <Modal show={showModal} onHide={closeModal} size="lg" scrollable>
