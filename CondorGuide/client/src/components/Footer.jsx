@@ -21,6 +21,7 @@ const Footer = () => (
             <li><a href="/issues">Report Issues</a></li>
             <li><a href="/security">Security Alarm</a></li>
             <li><a href="/about">About Us</a></li>
+            <li><a href="../../sitemap.html">Site Map</a></li>
           </ul>
         </Col>
         <Col md={4}>
