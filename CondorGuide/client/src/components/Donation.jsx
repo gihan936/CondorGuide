@@ -44,7 +44,7 @@ const DonationPage = () => {
         >
           <div className="bg-white p-5 rounded-4 shadow-lg mb-5" style={{ backdropFilter: "blur(12px)" }}>
             <h2 className="text-center fw-bold mb-4">Why We Need Your Support</h2>
-            <div style={{ fontSize: "1.3rem", lineHeight: "1.8", textAlign: "justify" }}>
+            <div className="donation-content" style={{ fontSize: "1.3rem", lineHeight: "1.8", textAlign: "justify" }}>
               <img
                 src={classroomsImg}
                 alt="Classrooms"
