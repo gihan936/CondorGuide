@@ -485,7 +485,7 @@ const Map = () => {
     // Enhanced connection rules based on intersection types
     const connectionRules = {
       'room_entrance': {
-        maxDistance: 50, // Back to original value that worked on floor 2
+        maxDistance: 150, // Increased for problematic rooms like 2A101-2A107
         connectTo: ['corridor_turn', 'corridor_junction', 'room_entrance'],
         priority: 'medium',
         bias: 1.0
@@ -833,6 +833,7 @@ const Map = () => {
 
   // Simplified path clearance checking - only avoid room interiors
   const isPathClearOfRooms = (startCoords, endCoords, roomPolygons, bufferDistance = 0.1) => {
+    
     const checkPoints = 20; // Check 20 points along the line for better precision
     
     for (let i = 1; i < checkPoints; i++) { // Skip start/end points (i=0 and i=checkPoints)
@@ -922,7 +923,7 @@ const Map = () => {
   // NEW: Generate corridor waypoints between two intersections
   const generateCorridorWaypoints = (startCoords, endCoords, roomPolygons) => {
     const waypoints = [];
-    const steps = 8; // Number of intermediate waypoints
+    const steps = 6; // Number of intermediate waypoints
     const offset = 0.5; // Meters to offset from room boundaries
     
     for (let i = 1; i < steps; i++) {
@@ -1091,7 +1092,8 @@ const Map = () => {
       // For room results, try to find their entrance intersection point
       results = results.map(result => {
         const roomLocationId = result.data.location_id;
-        const entranceIntersection = intersectionData.find(intersection => 
+        
+        let entranceIntersection = intersectionData.find(intersection => 
           intersection.location_id === roomLocationId && 
           intersection.type === 'room_entrance'
         );
@@ -1199,14 +1201,12 @@ const Map = () => {
   };
 
   // NEW: Find closest intersection to a coordinate
-  const findClosestIntersection = (coordinates, intersections, maxDistance = 50) => {
+  const findClosestIntersection = (coordinates, intersections, maxDistance = 150) => {
     let closestIntersection = null;
     let minDistance = Infinity;
-    const candidateDistances = [];
     
     intersections.forEach(intersection => {
       const distance = calculateDistance(coordinates, intersection.coordinates);
-      candidateDistances.push({ id: intersection.id, distance: distance.toFixed(1) });
       
       if (distance < minDistance && distance < maxDistance) {
         minDistance = distance;
@@ -1214,46 +1214,16 @@ const Map = () => {
       }
     });
     
-    // Sort candidates by distance to see the closest ones
-    candidateDistances.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
-    
+    // If no intersection found with default radius, try with expanded radius
     if (!closestIntersection) {
-      
-      // Try with expanded radius for isolated rooms like 2A101, 2A103, 2A105
-      const expandedMaxDistance = 100; // Double the search radius
-      let expandedMinDistance = Infinity; // Reset minDistance for expanded search
+      const expandedMaxDistance = 300;
       intersections.forEach(intersection => {
         const distance = calculateDistance(coordinates, intersection.coordinates);
-        if (distance < expandedMinDistance && distance < expandedMaxDistance) {
-          expandedMinDistance = distance;
+        if (distance < minDistance && distance < expandedMaxDistance) {
+          minDistance = distance;
           closestIntersection = intersection;
         }
       });
-      
-      if (closestIntersection) {
-        minDistance = expandedMinDistance; // Update minDistance for logging
-      }
-      
-      if (closestIntersection) {
-      } else {
-        
-        // For rooms 2A101, 2A103, 2A105, try an even larger radius as last resort
-        const veryExpandedMaxDistance = 200; // Even larger search radius
-        let veryExpandedMinDistance = Infinity;
-        intersections.forEach(intersection => {
-          const distance = calculateDistance(coordinates, intersection.coordinates);
-          if (distance < veryExpandedMinDistance && distance < veryExpandedMaxDistance) {
-            veryExpandedMinDistance = distance;
-            closestIntersection = intersection;
-          }
-        });
-        
-        if (closestIntersection) {
-          minDistance = veryExpandedMinDistance;
-        } else {
-        }
-      }
-    } else {
     }
     
     return closestIntersection;
@@ -1261,13 +1231,24 @@ const Map = () => {
 
   // NEW: A* pathfinding algorithm with detailed debugging
   const findShortestIntersectionPath = (startIntersection, endIntersection, intersections) => {
+    console.log(`DEBUG: findShortestIntersectionPath called`);
+    console.log(`Start intersection:`, startIntersection);
+    console.log(`End intersection:`, endIntersection);
+    console.log(`Start connections:`, startIntersection.connections?.length || 0);
+    console.log(`End connections:`, endIntersection.connections?.length || 0);
+    
+    // Log the first few connections for both start and end
+    console.log(`Start intersection connections:`, startIntersection.connections?.slice(0, 5).map(c => c.targetId));
+    console.log(`End intersection connections:`, endIntersection.connections?.slice(0, 5).map(c => c.targetId));
     
     if (startIntersection.id === endIntersection.id) {
+      console.log(`DEBUG: Same intersection, returning direct path`);
       return [startIntersection];
     }
     
     // Check if this is cross-wing pathfinding
     const isCrossWing = startIntersection.wing !== endIntersection.wing;
+    console.log(`DEBUG: Cross-wing navigation: ${isCrossWing}`);
     if (isCrossWing) {
       
       // Check if start has any cross-wing connections
@@ -1343,37 +1324,47 @@ const Map = () => {
       let validNeighborsExamined = 0;
       let crossWingNeighborsFound = 0;
       
+      // Log current intersection being processed
+      if (iterations <= 3) { // Only log first few iterations
+        console.log(`DEBUG: Processing intersection ${currentIntersection.id} (${currentIntersection.type}) with ${currentIntersection.connections?.length || 0} connections`);
+      }
+      
       // Examine neighbors
       currentIntersection.connections.forEach((connection, connIndex) => {
         const neighborId = connection.targetId;
         
-        if (closedSet.has(neighborId)) return;
+        if (closedSet.has(neighborId)) {
+          if (iterations <= 2) console.log(`DEBUG: Skipping ${neighborId} (already in closed set)`);
+          return;
+        }
         
         const neighbor = intersections.find(i => i.id === neighborId);
         if (!neighbor) {
           // Skip inter-floor connections during floor-specific pathfinding
           if (connection.type === 'inter_floor') {
             // This is expected for floor-specific pathfinding
-            if (iterations === 1) {
-            }
+            if (iterations <= 2) console.log(`DEBUG: Skipping inter-floor connection to ${neighborId}`);
             return;
           }
-          if (iterations === 1) { // Only log once to avoid spam
-          }
+          console.log(`DEBUG: Neighbor ${neighborId} not found in intersection list`);
           return;
         }
         
+        if (iterations <= 2) {
+          console.log(`DEBUG: Examining neighbor ${neighbor.id} (${neighbor.type})`);
+        }
+        
+        // TEMPORARILY ALLOW routing through room entrances for debugging
         // AVOID other room entrances (only allow start/end room entrances)
         // EXCEPT for emergency connections which are allowed to connect to isolated room entrances
-        if (neighbor.type === 'room_entrance' && 
+        /*if (neighbor.type === 'room_entrance' && 
             neighbor.id !== startIntersection.id && 
             neighbor.id !== endIntersection.id &&
             !(connection.pathType && connection.pathType.includes('emergency'))) {
           // Skip this room entrance - we don't want to route through other rooms
-          if (connection.pathType && connection.pathType.includes('emergency')) {
-          }
+          console.log(`DEBUG: Blocking path through room entrance ${neighbor.id}`);
           return;
-        }
+        }*/
         
         validNeighborsExamined++;
         if (isCrossWing && neighbor.wing !== currentIntersection.wing) {
@@ -1381,11 +1372,15 @@ const Map = () => {
         }
         
         
-        // Skip path clearance check for cross-wing debugging
+        // TEMPORARILY DISABLE ALL PATH CLEARANCE CHECKS FOR DEBUGGING
+        if (iterations <= 2) console.log(`DEBUG: Allowing connection to ${neighbor.id} (path clearance disabled)`);
+        
+        /*// Skip path clearance check for cross-wing debugging
         if (isCrossWing) {
-          // Skip clearance check to see if that's the issue
+          // Allow cross-wing connections without path clearance check
+          if (iterations <= 2) console.log(`DEBUG: Allowing cross-wing connection to ${neighbor.id}`);
         } else {
-          // Normal path clearance check for intra-wing
+          // Check path clearance for same-wing navigation
           const pathClear = isPathClearOfRooms(
             currentIntersection.coordinates,
             neighbor.coordinates,
@@ -1395,9 +1390,11 @@ const Map = () => {
           );
           
           if (!pathClear) {
+            if (iterations <= 2) console.log(`DEBUG: Path blocked to ${neighbor.id} (not clear of rooms)`);
             return;
           }
-        }
+          if (iterations <= 2) console.log(`DEBUG: Path clear to ${neighbor.id}`);
+        }*/
         
         const tentativeGScore = gScore[currentId] + connection.distance;
         
@@ -1437,6 +1434,10 @@ const Map = () => {
     }
     
     // Return null when pathfinding fails instead of a direct line
+    console.log(`DEBUG: Pathfinding failed, returning null`);
+    console.log(`End intersection reachable: ${gScore[endIntersection.id] !== Infinity}`);
+    console.log(`gScore for end:`, gScore[endIntersection.id]);
+    console.log(`Start intersection connections:`, startIntersection.connections);
     return null;
   };
 
@@ -1520,11 +1521,22 @@ const Map = () => {
         return;
       }
 
+      // Show navigation info
+      setDebugInfo(`Navigating from "${startRoom.displayName}" to "${endRoom.displayName}"`);
+      
       // Find closest intersections to start and end points
       const startIntersection = findClosestIntersection(startCoords, intersectionData);
       const endIntersection = findClosestIntersection(endCoords, intersectionData);
       
       if (!startIntersection || !endIntersection) {
+        let errorMessage = 'Navigation failed: ';
+        if (!startIntersection) errorMessage += `No intersection found near ${startRoom.displayName}. `;
+        if (!endIntersection) errorMessage += `No intersection found near ${endRoom.displayName}. `;
+        errorMessage += 'Showing direct route instead.';
+        
+        setDebugInfo(errorMessage);
+        
+        // Provide a simple direct route as fallback
         const simpleRoute = [startCoords, endCoords];
         displayRoute(simpleRoute);
         return;
@@ -1658,6 +1670,7 @@ const Map = () => {
       
       const intersectionPath = findShortestIntersectionPath(pathfindingStartIntersection, pathfindingEndIntersection, updatedIntersectionData);
       
+      
       if (!intersectionPath || intersectionPath.length === 0) {
         if (isCrossWingNavigation) {
         }
@@ -1692,8 +1705,11 @@ const Map = () => {
       } else {
       }
       
+      
       // Build final route coordinates with corridor following
       let routeCoordinates = [startCoords];
+      
+      console.log(`DEBUG: Building route with ${intersectionPath.length} intersections`);
       
       // Add intersection waypoints
       for (let i = 0; i < intersectionPath.length; i++) {
@@ -1708,14 +1724,23 @@ const Map = () => {
             nextIntersection.coordinates,
             Object.values(roomData).filter(room => room.geometry && room.geometry.type === 'Polygon').map(room => room.geometry)
           );
+          console.log(`DEBUG: Generated ${corridorWaypoints.length} corridor waypoints between intersections`);
           routeCoordinates.push(...corridorWaypoints);
         }
       }
       
       routeCoordinates.push(endCoords);
       
-      // Remove duplicate consecutive coordinates and smooth the path
-      const cleanedRoute = smoothNavigationPath(routeCoordinates);
+      console.log(`DEBUG: Route has ${routeCoordinates.length} total coordinates before smoothing`);
+      
+      // Remove duplicate consecutive coordinates only (disable aggressive smoothing for now)
+      const cleanedRoute = routeCoordinates.filter((coord, index) => {
+        if (index === 0) return true;
+        const prev = routeCoordinates[index - 1];
+        return calculateDistance(coord, prev) > 0.1; // Remove only very close duplicates
+      });
+      
+      console.log(`DEBUG: Route has ${cleanedRoute.length} coordinates after cleaning`);
       
       displayRoute(cleanedRoute);
 
@@ -3354,6 +3379,221 @@ const Map = () => {
 
   return (
     <div className={`map-page ${theme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
+      {/* Controls Section Above Map */}
+      <Container fluid className="py-3">
+        <Row className="g-3">
+          {/* Floor Switcher */}
+          <Col md={2}>
+            <Card className={`shadow-sm h-100 ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+              <Card.Body className="p-3">
+                <h6 className="mb-3 text-center">Floor</h6>
+                <div className="d-flex flex-column gap-2">
+                  {[3, 2, 1].map(floor => (
+                    <Button
+                      key={floor}
+                      variant={currentFloor === floor ? "primary" : "outline-secondary"}
+                      className="flex-fill"
+                      onClick={() => switchFloor(floor)}
+                      disabled={!isMapReady}
+                    >
+                      {floor}
+                    </Button>
+                  ))}
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Navigation Panel */}
+          <Col md={8}>
+            <Card className={`shadow-sm h-100 ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+              <Card.Header>
+                <h6 className="mb-0">Navigation</h6>
+              </Card.Header>
+              <Card.Body className="p-3">
+                <Row className="g-3">
+                  {/* Start Room Input */}
+                  <Col lg={5}>
+                    <label className="form-label small">From (Room Name/Number):</label>
+                    <InputGroup size="sm">
+                      <Form.Control
+                        type="text"
+                        placeholder="e.g., 2A202, Classroom, Staircase..."
+                        value={startRoomInput}
+                        onChange={(e) => {
+                          setStartRoomInput(e.target.value);
+                          searchRoomsWithIntersections(e.target.value, true);
+                        }}
+                      />
+                      {startRoom && (
+                        <Button 
+                          variant="outline-secondary" 
+                          size="sm"
+                          onClick={() => {
+                            setStartRoom(null);
+                            setStartRoomInput('');
+                            setRouteSearchResults(prev => ({ ...prev, start: [] }));
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </InputGroup>
+                    
+                    {/* Start Room Search Results */}
+                    {routeSearchResults.start.length > 0 && (
+                      <div className="mt-1">
+                        <div className="list-group" style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                          {routeSearchResults.start.map((result, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              className="list-group-item list-group-item-action py-1 px-2 small"
+                              onClick={() => selectRoomForNavigation(result, true)}
+                            >
+                              <div className="d-flex justify-content-between">
+                                <span className="fw-bold">{result.displayName}</span>
+                                <Badge bg="secondary">{result.displayNumber}</Badge>
+                              </div>
+                              <small className="text-muted">Match: {result.matchType}</small>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Col>
+
+                  {/* End Room Input */}
+                  <Col lg={5}>
+                    <label className="form-label small">To (Room Name/Number):</label>
+                    <InputGroup size="sm">
+                      <Form.Control
+                        type="text"
+                        placeholder="e.g., 2A202, Classroom, Elevator..."
+                        value={endRoomInput}
+                        onChange={(e) => {
+                          setEndRoomInput(e.target.value);
+                          searchRoomsWithIntersections(e.target.value, false);
+                        }}
+                      />
+                      {endRoom && (
+                        <Button 
+                          variant="outline-secondary" 
+                          size="sm"
+                          onClick={() => {
+                            setEndRoom(null);
+                            setEndRoomInput('');
+                            setRouteSearchResults(prev => ({ ...prev, end: [] }));
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </InputGroup>
+                    
+                    {/* End Room Search Results */}
+                    {routeSearchResults.end.length > 0 && (
+                      <div className="mt-1">
+                        <div className="list-group" style={{ maxHeight: '120px', overflowY: 'auto' }}>
+                          {routeSearchResults.end.map((result, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              className="list-group-item list-group-item-action py-1 px-2 small"
+                              onClick={() => selectRoomForNavigation(result, false)}
+                            >
+                              <div className="d-flex justify-content-between">
+                                <span className="fw-bold">{result.displayName}</span>
+                                <Badge bg="secondary">{result.displayNumber}</Badge>
+                              </div>
+                              <small className="text-muted">Match: {result.matchType}</small>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Col>
+
+                  {/* Navigation Controls */}
+                  <Col lg={2}>
+                    <label className="form-label small invisible">Controls</label>
+                    <div className="d-grid gap-2">
+                      <Button 
+                        variant="success" 
+                        size="sm"
+                        onClick={calculateIntersectionNavigationRoute}
+                        disabled={!isDataReady || !startRoom || !endRoom}
+                      >
+                        Get Directions
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={clearNavigation}
+                        disabled={!startRoom && !endRoom && !currentRoute}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  </Col>
+                </Row>
+
+                {/* Selected Rooms Display */}
+                {(startRoom || endRoom) && (
+                  <Row className="mt-2">
+                    <Col>
+                      <div className="d-flex gap-3 small">
+                        {startRoom && (
+                          <span>Start: <strong>{startRoom.displayName}</strong></span>
+                        )}
+                        {endRoom && (
+                          <span>End: <strong>{endRoom.displayName}</strong></span>
+                        )}
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Map Controls */}
+          <Col md={2}>
+            <Card className={`shadow-sm h-100 ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
+              <Card.Body className="p-3">
+                <h6 className="mb-3 text-center">Controls</h6>
+                <div className="d-grid gap-2">
+                  <Button 
+                    variant="warning" 
+                    size="sm"
+                    onClick={toggle3D}
+                    disabled={!isMapReady}
+                  >
+                    Toggle 3D
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={resetView}
+                    disabled={!isMapReady}
+                  >
+                    Reset View
+                  </Button>
+                  <Button 
+                    variant="info" 
+                    size="sm"
+                    onClick={() => showFloorOnly(currentFloor)}
+                    disabled={!isMapReady}
+                  >
+                    Refresh Floor
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+
       {/* Map Section */}
       <div className="map-container-wrapper position-relative">
         <div 
@@ -3361,209 +3601,6 @@ const Map = () => {
           className="map-container"
           style={{ height: '500px', width: '100%' }}
         />
-        
-        {/* Floor Switcher - LEFT SIDE */}
-        <div className="position-absolute" style={{ top: '20px', left: '20px', zIndex: 1000 }}>
-          <Card className={`shadow ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`}>
-            <Card.Body className="text-center p-3">
-              <h6 className="mb-3">Floor</h6>
-              {[3, 2, 1].map(floor => (
-                <Button
-                  key={floor}
-                  variant={currentFloor === floor ? "primary" : "outline-secondary"}
-                  className="d-block w-100 mb-2"
-                  style={{ minWidth: '60px', minHeight: '50px' }}
-                  onClick={() => switchFloor(floor)}
-                  disabled={!isMapReady}
-                >
-                  {floor}
-                </Button>
-              ))}
-            </Card.Body>
-          </Card>
-        </div>
-
-        {/* Navigation Panel - RIGHT SIDE BELOW MAP CONTROLS */}
-        <div className="position-absolute" style={{ top: '210px', right: '20px', zIndex: 1000 }}>
-          <Card className={`shadow ${theme === 'dark' ? 'bg-dark text-light' : 'bg-white'}`} style={{ width: '300px' }}>
-            <Card.Header>
-              <h6 className="mb-0">Navigation</h6>
-            </Card.Header>
-            <Card.Body className="p-3">
-              {/* Start Room Input */}
-              <div className="mb-3">
-                <label className="form-label small nav-label-color">From (Room Name/Number):</label>
-                <InputGroup size="sm">
-                  <Form.Control
-                    type="text"
-                    placeholder="e.g., 2A202, Classroom, Staircase..."
-                    value={startRoomInput}
-                    onChange={(e) => {
-                      setStartRoomInput(e.target.value);
-                      searchRoomsWithIntersections(e.target.value, true); // UPDATED: Use new function
-                    }}
-                  />
-                  {startRoom && (
-                    <Button 
-                      variant="outline-secondary" 
-                      size="sm"
-                      onClick={() => {
-                        setStartRoom(null);
-                        setStartRoomInput('');
-                        setRouteSearchResults(prev => ({ ...prev, start: [] }));
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </InputGroup>
-                
-                {/* Start Room Search Results */}
-                {routeSearchResults.start.length > 0 && (
-                  <div className="mt-1">
-                    <div className="list-group" style={{ maxHeight: '120px', overflowY: 'auto' }}>
-                      {routeSearchResults.start.map((result, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="list-group-item list-group-item-action py-1 px-2 small"
-                          onClick={() => selectRoomForNavigation(result, true)}
-                        >
-                          <div className="d-flex justify-content-between">
-                            <span className="fw-bold">{result.displayName}</span>
-                            <Badge bg="secondary">{result.displayNumber}</Badge>
-                          </div>
-                          <small className="text-muted">Match: {result.matchType}</small>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* End Room Input */}
-              <div className="mb-3">
-                <label className="form-label small nav-label-color">To (Room Name/Number):</label>
-                <InputGroup size="sm">
-                  <Form.Control
-                    type="text"
-                    placeholder="e.g., 2A202, Classroom, Elevator..."
-                    value={endRoomInput}
-                    onChange={(e) => {
-                      setEndRoomInput(e.target.value);
-                      searchRoomsWithIntersections(e.target.value, false); // UPDATED: Use new function
-                    }}
-                  />
-                  {endRoom && (
-                    <Button 
-                      variant="outline-secondary" 
-                      size="sm"
-                      onClick={() => {
-                        setEndRoom(null);
-                        setEndRoomInput('');
-                        setRouteSearchResults(prev => ({ ...prev, end: [] }));
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </InputGroup>
-                
-                {/* End Room Search Results */}
-                {routeSearchResults.end.length > 0 && (
-                  <div className="mt-1">
-                    <div className="list-group" style={{ maxHeight: '120px', overflowY: 'auto' }}>
-                      {routeSearchResults.end.map((result, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="list-group-item list-group-item-action py-1 px-2 small"
-                          onClick={() => selectRoomForNavigation(result, false)}
-                        >
-                          <div className="d-flex justify-content-between">
-                            <span className="fw-bold">{result.displayName}</span>
-                            <Badge bg="secondary">{result.displayNumber}</Badge>
-                          </div>
-                          <small className="text-muted">Match: {result.matchType}</small>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="d-grid gap-2">
-                <Button 
-                  variant="success" 
-                  size="sm"
-                  onClick={calculateIntersectionNavigationRoute} // UPDATED: Use new function
-                  disabled={!isDataReady || !startRoom || !endRoom}
-                >
-                  Get Directions
-                </Button>
-                <Button 
-                  variant="outline-secondary" 
-                  size="sm"
-                  onClick={clearNavigation}
-                  disabled={!startRoom && !endRoom && !currentRoute}
-                >
-                  Clear Navigation
-                </Button>
-              </div>
-
-              {/* Route Info */}
-
-              {/* Selected Rooms Display */}
-              {(startRoom || endRoom) && (
-                <div className="mt-3">
-                  {startRoom && (
-                    <div className="d-flex align-items-center mb-1">
-                      <small>Start: {startRoom.displayName}</small>
-                    </div>
-                  )}
-                  {endRoom && (
-                    <div className="d-flex align-items-center">
-                      <small>End: {endRoom.displayName}</small>
-                    </div>
-                  )}
-                </div>
-              )}
-
-            </Card.Body>
-          </Card>
-        </div>
-
-        {/* Map Controls - RIGHT SIDE */}
-        <div className="position-absolute" style={{ top: '20px', right: '20px', zIndex: 1000 }}>
-          <div className="d-flex flex-column gap-2">
-            <Button 
-              variant="warning" 
-              onClick={toggle3D}
-              disabled={!isMapReady}
-              style={{ minWidth: '100px' }}
-            >
-              Toggle 3D
-            </Button>
-            <Button 
-              variant="secondary" 
-              onClick={resetView}
-              disabled={!isMapReady}
-              style={{ minWidth: '100px' }}
-            >
-              Reset View
-            </Button>
-            <Button 
-              variant="info" 
-              onClick={() => showFloorOnly(currentFloor)}
-              disabled={!isMapReady}
-              style={{ minWidth: '100px' }}
-              size="sm"
-            >
-              Refresh Floor
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Information Panel Below */}
