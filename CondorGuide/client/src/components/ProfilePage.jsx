@@ -276,14 +276,10 @@ export default function ProfilePage() {
             </Form>
           </Card>
 
-          <Card className="p-4 shadow">
+          <Card className={`p-4 shadow ${themeClasses}`}>
             <h3 className="mb-3">Security Settings</h3>
 
-            <p>
-              You can change your password here.
-After a successful change, you
-              will receive a confirmation email. 
-            </p>
+            <p>You can change your password here. After a successful change, you will receive a confirmation email.</p>
 
  <p>
               Forgot your password? <a href="/forgot-password">Reset it here</a>.

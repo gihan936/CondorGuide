@@ -2595,6 +2595,9 @@ a, .hover-card, .hover-badge {
   border-right: 12px solid rgba(var(--bs-secondary-rgb), 0.8) !important;
 }
 
+.dark .donation-content {
+  color: var(--black);
+}
 /* Mobile Responsive Design */
 @media (max-width: 1200px) {
   .banner-text {

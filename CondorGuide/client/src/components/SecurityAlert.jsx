@@ -2,7 +2,16 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
-import { Container, Row, Col, Card, Button, Form, Table, Badge } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Form,
+  Table,
+  Badge,
+} from "react-bootstrap";
 
 const categories = ["Medical", "Fire", "Harassment", "Theft"];
 
@@ -33,9 +42,16 @@ const SecurityAlert = () => {
   }, []);
 
   const loadAlerts = async () => {
-    console.log("[API] loadAlerts: Sending GET /api/security-alerts");
+    console.log(
+      `[API] loadAlerts: Sending GET ${
+        import.meta.env.VITE_API_BASE_URL
+      }/api/security-alerts`
+    );
     try {
-      const res = await axios.get("/api/security-alerts/", { headers });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/security-alerts`,
+        { headers }
+      );
       console.log("[API] loadAlerts: Response received", res.data);
       setAlerts(Array.isArray(res.data) ? res.data : []);
       setError(null);
@@ -50,10 +66,17 @@ const SecurityAlert = () => {
       tab === "critical"
         ? { emergencyType: "critical" }
         : { emergencyType: "non-critical", category };
-    console.log("[API] sendAlert: Sending POST /api/security-alerts with payload:", payload);
+    console.log(
+      "[API] sendAlert: Sending POST /api/security-alerts with payload:",
+      payload
+    );
 
     try {
-      const res = await axios.post("/api/security-alerts", payload, { headers });
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/security-alerts`,
+        payload,
+        { headers }
+      );
       console.log("[API] sendAlert: Alert sent successfully", res.data);
       setError(null);
       await loadAlerts();
@@ -66,7 +89,11 @@ const SecurityAlert = () => {
   const pickAlert = async (id) => {
     console.log(`[API] pickAlert: Sending PUT /api/security-alerts/${id}/pick`);
     try {
-      const res = await axios.put(`/api/security-alerts/${id}/pick`, {}, { headers });
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/security-alerts/${id}/pick`,
+        {},
+        { headers }
+      );
       console.log("[API] pickAlert: Alert picked successfully", res.data);
       setError(null);
       await loadAlerts();
@@ -77,9 +104,17 @@ const SecurityAlert = () => {
   };
 
   const resolveAlert = async (id) => {
-    console.log(`[API] resolveAlert: Sending PATCH /api/security-alerts/${id}/resolve`);
+    console.log(
+      `[API] resolveAlert: Sending PATCH /api/security-alerts/${id}/resolve`
+    );
     try {
-      const res = await axios.patch(`/api/security-alerts/${id}/resolve`, {}, { headers });
+      const res = await axios.patch(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/security-alerts/${id}/resolve`,
+        {},
+        { headers }
+      );
       console.log("[API] resolveAlert: Alert resolved successfully", res.data);
       setError(null);
       await loadAlerts();
@@ -126,13 +161,25 @@ const SecurityAlert = () => {
   }, [category]);
 
   return (
-    <main className="py-4 py-md-5" style={{ minHeight: "100vh", backgroundColor: theme === "dark" ? "#1e1e1e" : "#f8f9fa" }}>
+    <main
+      className="py-4 py-md-5"
+      style={{
+        minHeight: "100vh",
+        backgroundColor: theme === "dark" ? "#1e1e1e" : "#f8f9fa",
+      }}
+    >
       <Container className="p-3 p-md-4">
         <div className="text-center mb-4 mb-md-5">
-          <h1 className={`display-6 fw-bold ${theme === "dark" ? "text-white" : "text-black"}`}>
+          <h1
+            className={`display-6 fw-bold ${
+              theme === "dark" ? "text-white" : "text-black"
+            }`}
+          >
             Security <span style={{ color: "#B68E0C" }}>Alert Center</span>
           </h1>
-          <p className={`lead ${theme === "dark" ? "text-light" : "text-muted"}`}>
+          <p
+            className={`lead ${theme === "dark" ? "text-light" : "text-muted"}`}
+          >
             Report and manage emergencies efficiently.
           </p>
         </div>
@@ -141,23 +188,45 @@ const SecurityAlert = () => {
           <Row className="justify-content-center mb-4">
             <Col xs={12} md={8}>
               <Card
-                className={`border-0 rounded-3 overflow-hidden ${theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"}`}
+                className={`border-0 rounded-3 overflow-hidden ${
+                  theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"
+                }`}
                 style={{
-                  background: theme === "dark"
-                    ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
-                    : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
+                  background:
+                    theme === "dark"
+                      ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
+                      : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
                   boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
                 }}
               >
                 <Card.Body className="p-4">
-                  <ul className="nav nav-tabs mb-4" style={{ borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}` }}>
+                  <ul
+                    className="nav nav-tabs mb-4"
+                    style={{
+                      borderBottom: `1px solid ${
+                        theme === "dark" ? "#444" : "#ddd"
+                      }`,
+                    }}
+                  >
                     <li className="nav-item">
                       <button
-                        className={`nav-link ${tab === "critical" ? "active" : ""} ${theme === "dark" ? "text-white" : "text-black"}`}
+                        className={`nav-link ${
+                          tab === "critical" ? "active" : ""
+                        } ${theme === "dark" ? "text-white" : "text-black"}`}
                         style={{
-                          borderColor: tab === "critical" ? "#B68E0C" : theme === "dark" ? "#444" : "#ddd",
+                          borderColor:
+                            tab === "critical"
+                              ? "#B68E0C"
+                              : theme === "dark"
+                              ? "#444"
+                              : "#ddd",
                           fontWeight: 500,
-                          backgroundColor: tab === "critical" ? (theme === "dark" ? "rgba(182, 142, 12, 0.1)" : "rgba(182, 142, 12, 0.1)") : "transparent",
+                          backgroundColor:
+                            tab === "critical"
+                              ? theme === "dark"
+                                ? "rgba(182, 142, 12, 0.1)"
+                                : "rgba(182, 142, 12, 0.1)"
+                              : "transparent",
                         }}
                         onClick={() => setTab("critical")}
                       >
@@ -166,11 +235,23 @@ const SecurityAlert = () => {
                     </li>
                     <li className="nav-item">
                       <button
-                        className={`nav-link ${tab === "non-critical" ? "active" : ""} ${theme === "dark" ? "text-white" : "text-black"}`}
+                        className={`nav-link ${
+                          tab === "non-critical" ? "active" : ""
+                        } ${theme === "dark" ? "text-white" : "text-black"}`}
                         style={{
-                          borderColor: tab === "non-critical" ? "#B68E0C" : theme === "dark" ? "#444" : "#ddd",
+                          borderColor:
+                            tab === "non-critical"
+                              ? "#B68E0C"
+                              : theme === "dark"
+                              ? "#444"
+                              : "#ddd",
                           fontWeight: 500,
-                          backgroundColor: tab === "non-critical" ? (theme === "dark" ? "rgba(182, 142, 12, 0.1)" : "rgba(182, 142, 12, 0.1)") : "transparent",
+                          backgroundColor:
+                            tab === "non-critical"
+                              ? theme === "dark"
+                                ? "rgba(182, 142, 12, 0.1)"
+                                : "rgba(182, 142, 12, 0.1)"
+                              : "transparent",
                         }}
                         onClick={() => setTab("non-critical")}
                       >
@@ -196,14 +277,26 @@ const SecurityAlert = () => {
 
                   {tab === "non-critical" && (
                     <Form.Group className="mb-4">
-                      <Form.Label className={`fw-bold ${theme === "dark" ? "text-white" : "text-black"}`}>Select Category:</Form.Label>
+                      <Form.Label
+                        className={`fw-bold ${
+                          theme === "dark" ? "text-white" : "text-black"
+                        }`}
+                      >
+                        Select Category:
+                      </Form.Label>
                       <Form.Select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className={theme === "dark" ? "bg-dark text-light border-dark" : "bg-white text-dark border-light"}
+                        className={
+                          theme === "dark"
+                            ? "bg-dark text-light border-dark"
+                            : "bg-white text-dark border-light"
+                        }
                         style={{
                           backgroundColor: "transparent",
-                          border: `1px solid ${theme === "dark" ? "#fff" : "#333"}`,
+                          border: `1px solid ${
+                            theme === "dark" ? "#fff" : "#333"
+                          }`,
                           color: theme === "dark" ? "#fff" : "#333",
                           fontWeight: 500,
                         }}
@@ -219,13 +312,27 @@ const SecurityAlert = () => {
 
                   <Button
                     variant="outline"
-                    className={`w-100 py-3 fw-bold custom-button ${hasActiveAlert ? "disabled" : ""}`}
+                    className={`w-100 py-3 fw-bold custom-button ${
+                      hasActiveAlert ? "disabled" : ""
+                    }`}
                     style={{
-                      backgroundColor: tab === "critical" ? "#dc3545" : "transparent",
-                      borderColor: hasActiveAlert ? "#6c757d" : tab === "critical" ? "#dc3545" : "#B68E0C",
-                      color: hasActiveAlert ? "#6c757d" : tab === "critical" ? "#fff" : "#B68E0C",
+                      backgroundColor:
+                        tab === "critical" ? "#dc3545" : "transparent",
+                      borderColor: hasActiveAlert
+                        ? "#6c757d"
+                        : tab === "critical"
+                        ? "#dc3545"
+                        : "#B68E0C",
+                      color: hasActiveAlert
+                        ? "#6c757d"
+                        : tab === "critical"
+                        ? "#fff"
+                        : "#B68E0C",
                       fontSize: "1.2rem",
-                      boxShadow: tab === "critical" && !hasActiveAlert ? "0 0 15px rgba(220, 53, 69, 0.5)" : "none",
+                      boxShadow:
+                        tab === "critical" && !hasActiveAlert
+                          ? "0 0 15px rgba(220, 53, 69, 0.5)"
+                          : "none",
                       borderRadius: "12px",
                       padding: tab === "critical" ? "1rem" : "0.75rem",
                       position: "relative",
@@ -239,7 +346,9 @@ const SecurityAlert = () => {
                       "Alert Sent – Awaiting Help"
                     ) : tab === "critical" ? (
                       <>
-                        <span style={{ position: "relative", zIndex: 1 }}>I Need Immediate Help!</span>
+                        <span style={{ position: "relative", zIndex: 1 }}>
+                          I Need Immediate Help!
+                        </span>
                         <span
                           style={{
                             position: "absolute",
@@ -247,8 +356,11 @@ const SecurityAlert = () => {
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            background: "radial-gradient(circle, rgba(220, 53, 69, 0.2) 0%, transparent 70%)",
-                            animation: !hasActiveAlert ? "pulse 2s infinite" : "none",
+                            background:
+                              "radial-gradient(circle, rgba(220, 53, 69, 0.2) 0%, transparent 70%)",
+                            animation: !hasActiveAlert
+                              ? "pulse 2s infinite"
+                              : "none",
                             zIndex: 0,
                           }}
                         />
@@ -274,7 +386,8 @@ const SecurityAlert = () => {
                           }}
                         >
                           <div className="text-center">
-                            <strong>{alert.pickedByName}</strong> is on the way to assist you. Help is coming!
+                            <strong>{alert.pickedByName}</strong> is on the way
+                            to assist you. Help is coming!
                           </div>
                           <Button
                             variant="outline"
@@ -303,50 +416,134 @@ const SecurityAlert = () => {
           <>
             <Row className="mb-4">
               {[
-                { title: "Total Alerts", value: alerts.length, color: "#B68E0C" },
-                { title: "Unclaimed", value: alerts.filter((a) => !a.isPicked && !a.resolved).length, color: "#dc3545" },
-                { title: "In Progress", value: alerts.filter((a) => a.isPicked && !a.resolved).length, color: "#28a745" },
+                {
+                  title: "Total Alerts",
+                  value: alerts.length,
+                  color: "#B68E0C",
+                },
+                {
+                  title: "Unclaimed",
+                  value: alerts.filter((a) => !a.isPicked && !a.resolved)
+                    .length,
+                  color: "#dc3545",
+                },
+                {
+                  title: "In Progress",
+                  value: alerts.filter((a) => a.isPicked && !a.resolved).length,
+                  color: "#28a745",
+                },
               ].map((stat, idx) => (
                 <Col md={4} key={idx}>
                   <Card
-                    className={`border-0 rounded-3 overflow-hidden ${theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"}`}
+                    className={`border-0 rounded-3 overflow-hidden ${
+                      theme === "dark"
+                        ? "bg-dark text-light"
+                        : "bg-white text-dark"
+                    }`}
                     style={{
-                      background: theme === "dark"
-                        ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
-                        : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
+                      background:
+                        theme === "dark"
+                          ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
+                          : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
                       boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
                     }}
                   >
                     <Card.Body className="p-4 text-center">
-                      <h4 className="mb-2" style={{ color: stat.color, fontWeight: 600 }}>{stat.title}</h4>
-                      <h2 className={`mb-0 ${theme === "dark" ? "text-white" : "text-black"}`}>{stat.value}</h2>
+                      <h4
+                        className="mb-2"
+                        style={{ color: stat.color, fontWeight: 600 }}
+                      >
+                        {stat.title}
+                      </h4>
+                      <h2
+                        className={`mb-0 ${
+                          theme === "dark" ? "text-white" : "text-black"
+                        }`}
+                      >
+                        {stat.value}
+                      </h2>
                     </Card.Body>
                   </Card>
                 </Col>
               ))}
             </Row>
 
-            <div className="table-responsive" style={{ maxWidth: "100%", overflowX: "auto" }}>
+            <div
+              className="table-responsive"
+              style={{ maxWidth: "100%", overflowX: "auto" }}
+            >
               <Table
-                className={`border-0 rounded-3 overflow-hidden ${theme === "dark" ? "table-dark" : "table-light"}`}
+                className={`border-0 rounded-3 overflow-hidden ${
+                  theme === "dark" ? "table-dark" : "table-light"
+                }`}
                 style={{ backgroundColor: "transparent", minWidth: "600px" }}
               >
-                <thead style={{ background: theme === "dark" ? "#222" : "#f1f3f5", color: theme === "dark" ? "#fff" : "#333" }}>
+                <thead
+                  style={{
+                    background: theme === "dark" ? "#222" : "#f1f3f5",
+                    color: theme === "dark" ? "#fff" : "#333",
+                  }}
+                >
                   <tr>
-                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "200px" }}>
+                    <th
+                      className="px-4 py-3 text-start"
+                      style={{
+                        fontWeight: 600,
+                        borderBottom: `1px solid ${
+                          theme === "dark" ? "#444" : "#ddd"
+                        }`,
+                        minWidth: "200px",
+                      }}
+                    >
                       User
                     </th>
-                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "150px" }}>
+                    <th
+                      className="px-4 py-3 text-start"
+                      style={{
+                        fontWeight: 600,
+                        borderBottom: `1px solid ${
+                          theme === "dark" ? "#444" : "#ddd"
+                        }`,
+                        minWidth: "150px",
+                      }}
+                    >
                       Type
                     </th>
-                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "150px" }}>
+                    <th
+                      className="px-4 py-3 text-start"
+                      style={{
+                        fontWeight: 600,
+                        borderBottom: `1px solid ${
+                          theme === "dark" ? "#444" : "#ddd"
+                        }`,
+                        minWidth: "150px",
+                      }}
+                    >
                       Elapsed Time
                     </th>
-                    <th className="px-4 py-3 text-start" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "200px" }}>
+                    <th
+                      className="px-4 py-3 text-start"
+                      style={{
+                        fontWeight: 600,
+                        borderBottom: `1px solid ${
+                          theme === "dark" ? "#444" : "#ddd"
+                        }`,
+                        minWidth: "200px",
+                      }}
+                    >
                       Status
                     </th>
                     {currentUser.role === "security" && (
-                      <th className="px-4 py-3 text-center" style={{ fontWeight: 600, borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`, minWidth: "150px" }}>
+                      <th
+                        className="px-4 py-3 text-center"
+                        style={{
+                          fontWeight: 600,
+                          borderBottom: `1px solid ${
+                            theme === "dark" ? "#444" : "#ddd"
+                          }`,
+                          minWidth: "150px",
+                        }}
+                      >
                         Action
                       </th>
                     )}
@@ -355,7 +552,11 @@ const SecurityAlert = () => {
                 <tbody style={{ backgroundColor: "transparent" }}>
                   {paginatedAlerts.length === 0 ? (
                     <tr>
-                      <td colSpan={currentUser.role === "security" ? 5 : 4} className="px-4 py-3 text-center" style={{ color: theme === "dark" ? "#fff" : "#333" }}>
+                      <td
+                        colSpan={currentUser.role === "security" ? 5 : 4}
+                        className="px-4 py-3 text-center"
+                        style={{ color: theme === "dark" ? "#fff" : "#333" }}
+                      >
                         No alerts found.
                       </td>
                     </tr>
@@ -364,23 +565,47 @@ const SecurityAlert = () => {
                       <tr
                         key={alert._id}
                         style={{
-                          borderBottom: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`,
+                          borderBottom: `1px solid ${
+                            theme === "dark" ? "#444" : "#ddd"
+                          }`,
                           backgroundColor: "transparent",
                         }}
                       >
                         <td className="px-4 py-3 align-middle">
-                          <span className={theme === "dark" ? "text-white" : "text-black"} style={{ wordBreak: "break-all" }}>
+                          <span
+                            className={
+                              theme === "dark" ? "text-white" : "text-black"
+                            }
+                            style={{ wordBreak: "break-all" }}
+                          >
                             {alert.username}
                           </span>
                         </td>
                         <td className="px-4 py-3 align-middle">
-                          <span className={theme === "dark" ? "text-white" : "text-black"}>
-                            {alert.emergencyType === "critical" ? "CRITICAL" : `${alert.emergencyType} (${alert.category})`}
+                          <span
+                            className={
+                              theme === "dark" ? "text-white" : "text-black"
+                            }
+                          >
+                            {alert.emergencyType === "critical"
+                              ? "CRITICAL"
+                              : `${alert.emergencyType} (${alert.category})`}
                           </span>
                         </td>
                         <td className="px-4 py-3 align-middle">
-                          <span style={{ color: !alert.isPicked ? "#dc3545" : theme === "dark" ? "#fff" : "#333", wordBreak: "break-all" }}>
-                            {!alert.isPicked ? getElapsedTime(alert.createdAt) : "Picked"}
+                          <span
+                            style={{
+                              color: !alert.isPicked
+                                ? "#dc3545"
+                                : theme === "dark"
+                                ? "#fff"
+                                : "#333",
+                              wordBreak: "break-all",
+                            }}
+                          >
+                            {!alert.isPicked
+                              ? getElapsedTime(alert.createdAt)
+                              : "Picked"}
                           </span>
                         </td>
                         <td className="px-4 py-3 align-middle">
@@ -388,12 +613,16 @@ const SecurityAlert = () => {
                             className="rounded-pill px-3 py-2 fw-semibold"
                             style={{
                               backgroundColor: "transparent",
-                              border: `1px solid ${alert.isPicked ? "#28a745" : "#dc3545"}`,
+                              border: `1px solid ${
+                                alert.isPicked ? "#28a745" : "#dc3545"
+                              }`,
                               color: theme === "dark" ? "#fff" : "#333",
                               fontSize: "0.9rem",
                             }}
                           >
-                            {alert.isPicked ? `Picked by ${alert.pickedByName}` : "Unclaimed"}
+                            {alert.isPicked
+                              ? `Picked by ${alert.pickedByName}`
+                              : "Unclaimed"}
                           </Badge>
                         </td>
                         {currentUser.role === "security" && (
@@ -428,26 +657,53 @@ const SecurityAlert = () => {
               {paginatedAlerts.map((alert) => (
                 <Card
                   key={alert._id}
-                  className={`border-0 rounded-3 overflow-hidden mb-3 ${theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"}`}
+                  className={`border-0 rounded-3 overflow-hidden mb-3 ${
+                    theme === "dark"
+                      ? "bg-dark text-light"
+                      : "bg-white text-dark"
+                  }`}
                   style={{
-                    background: theme === "dark"
-                      ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
-                      : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
+                    background:
+                      theme === "dark"
+                        ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
+                        : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
                     boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
                   }}
                 >
                   <Card.Body className="p-4">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className={theme === "dark" ? "text-white" : "text-black"} style={{ wordBreak: "break-all" }}>
+                      <span
+                        className={
+                          theme === "dark" ? "text-white" : "text-black"
+                        }
+                        style={{ wordBreak: "break-all" }}
+                      >
                         {alert.username}
                       </span>
-                      <span style={{ color: !alert.isPicked ? "#dc3545" : theme === "dark" ? "#fff" : "#333", wordBreak: "break-all" }}>
-                        {!alert.isPicked ? getElapsedTime(alert.createdAt) : "Picked"}
+                      <span
+                        style={{
+                          color: !alert.isPicked
+                            ? "#dc3545"
+                            : theme === "dark"
+                            ? "#fff"
+                            : "#333",
+                          wordBreak: "break-all",
+                        }}
+                      >
+                        {!alert.isPicked
+                          ? getElapsedTime(alert.createdAt)
+                          : "Picked"}
                       </span>
                     </div>
                     <div className="mb-2">
-                      <span className={theme === "dark" ? "text-white" : "text-black"}>
-                        {alert.emergencyType === "critical" ? "CRITICAL EMERGENCY" : `${alert.emergencyType} (${alert.category})`}
+                      <span
+                        className={
+                          theme === "dark" ? "text-white" : "text-black"
+                        }
+                      >
+                        {alert.emergencyType === "critical"
+                          ? "CRITICAL EMERGENCY"
+                          : `${alert.emergencyType} (${alert.category})`}
                       </span>
                     </div>
                     <div className="d-flex justify-content-between align-items-center">
@@ -455,12 +711,16 @@ const SecurityAlert = () => {
                         className="rounded-pill px-3 py-2 fw-semibold"
                         style={{
                           backgroundColor: "transparent",
-                          border: `1px solid ${alert.isPicked ? "#28a745" : "#dc3545"}`,
+                          border: `1px solid ${
+                            alert.isPicked ? "#28a745" : "#dc3545"
+                          }`,
                           color: theme === "dark" ? "#fff" : "#333",
                           fontSize: "0.9rem",
                         }}
                       >
-                        {alert.isPicked ? `Picked by ${alert.pickedByName}` : "Unclaimed"}
+                        {alert.isPicked
+                          ? `Picked by ${alert.pickedByName}`
+                          : "Unclaimed"}
                       </Badge>
                       {currentUser.role === "security" && !alert.isPicked && (
                         <Button
@@ -490,13 +750,21 @@ const SecurityAlert = () => {
                 {Array.from({ length: totalPages }, (_, i) => (
                   <li
                     key={i}
-                    className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
+                    className={`page-item ${
+                      currentPage === i + 1 ? "active" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
                       style={{
-                        backgroundColor: currentPage === i + 1 ? "#B68E0C" : "transparent",
-                        color: currentPage === i + 1 ? "#fff" : theme === "dark" ? "#fff" : "#333",
+                        backgroundColor:
+                          currentPage === i + 1 ? "#B68E0C" : "transparent",
+                        color:
+                          currentPage === i + 1
+                            ? "#fff"
+                            : theme === "dark"
+                            ? "#fff"
+                            : "#333",
                         borderColor: theme === "dark" ? "#444" : "#ddd",
                         borderRadius: "8px",
                       }}
