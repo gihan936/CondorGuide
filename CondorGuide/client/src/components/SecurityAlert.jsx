@@ -185,190 +185,74 @@ const SecurityAlert = () => {
         </div>
 
         {currentUser.role === "user" && (
-          <Row className="justify-content-center mb-4">
-            <Col xs={12} md={8}>
-              <Card
-                className={`border-0 rounded-3 overflow-hidden ${
-                  theme === "dark" ? "bg-dark text-light" : "bg-white text-dark"
-                }`}
-                style={{
-                  background:
-                    theme === "dark"
-                      ? "linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(50, 50, 50, 0.9))"
-                      : "linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(240, 240, 240, 0.9))",
-                  boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <Card.Body className="p-4">
-                  <ul
-                    className="nav nav-tabs mb-4"
-                    style={{
-                      borderBottom: `1px solid ${
-                        theme === "dark" ? "#444" : "#ddd"
-                      }`,
-                    }}
+            <>
+              <ul className="nav security-nav-tabs">
+                <li className="nav-item security-nav-item">
+                  <button
+                    className={`nav-link security-nav-link ${
+                      tab === "critical" ? "active" : ""
+                    }`}
+                    onClick={() => setTab("critical")}
                   >
-                    <li className="nav-item">
-                      <button
-                        className={`nav-link ${
-                          tab === "critical" ? "active" : ""
-                        } ${theme === "dark" ? "text-white" : "text-black"}`}
-                        style={{
-                          borderColor:
-                            tab === "critical"
-                              ? "#B68E0C"
-                              : theme === "dark"
-                              ? "#444"
-                              : "#ddd",
-                          fontWeight: 500,
-                          backgroundColor:
-                            tab === "critical"
-                              ? theme === "dark"
-                                ? "rgba(182, 142, 12, 0.1)"
-                                : "rgba(182, 142, 12, 0.1)"
-                              : "transparent",
-                        }}
-                        onClick={() => setTab("critical")}
-                      >
-                        Critical Emergency
-                      </button>
-                    </li>
-                    <li className="nav-item">
-                      <button
-                        className={`nav-link ${
-                          tab === "non-critical" ? "active" : ""
-                        } ${theme === "dark" ? "text-white" : "text-black"}`}
-                        style={{
-                          borderColor:
-                            tab === "non-critical"
-                              ? "#B68E0C"
-                              : theme === "dark"
-                              ? "#444"
-                              : "#ddd",
-                          fontWeight: 500,
-                          backgroundColor:
-                            tab === "non-critical"
-                              ? theme === "dark"
-                                ? "rgba(182, 142, 12, 0.1)"
-                                : "rgba(182, 142, 12, 0.1)"
-                              : "transparent",
-                        }}
-                        onClick={() => setTab("non-critical")}
-                      >
-                        Non-Critical Report
-                      </button>
-                    </li>
-                  </ul>
+                    Critical Emergency
+                  </button>
+                </li>
+                <li className="nav-item security-nav-item">
+                  <button
+                    className={`nav-link security-nav-link ${
+                      tab === "non-critical" ? "active" : ""
+                    }`}
+                    onClick={() => setTab("non-critical")}
+                  >
+                    Non‑Critical Report
+                  </button>
+                </li>
+              </ul>
 
-                  {error && (
-                    <div
-                      className="alert alert-danger"
-                      role="alert"
-                      style={{
-                        border: `1px solid #dc3545`,
-                        backgroundColor: "transparent",
-                        color: theme === "dark" ? "#fff" : "#333",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      <strong>Alert:</strong> {error}
-                    </div>
-                  )}
+              {error && (
+                <div className="alert security-error-alert">
+                  <strong>Alert:</strong> {error}
+                </div>
+              )}
 
+              <div className="card security-alert-card">
+                <div className="card-body security-card-body">
                   {tab === "non-critical" && (
-                    <Form.Group className="mb-4">
-                      <Form.Label
-                        className={`fw-bold ${
-                          theme === "dark" ? "text-white" : "text-black"
-                        }`}
-                      >
+                    <div className="mb-3">
+                      <label className="form-label fw-bold mb-2">
                         Select Category:
-                      </Form.Label>
-                      <Form.Select
+                      </label>
+                      <select
+                        className="form-select security-category-select"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className={
-                          theme === "dark"
-                            ? "bg-dark text-light border-dark"
-                            : "bg-white text-dark border-light"
-                        }
-                        style={{
-                          backgroundColor: "transparent",
-                          border: `1px solid ${
-                            theme === "dark" ? "#fff" : "#333"
-                          }`,
-                          color: theme === "dark" ? "#fff" : "#333",
-                          fontWeight: 500,
-                        }}
                       >
                         {categories.map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>
                         ))}
-                      </Form.Select>
-                    </Form.Group>
+                      </select>
+                    </div>
                   )}
 
-                  <Button
-                    variant="outline"
-                    className={`w-100 py-3 fw-bold custom-button ${
-                      hasActiveAlert ? "disabled" : ""
+                  <button
+                    className={`security-main-button ${
+                      hasActiveAlert
+                        ? "security-disabled-button"
+                        : tab === "critical"
+                        ? "security-critical-button"
+                        : "security-non-critical-button"
                     }`}
-                    style={{
-                      backgroundColor:
-                        tab === "critical" ? "#dc3545" : "transparent",
-                      borderColor: hasActiveAlert
-                        ? "#6c757d"
-                        : tab === "critical"
-                        ? "#dc3545"
-                        : "#B68E0C",
-                      color: hasActiveAlert
-                        ? "#6c757d"
-                        : tab === "critical"
-                        ? "#fff"
-                        : "#B68E0C",
-                      fontSize: "1.2rem",
-                      boxShadow:
-                        tab === "critical" && !hasActiveAlert
-                          ? "0 0 15px rgba(220, 53, 69, 0.5)"
-                          : "none",
-                      borderRadius: "12px",
-                      padding: tab === "critical" ? "1rem" : "0.75rem",
-                      position: "relative",
-                      overflow: "hidden",
-                      textTransform: "uppercase",
-                    }}
                     disabled={hasActiveAlert}
                     onClick={sendAlert}
                   >
-                    {hasActiveAlert ? (
-                      "Alert Sent – Awaiting Help"
-                    ) : tab === "critical" ? (
-                      <>
-                        <span style={{ position: "relative", zIndex: 1 }}>
-                          I Need Immediate Help!
-                        </span>
-                        <span
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background:
-                              "radial-gradient(circle, rgba(220, 53, 69, 0.2) 0%, transparent 70%)",
-                            animation: !hasActiveAlert
-                              ? "pulse 2s infinite"
-                              : "none",
-                            zIndex: 0,
-                          }}
-                        />
-                      </>
-                    ) : (
-                      `Report ${category}`
-                    )}
-                  </Button>
+                    {hasActiveAlert
+                      ? "Alert Sent – Awaiting Help"
+                      : tab === "critical"
+                      ? "I Need Immediate Help!"
+                      : `Report ${category}`}
+                  </button>
 
                   {alerts
                     .filter((a) => !a.resolved)
@@ -376,40 +260,24 @@ const SecurityAlert = () => {
                       alert.pickedBy && alert.userId === currentUser._id ? (
                         <div
                           key={alert._id}
-                          className="alert alert-success d-flex justify-content-between align-items-center mt-3"
-                          role="alert"
-                          style={{
-                            border: `1px solid #28a745`,
-                            backgroundColor: "transparent",
-                            color: theme === "dark" ? "#fff" : "#333",
-                            borderRadius: "8px",
-                          }}
+                          className="alert security-assistance-alert d-flex justify-content-between align-items-center"
                         >
                           <div className="text-center">
                             <strong>{alert.pickedByName}</strong> is on the way
                             to assist you. Help is coming!
                           </div>
-                          <Button
-                            variant="outline"
-                            className="fw-semibold custom-button"
-                            style={{
-                              backgroundColor: "transparent",
-                              borderColor: "#28a745",
-                              color: "#28a745",
-                              fontWeight: 500,
-                              borderRadius: "8px",
-                            }}
+                          <button
+                            className="btn security-resolve-button"
                             onClick={() => resolveAlert(alert._id)}
                           >
                             Mark as Resolved
-                          </Button>
+                          </button>
                         </div>
                       ) : null
                     )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+                </div>
+              </div>
+            </>
         )}
 
         {["security", "admin", "superadmin"].includes(currentUser.role) && (

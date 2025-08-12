@@ -5,6 +5,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import { FaGithub, FaLinkedin, FaEnvelope, FaTwitter, FaRocket, FaEye, FaUsers, FaLightbulb, FaCheckCircle, FaLaptopCode } from "react-icons/fa";
 import GihanImg from "../assets/gihan.jpg";
 import KushadiniImg from "../assets/Kushadini.jpg";
+import ShannthaImg from "../assets/shanntha.jpg";
 
 // Team data
 const team = [
@@ -18,9 +19,9 @@ const team = [
   {
     name: "Shanntha Kumar",
     role: "Full Stack Developer",
-    image: "",
-    linkedin: "#",
-    github: "#",
+    image: ShannthaImg,
+    linkedin: "https://www.linkedin.com/in/shanntha-kumar-k-b210a6240",
+    github: "https://github.com/shannthakumar",
   },
   {
     name: "Kushadini Mallawaarachchi",
@@ -32,13 +33,13 @@ const team = [
 ];
 
 // Tech stack
-const techStack = ["React", "Bootstrap", "Node.js", "Express", "MongoDB", "Figma", "SMTP", "GridFS"];
+const techStack = ["React.js", "Bootstrap", "Node.js", "Express", "MongoDB", "Mapbox GL JS", "geojson.io", "Figma", "SMTP", "GridFS", "JWT", "Stripe"];
 
 // Core values
 const coreValues = [
   { icon: FaUsers, title: "User-First", description: "Your experience drives our development." },
   { icon: FaLightbulb, title: "Innovation", description: "Constantly seeking new ways to solve old problems." },
-  { icon: FaCheckCircle, title: "Reliability", description: "Building a platform that is always available when you need it." },
+  { icon: FaCheckCircle, title: "Reliability", description: "Building a platform always available when you need it." },
   { icon: FaLaptopCode, title: "Accessibility", description: "Designing for everyone, ensuring equal access to tools." }
 ];
 

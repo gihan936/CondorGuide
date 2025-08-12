@@ -6,7 +6,7 @@ import {  FaUserCircle } from "react-icons/fa";
 import { AiOutlineFontSize } from "react-icons/ai";
 import logoLight from "../assets/logo.png";
 import logoDark from "../assets/white_logo.png";
-import { Image as BSImage } from "react-bootstrap"; // Alias Image to BSImage to avoid conflict
+import { Image as BSImage } from "react-bootstrap"; 
 
 const Header = () => {
   const { theme, toggleTheme, fontSize, changeFontSize } = useContext(ThemeContext);
