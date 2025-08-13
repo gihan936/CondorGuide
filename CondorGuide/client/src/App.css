@@ -444,6 +444,11 @@ body.light {
   color: var(--gold);
 }
 
+/* Light mode override for better contrast */
+.home-light .text-gold {
+  color: #b68e0c;
+}
+
 /* Navbar */
 .custom-navbar.light {
   background-color: var(--white) !important;
