@@ -28,7 +28,7 @@ const enhancedFeatures = [
   },
   {
     title: "Smart Classroom Finder",
-    text: "Check real-time availability of classrooms, study spaces, and labs with advanced booking and notification features.",
+    text: "Easily check real-time availability of classrooms, study spaces, and labs with advanced booking and instant notification features.",
     detailedFeatures: [
       "Live availability status",
       "Advanced booking system",
@@ -128,7 +128,6 @@ const Home = () => {
 
   return (
     <main className={theme === "dark" ? "home-dark" : "home-light"}>
-      {/* Enhanced Banner Section with Improved Layout */}
       <div className="home-banner-section" style={{
           backgroundImage: `url(${bannerBg})`,
           backgroundSize: "cover",
@@ -140,7 +139,7 @@ const Home = () => {
           flexDirection: "column",
         }}>
         
-        {/* Banner Overlay with Flexbox Layout */}
+
         <div className="banner-overlay" style={{
           position: "absolute",
           inset: 0,
@@ -153,7 +152,6 @@ const Home = () => {
           padding: "2rem"
         }}>
           
-          {/* Main Banner Content - Centered */}
           <Motion.div
             className="text-center text-white banner-content"
             variants={bannerVariants}
@@ -187,7 +185,6 @@ const Home = () => {
           </Motion.div>
         </div>
         
-        {/* Floating Scroll Indicator */}
         <Motion.div 
           className="scroll-indicator"
           initial={{ opacity: 0 }}
@@ -207,7 +204,6 @@ const Home = () => {
         </Motion.div>
       </div>
 
-      {/* Enhanced Features Section */}
       <Container className="my-5 py-5">
         <Motion.div 
           className="text-center mb-5"
@@ -236,7 +232,6 @@ const Home = () => {
                   whileHover="hover"
                 >
                   <Card className={`enhanced-feature-card h-100 ${theme === "dark" ? "card-dark" : "card-light"}`}>
-                    {/* Image Section with Overlay */}
                     <div className="card-image-container">
                       <Card.Img 
                         variant="top" 
@@ -247,7 +242,6 @@ const Home = () => {
                     </div>
 
                     <Card.Body className="p-4">
-                      {/* Header Section */}
                       <div className="card-header-section mb-3">
                         <Badge variant="outline" className="subtitle-badge mb-2">
                           {feature.subtitle}
@@ -260,7 +254,6 @@ const Home = () => {
                         </Card.Text>
                       </div>
 
-                      {/* Features List */}
                       <div className="features-list mb-3">
                         {feature.detailedFeatures.map((item, idx) => (
                           <div key={idx} className="feature-item">
@@ -272,7 +265,6 @@ const Home = () => {
                         ))}
                       </div>
 
-                      {/* Action Button */}
                       <Button 
                         variant="outline-gold" 
                         className="w-100 fw-semibold action-btn"
@@ -290,7 +282,6 @@ const Home = () => {
         </Motion.div>
       </Container>
 
-      {/* Enhanced About Section */}
       <Container className="my-5 py-5">
         <Motion.div 
           className="text-center"
@@ -311,7 +302,6 @@ const Home = () => {
                   efficiency, and enhanced learning experiences.
                 </p>
                 
-                {/* Key Benefits */}
                 <Row className="benefits-row g-4 my-5">
                   <Col md={4}>
                     <div className="benefit-item">
@@ -356,7 +346,7 @@ const Home = () => {
 
                 {/* CTA Section */}
                 <div className="cta-section mt-5">
-                  <Button variant="gold" size="lg" className="me-3 px-4 py-3 fw-semibold">
+                  <Button href="/signup" variant="gold" size="lg" className="me-3 px-4 py-3 fw-semibold">
                     Get Started Today
                     <i className="fas fa-rocket ms-2"></i>
                   </Button>
@@ -366,7 +356,6 @@ const Home = () => {
         </Motion.div>
       </Container>
 
-      {/* Testimonials Section */}
       <Container className="my-5 py-5">
         <Motion.div 
           initial={{ opacity: 0, y: 30 }}

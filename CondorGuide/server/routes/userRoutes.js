@@ -35,17 +35,6 @@ router.post('/signUp', async (req, res) => {
       return res.status(409).json({ message: 'User with this email already exists' });
     }
 
-    // Check if firstName or lastName already exists
-    const nameExist = await User.findOne({
-      $or: [
-        { firstName: { $regex: new RegExp(`^${firstName}$`, 'i') } },
-        { lastName: { $regex: new RegExp(`^${lastName}$`, 'i') } }
-      ]
-    });
-    if (nameExist) {
-      return res.status(409).json({ message: 'A user with this first name or lastName already exists' });
-    }
-
     // Create new user
     const newUser = new User({ email, password, firstName, lastName });
     await newUser.save();

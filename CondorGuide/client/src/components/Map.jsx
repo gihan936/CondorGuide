@@ -18,6 +18,7 @@ const Map = () => {
   const [debugInfo, setDebugInfo] = React.useState('Loading map...');
   const [isMapReady, setIsMapReady] = React.useState(false);
   const [isDataReady, setIsDataReady] = React.useState(false);
+  const [isInitializing, setIsInitializing] = React.useState(true);
   const [hallwayData, setHallwayData] = React.useState({});
   const [intersectionData, setIntersectionData] = React.useState([]); // NEW: Intersection points
   
@@ -59,7 +60,7 @@ const Map = () => {
       .addTo(mapRef.current);
 
     let startTime = null;
-    const duration = 10000; // 10 seconds for the animation
+    const duration = 5000; // 5 seconds for the animation (was 10)
 
     const frame = (timestamp) => {
       if (!startTime) startTime = timestamp;
@@ -215,7 +216,7 @@ const Map = () => {
   // NEW: Updated fetchRoomData function with intersection loading
   const fetchRoomDataWithIntersections = async () => {
     try {
-      setDebugInfo('Fetching room, hallway, and intersection data...');
+      setDebugInfo('Loading building data...');
       
       const roomDatasetIds = [
         'cmbhf0ndq2kld1on5g332amn7',  // A-wing-level-1
@@ -1354,17 +1355,16 @@ const Map = () => {
           console.log(`DEBUG: Examining neighbor ${neighbor.id} (${neighbor.type})`);
         }
         
-        // TEMPORARILY ALLOW routing through room entrances for debugging
         // AVOID other room entrances (only allow start/end room entrances)
         // EXCEPT for emergency connections which are allowed to connect to isolated room entrances
-        /*if (neighbor.type === 'room_entrance' && 
+        if (neighbor.type === 'room_entrance' && 
             neighbor.id !== startIntersection.id && 
             neighbor.id !== endIntersection.id &&
             !(connection.pathType && connection.pathType.includes('emergency'))) {
-          // Skip this room entrance - we don't want to route through other rooms
-          console.log(`DEBUG: Blocking path through room entrance ${neighbor.id}`);
+          // Skip this room entrance - we don't want to route through other rooms' entrances
+          if (iterations <= 2) console.log(`DEBUG: Blocking path through room entrance ${neighbor.id}`);
           return;
-        }*/
+        }
         
         validNeighborsExamined++;
         if (isCrossWing && neighbor.wing !== currentIntersection.wing) {
@@ -1857,12 +1857,12 @@ const Map = () => {
       // Add animated route drawing effect
       setTimeout(() => {
         animateRouteDrawing(routeSourceId, validCoordinates);
-      }, 1000); // Wait for map to finish fitting
+      }, 500); // Wait for map to finish fitting (was 1000)
 
       // Add animated marker after route drawing
       setTimeout(() => {
         animateMarkerAlongRoute(validCoordinates);
-      }, 2000); // Start marker animation after route drawing
+      }, 1000); // Start marker animation after route drawing (was 2000)
 
 
     } catch (error) {
@@ -1875,7 +1875,7 @@ const Map = () => {
     if (!mapRef.current || !coordinates || coordinates.length < 2) return;
 
     let currentPointIndex = 0;
-    const animationSpeed = 100; // milliseconds between points
+    const animationSpeed = 50; // milliseconds between points (was 100)
 
     const drawNextSegment = () => {
       if (currentPointIndex >= coordinates.length - 1) return;
@@ -1981,7 +1981,7 @@ const Map = () => {
       .addTo(mapRef.current);
 
     let startTime = null;
-    const duration = Math.max(8000, routeCoordinates.length * 300); // Dynamic duration based on route length
+    const duration = Math.max(4000, routeCoordinates.length * 150); // Dynamic duration based on route length (was 8000, 300)
 
     const frame = (timestamp) => {
       if (!startTime) startTime = timestamp;
@@ -2160,6 +2160,23 @@ const Map = () => {
     }
   };
 
+  // NEW: Check if a transport point is accessible (not covered by room polygons)
+  const isTransportAccessible = (transportPoint, floor) => {
+    const rooms = roomData[floor] || [];
+    
+    // Check if the transport point is inside any room polygon
+    for (const room of rooms) {
+      if (room.geometry && room.geometry.coordinates && room.geometry.coordinates[0]) {
+        const polygon = room.geometry.coordinates[0];
+        if (isPointInPolygon(transportPoint.coordinates, polygon)) {
+          console.log(`Transport ${transportPoint.id} is blocked by room ${room.room_name || room.displayName}`);
+          return false; // Transport is blocked by a room
+        }
+      }
+    }
+    return true; // Transport is accessible
+  };
+
   // NEW: Find available transports for cross-floor navigation
   const findAvailableTransports = (startFloor, endFloor) => {
     
@@ -2186,11 +2203,23 @@ const Map = () => {
     
     Object.entries(transportGroups).forEach(([locationId, points]) => {
       const floors = points.map(p => p.floor);
+      // Ensure this specific staircase/elevator exists on BOTH start and destination floors
       if (floors.includes(startFloor) && floors.includes(endFloor)) {
         const startPoint = points.find(p => p.floor === startFloor);
         const endPoint = points.find(p => p.floor === endFloor);
         
+        console.log(`Evaluating transport ${locationId}: start floor ${startFloor} → end floor ${endFloor}`);
+        
         if (startPoint && endPoint) {
+          // Check if both transport points are accessible (not covered by rooms)
+          const startPointAccessible = isTransportAccessible(startPoint, startFloor);
+          const endPointAccessible = isTransportAccessible(endPoint, endFloor);
+          
+          if (!startPointAccessible || !endPointAccessible) {
+            console.log(`Skipping transport ${locationId} - not accessible`);
+            return; // Skip this transport option
+          }
+          
           // For floor 3, filter by destination wing since A and B wings are not connected
           let isValidForDestination = true;
           if (endFloor === 3) {
@@ -2217,8 +2246,18 @@ const Map = () => {
                 [parseFloat(startRoom.key.split(',')[0]), parseFloat(startRoom.key.split(',')[1])],
                 startPoint.coordinates
               ) : Infinity,
+              // Calculate distance from transport to destination room
+              distanceToDestination: endRoom ? calculateDistance(
+                endPoint.coordinates,
+                [parseFloat(endRoom.key.split(',')[0]), parseFloat(endRoom.key.split(',')[1])]
+              ) : Infinity,
               wing: endPoint.wing || endPoint.id?.charAt(1) // Store wing info
             };
+            
+            console.log(`Added ${option.type} option: ${locationId} (same on floors ${startFloor} & ${endFloor})`);
+            console.log(`  - Distance to destination: ${option.distanceToDestination.toFixed(1)}m`);
+            console.log(`  - Start point: ${startPoint.id} on floor ${startFloor}`);
+            console.log(`  - End point: ${endPoint.id} on floor ${endFloor}`);
             
             if (option.type === 'stairs') {
               stairOptions.push(option);
@@ -2230,32 +2269,44 @@ const Map = () => {
       }
     });
     
-    // Sort by distance to find the most efficient options
-    stairOptions.sort((a, b) => a.distanceFromStart - b.distanceFromStart);
-    elevatorOptions.sort((a, b) => a.distanceFromStart - b.distanceFromStart);
+    // Sort by total travel distance (start to transport + transport to destination) to find the most efficient options
+    stairOptions.sort((a, b) => {
+      const totalDistanceA = a.distanceFromStart + a.distanceToDestination;
+      const totalDistanceB = b.distanceFromStart + b.distanceToDestination;
+      // Prioritize by distance to destination (more weight), then by distance from start
+      return (a.distanceToDestination * 2 + a.distanceFromStart) - (b.distanceToDestination * 2 + b.distanceFromStart);
+    });
+    elevatorOptions.sort((a, b) => {
+      const totalDistanceA = a.distanceFromStart + a.distanceToDestination;
+      const totalDistanceB = b.distanceFromStart + b.distanceToDestination;
+      // Prioritize by distance to destination (more weight), then by distance from start
+      return (a.distanceToDestination * 2 + a.distanceFromStart) - (b.distanceToDestination * 2 + b.distanceFromStart);
+    });
     
     // Create simplified transport choices
     const simplifiedOptions = [];
     
     if (stairOptions.length > 0) {
-      const wingInfo = endFloor === 3 && stairOptions[0].wing ? ` in ${stairOptions[0].wing.toUpperCase()}-wing` : '';
+      const best = stairOptions[0];
+      const wingInfo = endFloor === 3 && best.wing ? ` in ${best.wing.toUpperCase()}-wing` : '';
       simplifiedOptions.push({
         type: 'stairs',
         label: 'Take Stairs',
-        bestOption: stairOptions[0], // Use the closest stairs
+        bestOption: best,
         icon: 'stairs',
-        description: `Use the nearest staircase${wingInfo} (${stairOptions[0].description})`
+        description: `Use staircase ${best.locationId}${wingInfo} (closest to destination - same staircase on both floors)`
       });
     }
     
     if (elevatorOptions.length > 0) {
-      const wingInfo = endFloor === 3 && elevatorOptions[0].wing ? ` in ${elevatorOptions[0].wing.toUpperCase()}-wing` : '';
+      const best = elevatorOptions[0];
+      const wingInfo = endFloor === 3 && best.wing ? ` in ${best.wing.toUpperCase()}-wing` : '';
       simplifiedOptions.push({
         type: 'elevator',
         label: 'Take Elevator',
-        bestOption: elevatorOptions[0], // Use the closest elevator
+        bestOption: best,
         icon: 'elevator',
-        description: `Use the nearest elevator${wingInfo} (${elevatorOptions[0].description})`
+        description: `Use elevator ${best.locationId}${wingInfo} (closest to destination - same elevator on both floors)`
       });
     }
     
@@ -3104,26 +3155,34 @@ const Map = () => {
 
     mapboxgl.accessToken = 'pk.eyJ1Ijoia3VzaGFkaW5pIiwiYSI6ImNtYjBxdnlzczAwNmUyanE0ejhqdnNibGMifQ.39lNqpWtEZ_flmjVch2V5g';
 
-    fetchRoomDataWithIntersections(); // UPDATED: Use new function
-
+    // Initialize map closer to final position to reduce jarring
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/kushadini/cmclf9u4f008z01s01mg44i6x',
-      center: [-74.5, 40],
-      zoom: 9
+      center: [-80.402816, 43.390824], // Start closer to final position
+      zoom: 15, // Start at medium zoom
+      pitch: 0 // Start flat, then animate to 3D
     });
 
     mapRef.current.on('load', () => {
-      setDebugInfo('Map loaded successfully!');
+      setDebugInfo('Map loaded, initializing...');
 
-      mapRef.current.flyTo({
-        center: [-80.402816, 43.390824],
-        zoom: 19,
-        pitch: 45
-      });
+      // Smooth animation to final position
+      setTimeout(() => {
+        mapRef.current.easeTo({
+          center: [-80.402816, 43.390824],
+          zoom: 19,
+          pitch: 45,
+          duration: 2000, // Smooth 2-second animation
+          easing: (t) => t * (2 - t) // Ease-out animation
+        });
+      }, 500); // Small delay to ensure map is fully loaded
 
       // Set initial user location
       setUserLocation(mapRef.current.getCenter().toArray());
+      
+      // Start data loading AFTER map is ready
+      fetchRoomDataWithIntersections();
 
       setIsMapReady(true);
     });
@@ -3145,10 +3204,17 @@ const Map = () => {
 
   // Set up room interactions when both map and data are ready
   useEffect(() => {
-    if (isMapReady && isDataReady) {
-      initializeLayers();
-      setupRoomInteractions();
-      showFloorOnly(currentFloor);
+    if (isMapReady && isDataReady && isInitializing) {
+      setDebugInfo('Setting up interactions...');
+      
+      // Add a small delay to prevent interruption of the initial animation
+      setTimeout(() => {
+        initializeLayers();
+        setupRoomInteractions();
+        showFloorOnly(currentFloor);
+        setIsInitializing(false);
+        setDebugInfo('Ready for navigation');
+      }, 2500); // Wait for initial map animation to complete
     }
   }, [isMapReady, isDataReady]);
 
@@ -3160,12 +3226,12 @@ const Map = () => {
     }
     
     const allRoomLayers = [
-      'a-wing-level-1-fill', 'a-wing-level-1-borders', 'a-wing-level-1-label',
-      'a-wing-level-2-fill', 'a-wing-level-2-borders', 'a-wing-level-2-label',
-      'a-wing-level-3-fill', 'a-wing-level-3-borders', 'a-wing-level-3-label',
-      'b-wing-level-1-fill', 'b-wing-level-1-borders', 'b-wing-level-1-label',
-      'b-wing-level-2-fill', 'b-wing-level-2-borders', 'b-wing-level-2-label',
-      'b-wing-level-3-fill', 'b-wing-level-3-borders', 'b-wing-level-3-label'
+      'a-wing-level-1-label', 'a-wing-level-1-extrusion', 'a-wing-level-1-borders',
+      'a-wing-level-2-label', 'a-wing-level-2-extrusion', 'a-wing-level-2-borders',
+      'a-wing-level-3-label', 'a-wing-level-3-extrusion', 'a-wing-level-3-borders',
+      'b-wing-level-1-label', 'b-wing-level-1-extrusion', 'b-wing-level-1-borders',
+      'b-wing-level-2-label', 'b-wing-level-2-extrusion', 'b-wing-level-2-borders',
+      'b-wing-level-3-label', 'b-wing-level-3-extrusion', 'b-wing-level-3-borders'
     ];
     
     // Log all layers for debugging
@@ -3179,10 +3245,26 @@ const Map = () => {
       }
     });
     
+    // Hide all managed layers
     allRoomLayers.forEach(layerId => {
       try {
         mapRef.current.setLayoutProperty(layerId, 'visibility', 'none');
       } catch (e) {
+      }
+    });
+    
+    // Force hide all fill layers to prevent them from showing
+    const allFillLayers = [
+      'a-wing-level-1-fill', 'a-wing-level-2-fill', 'a-wing-level-3-fill',
+      'b-wing-level-1-fill', 'b-wing-level-2-fill', 'b-wing-level-3-fill'
+    ];
+    
+    allFillLayers.forEach(layerId => {
+      try {
+        mapRef.current.setLayoutProperty(layerId, 'visibility', 'none');
+        console.log(`🚫 Force hidden fill layer: ${layerId}`);
+      } catch (e) {
+        // Layer might not exist, which is fine
       }
     });
     
@@ -3247,40 +3329,69 @@ const Map = () => {
     
   };
 
-  const showFloorOnly = (floor) => {
+  const showFloorOnly = (floor, retryCount = 0) => {
+    console.log(`🏢 showFloorOnly called with floor: ${floor}, retry: ${retryCount}`);
     setDebugInfo(`Switching to floor ${floor}...`);
     
-    if (!mapRef.current || !mapRef.current.isStyleLoaded()) {
-      setTimeout(() => showFloorOnly(floor), 500);
+    if (!mapRef.current) {
+      console.log(`❌ Map ref not available`);
       return;
     }
     
+    if (!mapRef.current.isStyleLoaded() && retryCount < 10) {
+      console.log(`⏳ Map not ready, retrying in 500ms... (attempt ${retryCount + 1}/10)`);
+      setTimeout(() => showFloorOnly(floor, retryCount + 1), 500);
+      return;
+    }
+    
+    if (retryCount >= 10) {
+      console.log(`⚠️ Max retries reached, proceeding anyway...`);
+    }
+    
     const allFloorLayers = [
-      'a-wing-level-1-fill', 'a-wing-level-1-borders', 'a-wing-level-1-label',
-      'a-wing-level-2-fill', 'a-wing-level-2-borders', 'a-wing-level-2-label',
-      'a-wing-level-3-fill', 'a-wing-level-3-borders', 'a-wing-level-3-label',
-      'b-wing-level-1-fill', 'b-wing-level-1-borders', 'b-wing-level-1-label',
-      'b-wing-level-2-fill', 'b-wing-level-2-borders', 'b-wing-level-2-label',
-      'b-wing-level-3-fill', 'b-wing-level-3-borders', 'b-wing-level-3-label'
+      'a-wing-level-1-label', 'a-wing-level-1-extrusion', 'a-wing-level-1-borders',
+      'a-wing-level-2-label', 'a-wing-level-2-extrusion', 'a-wing-level-2-borders',
+      'a-wing-level-3-label', 'a-wing-level-3-extrusion', 'a-wing-level-3-borders',
+      'b-wing-level-1-label', 'b-wing-level-1-extrusion', 'b-wing-level-1-borders',
+      'b-wing-level-2-label', 'b-wing-level-2-extrusion', 'b-wing-level-2-borders',
+      'b-wing-level-3-label', 'b-wing-level-3-extrusion', 'b-wing-level-3-borders'
     ];
     
     // Hide ALL layers first
+    console.log(`🔒 Hiding all floor layers...`);
     allFloorLayers.forEach(layerId => {
       try {
         mapRef.current.setLayoutProperty(layerId, 'visibility', 'none');
+        console.log(`Hidden: ${layerId}`);
       } catch (e) {
+        console.log(`Error hiding ${layerId}:`, e);
+      }
+    });
+    
+    // Also force hide fill layers
+    const fillLayersToHide = [
+      'a-wing-level-1-fill', 'a-wing-level-2-fill', 'a-wing-level-3-fill',
+      'b-wing-level-1-fill', 'b-wing-level-2-fill', 'b-wing-level-3-fill'
+    ];
+    
+    fillLayersToHide.forEach(layerId => {
+      try {
+        mapRef.current.setLayoutProperty(layerId, 'visibility', 'none');
+        console.log(`🚫 Hidden fill layer: ${layerId}`);
+      } catch (e) {
+        // Layer might not exist
       }
     });
     
     setTimeout(() => {
       // Show only the layers for the selected floor
       const currentFloorLayers = [
-        `a-wing-level-${floor}-fill`,
-        `a-wing-level-${floor}-borders`,
         `a-wing-level-${floor}-label`,
-        `b-wing-level-${floor}-fill`,
-        `b-wing-level-${floor}-borders`,
-        `b-wing-level-${floor}-label`
+        `a-wing-level-${floor}-extrusion`,
+        `a-wing-level-${floor}-borders`,
+        `b-wing-level-${floor}-label`,
+        `b-wing-level-${floor}-extrusion`,
+        `b-wing-level-${floor}-borders`
       ];
       
       let visibleCount = 0;
@@ -3289,15 +3400,23 @@ const Map = () => {
           const layer = mapRef.current.getLayer(layerId);
           if (layer) {
             mapRef.current.setLayoutProperty(layerId, 'visibility', 'visible');
+            
+            // Simple layer management - just set visibility
+            console.log(`✅ Making layer visible: ${layerId}`, layer.type);
+            
             visibleCount++;
+            console.log(`✓ Found and made visible: ${layerId}`, layer.type);
           } else {
+            console.log(`✗ Layer not found: ${layerId}`);
           }
         } catch (e) {
+          console.log(`✗ Error with layer ${layerId}:`, e);
         }
       });
       
-      setDebugInfo(`Floor ${floor} - ${visibleCount}/6 layers visible (A & B Wings)`);
+      setDebugInfo(`Floor ${floor} - ${visibleCount}/7 layers visible (A & B Wings + Extrusion)`);
       
+      console.log(`🎨 Simple repaint for floor ${floor}...`);
       mapRef.current.triggerRepaint();
       
     }, 100);
@@ -3305,6 +3424,7 @@ const Map = () => {
   };
 
   const switchFloor = (floor) => {
+    console.log(`🔄 switchFloor called with floor: ${floor}`);
     setCurrentFloor(floor);
     showFloorOnly(floor);
     setSelectedRoom(null);
@@ -3379,6 +3499,31 @@ const Map = () => {
 
   return (
     <div className={`map-page ${theme === 'dark' ? 'bg-dark' : 'bg-light'}`}>
+      {/* Loading Overlay */}
+      {isInitializing && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column'
+        }}>
+          <div className="text-center text-white">
+            <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <h5>Loading Interactive Map</h5>
+            <p className="text-light">{debugInfo}</p>
+          </div>
+        </div>
+      )}
+      
       {/* Controls Section Above Map */}
       <Container fluid className="py-3">
         <Row className="g-3">

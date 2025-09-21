@@ -444,6 +444,11 @@ body.light {
   color: var(--gold);
 }
 
+/* Light mode override for better contrast */
+.home-light .text-gold {
+  color: #b68e0c;
+}
+
 /* Navbar */
 .custom-navbar.light {
   background-color: var(--white) !important;
@@ -1309,6 +1314,7 @@ body.light {
   font-weight: 400;
   margin: 0;
 }
+
 
 .light .report-issue-tab-content {
   color: var(--black);
@@ -2593,6 +2599,130 @@ a, .hover-card, .hover-badge {
 
 .bg-dark .timeline li:nth-child(even) .timeline-content::before {
   border-right: 12px solid rgba(var(--bs-secondary-rgb), 0.8) !important;
+}
+
+.dark .donation-content {
+  color: var(--black);
+}
+
+/*profile Page Styles */
+/* General Page Layout */
+.profile-page {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.profile-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.profile-highlight {
+  color: #B68E0C;
+}
+
+.profile-subtitle {
+  max-width: 500px;
+  font-size: 1.1rem;
+  margin: 0 auto;
+}
+
+/* Theme specific */
+.dark-theme {
+  background-color: #121212;
+  color: #f5f5f5;
+}
+
+.light-theme {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Alerts */
+.alert-custom-dark {
+  background: rgba(30, 30, 30, 0.9);
+}
+
+.alert-custom-light {
+  background: rgba(240, 240, 240, 0.9);
+}
+
+.alert-success-dark {
+  color: #90e0c0;
+}
+
+.alert-success-light {
+  color: #0f5132;
+}
+
+.alert-danger-dark {
+  color: #ff9999;
+}
+
+.alert-danger-light {
+  color: #dc3545;
+}
+
+.alert-info-dark {
+  color: #a0c4ff;
+}
+
+.alert-info-light {
+  color: #004085;
+}
+
+/* Cards */
+.profile-card {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.profile-card-dark {
+  background: rgba(30, 30, 30, 0.95);
+}
+
+.profile-heading {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+/* Form Controls */
+.profile-input {
+  font-size: 0.95rem;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+}
+
+.dark-theme .profile-input {
+  background: #222;
+  border: 1px solid #555;
+}
+
+.profile-input-error {
+  border-color: #dc3545 !important;
+}
+
+/* Buttons */
+.btn-outline-gold {
+  border-color: #B68E0C;
+  color: #B68E0C;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+}
+
+.btn-outline-secondary-custom {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+}
+
+/* Password Strength */
+.password-strength {
+  height: 6px;
+}
+
+.password-feedback {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
 }
 
 /* Mobile Responsive Design */
