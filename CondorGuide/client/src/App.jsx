@@ -98,9 +98,9 @@ const AppWrapper = () => {
           <Route
             path="/donate"
             element={
-              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+             
                 <Donation />
-              </ProtectedRoute>
+            
             }
           />
           <Route path="/about" element={<AboutUs />} />

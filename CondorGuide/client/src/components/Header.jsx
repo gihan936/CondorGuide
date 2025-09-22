@@ -120,12 +120,14 @@ const Header = () => {
                   <Nav.Link href="/map" className={`nav-link-custom ${isActive("/map") && "active"}`}>College Map</Nav.Link>
                 </>
               )}
+              <Nav.Link href="/donate" className={`nav-link-custom ${isActive("/donate") && "active"}`}>Donate</Nav.Link>
+
               {user?.role === "user" && (
                 <>
                   
                   <Nav.Link href="/issues" className={`nav-link-custom ${isActive("/issues") && "active"}`}>Report Issues</Nav.Link>
                   <Nav.Link href="/security-alerts" className={`nav-link-custom ${isActive("/security-alerts") && "active"}`}>Security Alarm</Nav.Link>
-                  <Nav.Link href="/donate" className={`nav-link-custom ${isActive("/donate") && "active"}`}>Donate</Nav.Link>
+                 
                 </>
               )}
               {user?.role === "admin" && (
