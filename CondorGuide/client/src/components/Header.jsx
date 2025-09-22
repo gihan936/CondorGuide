@@ -114,6 +114,7 @@ const Header = () => {
             <Nav className="ms-auto d-flex align-items-center gap-2 gap-lg-3">
               <Nav.Link href="/" className={`nav-link-custom ${isActive("/") && "active"}`}>Home</Nav.Link>
               <Nav.Link href="/about" className={`nav-link-custom ${isActive("/about") && "active"}`}>About Us</Nav.Link>
+              <Nav.Link href="/classrooms" className={`nav-link-custom ${isActive("/classrooms") && "active"}`}>Available Classrooms</Nav.Link>
               {user?.role !== "admin" && user?.role !== "superadmin" && (
                 <>
                   <Nav.Link href="/map" className={`nav-link-custom ${isActive("/map") && "active"}`}>College Map</Nav.Link>
@@ -121,7 +122,7 @@ const Header = () => {
               )}
               {user?.role === "user" && (
                 <>
-                  <Nav.Link href="/classrooms" className={`nav-link-custom ${isActive("/classrooms") && "active"}`}>Available Classrooms</Nav.Link>
+                  
                   <Nav.Link href="/issues" className={`nav-link-custom ${isActive("/issues") && "active"}`}>Report Issues</Nav.Link>
                   <Nav.Link href="/security-alerts" className={`nav-link-custom ${isActive("/security-alerts") && "active"}`}>Security Alarm</Nav.Link>
                   <Nav.Link href="/donate" className={`nav-link-custom ${isActive("/donate") && "active"}`}>Donate</Nav.Link>

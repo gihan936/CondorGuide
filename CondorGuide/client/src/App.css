@@ -700,6 +700,16 @@ body.light {
   backdrop-filter: blur(10px);
   z-index: 1000;
 }
+.donation-body {
+  font-size: 1.3rem;
+  line-height: 1.8;
+  text-align: justify;
+}
+
+.donation-body.dark-theme {
+  background-color: #977878;
+  color: #e90e0e;
+}
 
 .map-info-card.dark-theme {
   background-color: #1a1a1a;

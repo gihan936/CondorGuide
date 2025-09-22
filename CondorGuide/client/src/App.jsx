@@ -82,10 +82,9 @@ const AppWrapper = () => {
           <Route
             path="/classrooms"
             element={
-              <ProtectedRoute allowedRoles={["user"]}>
-                {" "}
-                <AvailableClassrooms />{" "}
-              </ProtectedRoute>
+              
+                <AvailableClassrooms />
+             
             }
           />
           <Route

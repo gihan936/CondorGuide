@@ -3191,7 +3191,7 @@ const Map = () => {
       setUserLocation(mapRef.current.getCenter().toArray());
     });
 
-    mapRef.current.on('error', (e) => {
+    mapRef.current.on('error', () => {
       setDebugInfo('Map error occurred');
     });
 
